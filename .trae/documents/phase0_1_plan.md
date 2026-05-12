@@ -30,29 +30,20 @@
 
 ### 任务清单
 
-#### 1. 创建新的项目结构
-- 创建 `src/` 目录作为新项目根目录
-- 创建 `docs/` 目录存放文档
-- 创建 `tests/` 目录存放测试
-- 保持原项目在根目录（用于过渡）
-
-#### 2. 设置分支策略
+#### 1. 设置分支策略
 - 创建 `feature/crossplatform-phase1` 分支作为工作分支
 - 创建分支保护规则
 - 更新 `.github/` 相关配置
 
-#### 3. 创建基础架构文档
-- 创建 `docs/ARCHITECTURE.md` - 架构设计文档
-- 创建 `docs/PLATFORM_ABSTRACTIONS.md` - 平台抽象规范
-- 创建 `docs/UI_MIGRATION_GUIDE.md` - UI 迁移指南（重点说明像素级还原要求）
+#### 2. 创建架构文档
+- 在根目录创建 `ARCHITECTURE.md` - 架构设计文档
+- 创建 `PLATFORM_ABSTRACTIONS.md` - 平台抽象规范
+- 创建 `UI_MIGRATION_GUIDE.md` - UI 迁移指南（重点说明像素级还原要求）
+- 创建 `DEVELOPMENT.md` - 开发环境指南
 
-#### 4. 更新 CI/CD 配置
+#### 3. 更新 CI/CD 配置
 - 创建新的 GitHub Actions 工作流用于跨平台构建
 - 在原工作流中添加新分支的支持
-
-#### 5. 创建开发环境指南
-- 创建 `docs/DEVELOPMENT.md`
-- 包含 Uno Platform 环境配置说明
 
 ---
 
@@ -65,37 +56,37 @@
 
 #### Part 1：项目重组与 .NET 10 升级
 
-##### 1.1 创建新项目文件结构
-在 `src/` 下创建以下项目：
-- `src/PCL.Core/` - 可移植核心库（多目标框架）
-- `src/PCL.Core.Abstractions/` - 平台抽象接口
-- `src/PCL.Platform/` - 平台实现
+##### 1.1 创建新项目（直接在根目录）
+在根目录下创建以下新项目：
+- `PCL.Core.Abstractions/` - 平台抽象接口
+- `PCL.Platform/` - 平台实现
   - `Windows/` - Windows 平台实现
   - `MacOS/` - macOS 平台实现（占位）
   - `Linux/` - Linux 平台实现（占位）
-- `src/PCL.UI/` - Uno Platform UI 项目（基础结构）
-- `src/PCL.App/` - 应用入口项目
+- `PCL.UI/` - Uno Platform UI 项目
+- `PCL.App/` - 应用入口项目
 
 ##### 1.2 升级 PCL.Core 到 .NET 10
-- 修改项目文件支持多目标：`net10.0;netstandard2.1`
-- 移除 `UseWPF` 和 `EnableWindowsTargeting`
-- 更新所有 NuGet 包到 .NET 10 兼容版本
-- 移除 Windows 特定包（`System.Management`、`Microsoft.Xaml.Behaviors.Wpf` 等）到平台项目
-- 解决 API 变更问题
+- 修改 [PCL.Core.csproj](file:///workspace/PCL.Core/PCL.Core.csproj)：
+  - 支持多目标：`net10.0;netstandard2.1`
+  - 移除 `UseWPF` 和 `EnableWindowsTargeting`
+  - 更新所有 NuGet 包到 .NET 10 兼容版本
+  - 移除 Windows 特定包（`System.Management`、`Microsoft.Xaml.Behaviors.Wpf` 等）到平台项目
+  - 解决 API 变更问题
 
 ##### 1.3 代码分离 - 迁移非 UI 代码
-从原 PCL.Core 迁移以下模块到新结构：
-- ✅ `App/Configuration/` - 配置系统（无 WPF 依赖）
-- ✅ `App/Database/` - 数据库服务
-- ✅ `App/IoC/` - 依赖注入（需调整）
-- ✅ `App/Tasks/` - 任务管理
-- ✅ `IO/` - IO 操作
-- ✅ `Link/` - 联机功能（大部分可移植）
-- ✅ `Logging/` - 日志系统
-- ✅ `Minecraft/` - Minecraft 相关（除 Java 扫描器）
-- ✅ `Utils/` - 工具类（除 OS/Windows 特定部分）
+在 PCL.Core 内部进行代码分离：
+- ✅ 保留：`App/Configuration/` - 配置系统（无 WPF 依赖）
+- ✅ 保留：`App/Database/` - 数据库服务
+- ✅ 保留：`App/IoC/` - 依赖注入（需调整）
+- ✅ 保留：`App/Tasks/` - 任务管理
+- ✅ 保留：`IO/` - IO 操作
+- ✅ 保留：`Link/` - 联机功能（大部分可移植）
+- ✅ 保留：`Logging/` - 日志系统
+- ✅ 保留：`Minecraft/` - Minecraft 相关（除 Java 扫描器）
+- ✅ 保留：`Utils/` - 工具类（除 OS/Windows 特定部分）
 
-**保留在原位置（暂不迁移）**：
+**重构/移动**：
 - `UI/` - 全部 UI 相关（后续迁移到 PCL.UI）
 - `Utils/OS/` - 操作系统相关（移到平台抽象）
 - `App/Essentials/` - 需重构的应用服务
@@ -103,7 +94,7 @@
 #### Part 2：定义平台抽象接口
 
 ##### 2.1 创建平台抽象项目
-创建 `src/PCL.Core.Abstractions/PCL.Core.Abstractions.csproj`
+创建 `PCL.Core.Abstractions/PCL.Core.Abstractions.csproj`
 
 ##### 2.2 定义核心接口
 
@@ -227,9 +218,9 @@ public interface IDialogService
 - 其他扫描器（Path、WhereCommand 等）保留在核心但抽象化
 
 ##### 3.4 分离 UI 相关工具类
-- 将 `Utils/WpfUtils.cs` 移到 UI 项目
-- 将 `Utils/Exts/UiExtension.cs` 移到 UI 项目
-- 将 `UI/` 整个目录暂时保留在原位置（标记为待迁移）
+- 将 `Utils/WpfUtils.cs` 移到 PCL.UI 项目
+- 将 `Utils/Exts/UiExtension.cs` 移到 PCL.UI 项目
+- 将 `UI/` 整个目录标记为待迁移
 
 ##### 3.5 调整动画系统
 - 暂时保留动画系统代码但不编译
@@ -237,18 +228,18 @@ public interface IDialogService
 - 标记为「UI 依赖，待迁移」
 
 ##### 3.6 添加单元测试
-- 为平台抽象接口创建测试
+- 为平台抽象接口创建测试（更新 PCL.Core.Test）
 - 为重构后的核心服务添加测试
 - 目标：核心逻辑测试覆盖率 ≥ 80%
 
 #### Part 4：创建 Windows 平台实现
 
 ##### 4.1 创建 Windows 平台项目
-`src/PCL.Platform/Windows/PCL.Platform.Windows.csproj`
+`PCL.Platform/Windows/PCL.Platform.Windows.csproj`
 
 ##### 4.2 实现平台服务
 - **WindowsPlatformService** - 实现 `IPlatformService`
-- **WindowsWindowService** - 实现 `IWindowService`（暂时包装 WPF）
+- **WindowsWindowService** - 实现 `IWindowService`
 - **WindowsJavaScanner** - 移植原注册表扫描器
 - **WindowsClipboardService** - Windows 剪贴板实现
 - **WindowsDialogService** - Windows 对话框实现
@@ -271,11 +262,8 @@ public static class WindowsServiceCollectionExtensions
 
 #### Part 5：更新解决方案文件
 
-##### 5.1 创建新的解决方案
-创建 `src/PCL.CrossPlatform.sln`（或 `Plain Craft Launcher 3.sln`）
-
-##### 5.2 保持原解决方案
-原 `Plain Craft Launcher 2.slnx` 继续用于维护旧版本
+##### 5.1 更新解决方案
+更新 [Plain Craft Launcher 2.slnx](file:///workspace/Plain%20Craft%20Launcher%202.slnx) 添加新项目
 
 ---
 
@@ -290,10 +278,9 @@ public static class WindowsServiceCollectionExtensions
 
 ### PCL.Core 重构策略
 采用**渐进式重构**：
-1. 保持原项目可编译可运行
-2. 新架构与旧架构并行
-3. 使用特性开关控制新旧代码路径
-4. 逐步迁移功能
+1. 直接在 PCL.Core 上修改
+2. 使用条件编译控制平台特定代码
+3. 逐步迁移功能
 
 ### 平台抽象设计原则
 - **最小接口** - 只抽象真正需要跨平台的功能
@@ -307,61 +294,53 @@ public static class WindowsServiceCollectionExtensions
 ### 新增文件（创建）
 
 ```
-src/
-├── PCL.Core/
-│   └── PCL.Core.csproj (新，多目标)
-├── PCL.Core.Abstractions/
-│   ├── PCL.Core.Abstractions.csproj
-│   ├── IPlatformService.cs
-│   ├── IWindowService.cs
-│   ├── IJavaScanner.cs
-│   ├── IThemeService.cs
-│   ├── IUIAccessProvider.cs
-│   ├── IAudioService.cs
-│   ├── IClipboardService.cs
-│   └── IDialogService.cs
-├── PCL.Platform/
-│   └── Windows/
-│       ├── PCL.Platform.Windows.csproj
-│       ├── WindowsPlatformService.cs
-│       ├── WindowsWindowService.cs
-│       ├── WindowsJavaScanner.cs
-│       ├── WindowsClipboardService.cs
-│       └── WindowsDialogService.cs
-├── PCL.UI/
-│   └── PCL.UI.csproj (基础 Uno 项目)
-└── PCL.App/
-    └── PCL.App.csproj
-docs/
-├── ARCHITECTURE.md
-├── PLATFORM_ABSTRACTIONS.md
-├── UI_MIGRATION_GUIDE.md
-└── DEVELOPMENT.md
-tests/
-└── PCL.Core.Tests/ (重构后的测试)
-.github/
-└── workflows/
-    └── build-crossplatform.yml (新工作流)
+PCL.Core.Abstractions/
+├── PCL.Core.Abstractions.csproj
+├── IPlatformService.cs
+├── IWindowService.cs
+├── IJavaScanner.cs
+├── IThemeService.cs
+├── IUIAccessProvider.cs
+├── IAudioService.cs
+├── IClipboardService.cs
+└── IDialogService.cs
+
+PCL.Platform/
+└── Windows/
+    ├── PCL.Platform.Windows.csproj
+    ├── WindowsPlatformService.cs
+    ├── WindowsWindowService.cs
+    ├── WindowsJavaScanner.cs
+    ├── WindowsClipboardService.cs
+    └── WindowsDialogService.cs
+
+PCL.UI/
+└── PCL.UI.csproj (基础 Uno 项目)
+
+PCL.App/
+└── PCL.App.csproj
+
+ARCHITECTURE.md
+PLATFORM_ABSTRACTIONS.md
+UI_MIGRATION_GUIDE.md
+DEVELOPMENT.md
 ```
 
 ### 修改文件（编辑）
 
 ```
 PCL.Core/
-├── PCL.Core.csproj (保持但设为"legacy")
+├── PCL.Core.csproj (升级到 .NET 10，移除 WPF)
 ├── App/Essentials/
 │   ├── ApplicationService.cs (重构)
 │   └── MainWindowService.cs (重构)
 └── Minecraft/Java/Scanner/
     └── RegistryJavaScanner.cs (移到平台项目)
-```
 
-### 保留文件（不修改）
+Plain Craft Launcher 2.slnx (添加新项目)
 
-```
-Plain Craft Launcher 2/ (完整保留，用于过渡)
-PCL.Core.SourceGenerators/ (暂时保持不变)
-PCL.Core.Test/ (暂时保持不变)
+.github/workflows/
+└── build-test.yml (更新)
 ```
 
 ---
@@ -380,27 +359,26 @@ PCL.Core.Test/ (暂时保持不变)
 ## 实施顺序（按优先级）
 
 ### 第一优先级（必须先做）
-1. 创建新目录结构
-2. 创建平台抽象接口
-3. 升级 PCL.Core 项目文件（移除 WPF 依赖）
-4. 重构 ApplicationService 和 MainWindowService
+1. 创建平台抽象接口项目
+2. 升级 PCL.Core 项目文件（移除 WPF 依赖）
+3. 重构 ApplicationService 和 MainWindowService
 
 ### 第二优先级（重要）
-5. 迁移非 UI 核心代码
-6. 实现 Windows 平台服务
-7. 添加单元测试
+4. 调整 PCL.Core 内部代码结构
+5. 实现 Windows 平台服务
+6. 添加单元测试
 
 ### 第三优先级（完善）
-8. 创建文档
-9. 更新 CI/CD
-10. 创建 UI 项目基础结构
+7. 创建文档
+8. 更新 CI/CD
+9. 创建 UI 项目基础结构
+10. 更新解决方案
 
 ---
 
 ## 验收标准
 
 ### 阶段 0 验收
-- [ ] 新目录结构创建完成
 - [ ] 分支策略设置完成
 - [ ] 架构文档创建完成
 - [ ] CI/CD 配置更新完成
@@ -411,7 +389,7 @@ PCL.Core.Test/ (暂时保持不变)
 - [ ] Windows 平台实现完成
 - [ ] 核心服务重构完成
 - [ ] 单元测试覆盖率 ≥ 80%
-- [ ] 原 WPF 项目仍可正常工作（双轨制）
+- [ ] 解决方案更新完成
 - [ ] 像素级还原准备工作完成（资源提取、截图记录）
 
 ---
