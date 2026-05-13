@@ -46,6 +46,7 @@
     <ItemGroup>
         <ProjectReference Include="..\PCL-CE.Neo.Core.Abstractions\PCL-CE.Neo.Core.Abstractions.csproj" />
         <ProjectReference Include="..\PCL-CE.Neo.Core\PCL-CE.Neo.Core.csproj" />
+        <ProjectReference Include="..\PCL-CE.Neo.Platform\Windows\PCL-CE.Neo.Platform.Windows.csproj" />
     </ItemGroup>
 
 </Project>
