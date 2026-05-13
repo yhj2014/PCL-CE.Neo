@@ -1,6 +1,6 @@
-# PCL CE UI 迁移指南
+# PCL-CE.Neo UI 迁移指南
 
-本文档描述如何将 PCL CE 的 WPF UI 像素级迁移到 Uno Platform。
+本文档描述如何将 PCL Community Edition 的 WPF UI 像素级迁移到 Uno Platform。
 
 ## 目录
 
@@ -15,7 +15,11 @@
 
 ## 1. 概述
 
-### 1.1 目标
+### 1.1 项目背景
+
+PCL-CE.Neo 是 PCL Community Edition 的跨平台重构项目，由社区开发者发起。
+
+### 1.2 目标
 
 将现有的 WPF UI 完整迁移到 Uno Platform，同时保持：
 - 100% 的视觉一致性

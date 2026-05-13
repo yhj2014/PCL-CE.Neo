@@ -1,6 +1,8 @@
-# PCL CE 开发环境配置指南
+# PCL-CE.Neo 开发环境配置指南
 
-本文档帮助开发者配置 PCL CE 跨平台重构项目的开发环境。
+本文档帮助开发者配置 PCL-CE.Neo 跨平台重构项目的开发环境。
+
+> **项目背景**：PCL-CE.Neo 是 PCL Community Edition 的跨平台重构项目，由社区开发者发起。
 
 ## 目录
 
