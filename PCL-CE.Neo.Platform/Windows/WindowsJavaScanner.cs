@@ -27,10 +27,12 @@ public class WindowsJavaScanner : IJavaScanner
         {
             ScanJavaSoftRegistry(results);
             ScanBrandRegistry(results);
+            // 也扫描常见的 Java 安装目录
+            ScanCommonDirectories(results);
         }
         catch (Exception ex)
         {
-            LogWrapper.Error(ex, "Java", "注册表扫描失败");
+            System.Diagnostics.Debug.WriteLine($"Java 注册表扫描失败: {ex.Message}");
         }
         return results;
     }
@@ -50,7 +52,7 @@ public class WindowsJavaScanner : IJavaScanner
         }
         catch (Exception ex)
         {
-            LogWrapper.Error(ex, "Java", $"目录扫描失败: {directory}");
+            System.Diagnostics.Debug.WriteLine($"Java 目录扫描失败 ({directory}): {ex.Message}");
         }
         return results;
     }
@@ -66,18 +68,35 @@ public class WindowsJavaScanner : IJavaScanner
     {
         foreach (var regPath in RegistryPaths)
         {
-            using var regKey = Registry.LocalMachine.OpenSubKey(regPath);
-            if (regKey == null) continue;
-
-            foreach (var subKeyName in regKey.GetSubKeyNames())
+            try
             {
-                using var subKey = regKey.OpenSubKey(subKeyName);
-                var javaHome = subKey?.GetValue("JavaHome") as string;
-                if (string.IsNullOrEmpty(javaHome) ||
-                    Path.GetInvalidPathChars().Any(c => javaHome.Contains(c))) continue;
+                using var regKey = Registry.LocalMachine.OpenSubKey(regPath);
+                if (regKey == null) continue;
 
-                var javaExePath = Path.Combine(javaHome, "bin", "java.exe");
-                if (File.Exists(javaExePath)) results.Add(javaExePath);
+                foreach (var subKeyName in regKey.GetSubKeyNames())
+                {
+                    try
+                    {
+                        using var subKey = regKey.OpenSubKey(subKeyName);
+                        var javaHome = subKey?.GetValue("JavaHome") as string;
+                        if (string.IsNullOrEmpty(javaHome) ||
+                            Path.GetInvalidPathChars().Any(c => javaHome.Contains(c))) continue;
+
+                        var javaExePath = Path.Combine(javaHome, "bin", "java.exe");
+                        if (File.Exists(javaExePath) && !results.Contains(javaExePath))
+                        {
+                            results.Add(javaExePath);
+                        }
+                    }
+                    catch
+                    {
+                        // 忽略单个子键的错误
+                    }
+                }
+            }
+            catch
+            {
+                // 忽略单个注册表路径的错误
             }
         }
     }
@@ -86,18 +105,72 @@ public class WindowsJavaScanner : IJavaScanner
     {
         foreach (var keyPath in BrandRegistryPaths)
         {
-            using var brandKey = Registry.LocalMachine.OpenSubKey(keyPath);
-            if (brandKey == null) continue;
-
-            foreach (var subKeyName in brandKey.GetSubKeyNames())
+            try
             {
-                using var subKey = brandKey.OpenSubKey(subKeyName);
-                var installPath = subKey?.GetValue("InstallationPath") as string;
-                if (string.IsNullOrEmpty(installPath) ||
-                    Path.GetInvalidPathChars().Any(c => installPath.Contains(c))) continue;
+                using var brandKey = Registry.LocalMachine.OpenSubKey(keyPath);
+                if (brandKey == null) continue;
 
-                var javaExePath = Path.Combine(installPath, "bin", "java.exe");
-                if (File.Exists(javaExePath)) results.Add(javaExePath);
+                foreach (var subKeyName in brandKey.GetSubKeyNames())
+                {
+                    try
+                    {
+                        using var subKey = brandKey.OpenSubKey(subKeyName);
+                        var installPath = subKey?.GetValue("InstallationPath") as string;
+                        if (string.IsNullOrEmpty(installPath) ||
+                            Path.GetInvalidPathChars().Any(c => installPath.Contains(c))) continue;
+
+                        var javaExePath = Path.Combine(installPath, "bin", "java.exe");
+                        if (File.Exists(javaExePath) && !results.Contains(javaExePath))
+                        {
+                            results.Add(javaExePath);
+                        }
+                    }
+                    catch
+                    {
+                        // 忽略单个子键的错误
+                    }
+                }
+            }
+            catch
+            {
+                // 忽略单个注册表路径的错误
+            }
+        }
+    }
+
+    private void ScanCommonDirectories(List<string> results)
+    {
+        // 常见的 Java 安装目录
+        var commonDirectories = new[]
+        {
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Java"),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Java"),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "Java"),
+            "C:\\Program Files\\Eclipse Adoptium",
+            "C:\\Program Files\\Microsoft",
+            "C:\\Program Files\\Zulu"
+        };
+
+        foreach (var directory in commonDirectories)
+        {
+            if (Directory.Exists(directory))
+            {
+                try
+                {
+                    // 查找子目录
+                    foreach (var subDir in Directory.GetDirectories(directory))
+                    {
+                        var javaExePath = Path.Combine(subDir, "bin", "java.exe");
+                        if (File.Exists(javaExePath) && !results.Contains(javaExePath))
+                        {
+                            results.Add(javaExePath);
+                        }
+                    }
+                }
+                catch
+                {
+                    // 忽略单个目录的错误
+                }
             }
         }
     }
