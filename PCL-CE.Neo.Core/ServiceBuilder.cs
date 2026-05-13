@@ -59,7 +59,7 @@ public static class ServiceBuilder
         {
             var assembly = Assembly.Load("PCL-CE.Neo.Platform.macOS");
             var extensionType = assembly.GetType("PCL_CE.Neo.Platform.macOS.ServiceCollectionExtensions");
-            extensionType.GetMethod("AddMacOSPlatformServices", BindingFlags.Public | BindingFlags.Static)?.Invoke(null, new object[] { services });
+            extensionType?.GetMethod("AddMacOSPlatformServices", BindingFlags.Public | BindingFlags.Static)?.Invoke(null, new object[] { services });
         }
         catch
         {
@@ -73,7 +73,7 @@ public static class ServiceBuilder
         {
             var assembly = Assembly.Load("PCL-CE.Neo.Platform.Linux");
             var extensionType = assembly.GetType("PCL_CE.Neo.Platform.Linux.ServiceCollectionExtensions");
-            extensionType.GetMethod("AddLinuxPlatformServices", BindingFlags.Public | BindingFlags.Static)?.Invoke(null, new object[] { services });
+            extensionType?.GetMethod("AddLinuxPlatformServices", BindingFlags.Public | BindingFlags.Static)?.Invoke(null, new object[] { services });
         }
         catch
         {
