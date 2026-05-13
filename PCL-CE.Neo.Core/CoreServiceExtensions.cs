@@ -16,6 +16,12 @@ public static class CoreServiceExtensions
         services.AddSingleton<IDownloadAdapter, DownloadAdapter>();
         services.AddSingleton<INetworkAdapter, NetworkAdapter>();
         services.AddSingleton<IDatabaseAdapter, DatabaseAdapter>();
+        services.AddSingleton<ILoggerAdapter, LoggerAdapter>();
+        services.AddSingleton<ITelemetryAdapter, TelemetryAdapter>();
+        services.AddSingleton<IAuthAdapter, AuthAdapter>();
+        services.AddSingleton<ITaskAdapter, TaskAdapter>();
+        services.AddSingleton<IInstanceAdapter, InstanceAdapter>();
+        services.AddSingleton<IModAdapter, ModAdapter>();
         return services;
     }
 }
