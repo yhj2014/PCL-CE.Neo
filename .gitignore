@@ -354,10 +354,5 @@ MaskFiles/
 # IDE/Editor specific files
 .trae/
 
-# Documentation and planning files (generated locally)
-重构计划书.md
-原项目架构书.md
-ARCHITECTURE.md
-PLATFORM_ABSTRACTIONS.md
-UI_MIGRATION_GUIDE.md
-DEVELOPMENT.md
+# Documentation files (generated locally, stored in docs/)
+docs/

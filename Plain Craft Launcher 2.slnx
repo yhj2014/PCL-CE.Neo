@@ -18,6 +18,7 @@
   <Project Path="Plain Craft Launcher 2\Plain Craft Launcher 2.csproj" Type="C#" />
 
   <!-- PCL-CE.Neo Cross-Platform Projects -->
+  <Project Path="PCL-CE.Neo.Core\PCL-CE.Neo.Core.csproj" Type="C#" />
   <Project Path="PCL-CE.Neo.Core.Abstractions\PCL-CE.Neo.Core.Abstractions.csproj" Type="C#" />
   <Project Path="PCL-CE.Neo.Platform\Windows\PCL-CE.Neo.Platform.Windows.csproj" Type="C#" />
   <Project Path="PCL-CE.Neo.Platform\macOS\PCL-CE.Neo.Platform.macOS.csproj" Type="C#" />
