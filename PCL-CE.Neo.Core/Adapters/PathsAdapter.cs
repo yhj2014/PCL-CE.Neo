@@ -21,6 +21,13 @@ public class PathsAdapter : IPathsAdapter
     private const string OldName = ".PCLCE";
 #endif
 
+    public PathsAdapter()
+    {
+        _logger = Microsoft.Extensions.Logging.Abstractions.NullLogger<PathsAdapter>.Instance;
+        _appAdapter = new ApplicationAdapter();
+        InitializePaths();
+    }
+
     public PathsAdapter(ILogger<PathsAdapter> logger, IApplicationAdapter appAdapter)
     {
         _logger = logger;

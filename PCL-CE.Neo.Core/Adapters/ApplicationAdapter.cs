@@ -12,10 +12,41 @@ public class ApplicationAdapter : IApplicationAdapter
     private readonly IPlatformService _platformService;
     private MetadataModel? _metadata;
 
+    public ApplicationAdapter() : this(Microsoft.Extensions.Logging.Abstractions.NullLogger<ApplicationAdapter>.Instance)
+    {
+    }
+
+    public ApplicationAdapter(ILogger<ApplicationAdapter> logger) : this(logger, CreateDefaultPlatformService())
+    {
+    }
+
     public ApplicationAdapter(ILogger<ApplicationAdapter> logger, IPlatformService platformService)
     {
         _logger = logger;
         _platformService = platformService;
+    }
+
+    private static IPlatformService CreateDefaultPlatformService()
+    {
+        try
+        {
+            var platformName = OperatingSystem.IsWindows() ? "Windows"
+                : OperatingSystem.IsMacOS() ? "macOS"
+                : "Linux";
+            var assemblyName = $"PCL-CE.Neo.Platform.{platformName}";
+            var typeName = $"PCL_CE.Neo.Platform.{platformName}.{platformName}PlatformService";
+            var assembly = Assembly.Load(assemblyName);
+            var type = assembly.GetType(typeName);
+            if (type != null)
+            {
+                return Activator.CreateInstance(type) as IPlatformService
+                    ?? throw new InvalidOperationException($"无法创建平台服务: {typeName}");
+            }
+        }
+        catch
+        {
+        }
+        return new DefaultPlatformService();
     }
 
     public string VersionName => Metadata?.Version.BaseName ?? "Unknown";
@@ -120,4 +151,17 @@ public class VersionModel
     public string BaseName { get; set; } = "0.0.0";
     public int Code { get; set; }
     public string BranchName { get; set; } = "unknown";
+}
+
+internal class DefaultPlatformService : IPlatformService
+{
+    public string PlatformName => "Unknown";
+    public string OSVersion => Environment.OSVersion.ToString();
+    public string Architecture => Environment.Is64BitOperatingSystem ? "x64" : "x86";
+
+    public void OpenUrl(string url) => Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+    public void OpenFolder(string path) => Process.Start("explorer.exe", path);
+    public string GetLocalApplicationDataPath() => Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+    public string GetTempPath() => Path.GetTempPath();
+    public string GetGameDataPath() => Path.Combine(GetLocalApplicationDataPath(), ".minecraft");
 }

@@ -19,6 +19,13 @@ public class ConfigAdapter : IConfigAdapter
         PropertyNameCaseInsensitive = true
     };
 
+    public ConfigAdapter()
+    {
+        _logger = Microsoft.Extensions.Logging.Abstractions.NullLogger<ConfigAdapter>.Instance;
+        _pathsAdapter = new PathsAdapter();
+        _configFilePath = Path.Combine(_pathsAdapter.SharedData, "config.json");
+    }
+
     public ConfigAdapter(ILogger<ConfigAdapter> logger, IPathsAdapter pathsAdapter)
     {
         _logger = logger;

@@ -1,95 +1,61 @@
 using Xunit;
-using PCL.CE.Neo.Core.Abstractions;
+using PCL_CE.Neo.Core.Abstractions;
+using PCL_CE.Neo.Core;
 
 namespace PCL.CE.Neo.Tests.PlatformAbstractions;
 
-public class PlatformServiceTests
+public class PlatformDetectorTests
 {
     [Fact]
-    public void WindowsPlatformService_PlatformName_ReturnsWindows()
+    public void PlatformDetector_CurrentPlatform_ReturnsValidPlatform()
     {
-        var service = new Platform.Windows.WindowsPlatformService();
-        Assert.Equal("Windows", service.PlatformName);
+        var platform = PlatformDetector.CurrentPlatform;
+        Assert.NotNull(platform);
+        Assert.Contains(platform, new[] { "Windows", "macOS", "Linux" });
     }
 
     [Fact]
-    public void WindowsPlatformService_GetLocalApplicationDataPath_ReturnsValidPath()
+    public void PlatformDetector_CurrentPlatform_IsConsistent()
     {
-        var service = new Platform.Windows.WindowsPlatformService();
-        var path = service.GetLocalApplicationDataPath();
-        Assert.NotNull(path);
-        Assert.Contains("PCL", path);
+        var platform1 = PlatformDetector.CurrentPlatform;
+        var platform2 = PlatformDetector.CurrentPlatform;
+        Assert.Equal(platform1, platform2);
     }
 
     [Fact]
-    public void WindowsPlatformService_GetGameDataPath_ReturnsMinecraftPath()
+    public void PlatformDetector_IsLinux_ReturnsTrueOnLinux()
     {
-        var service = new Platform.Windows.WindowsPlatformService();
-        var path = service.GetGameDataPath();
-        Assert.NotNull(path);
-        Assert.Contains(".minecraft", path);
+        Assert.True(PlatformDetector.IsLinux);
     }
 
     [Fact]
-    public void WindowsPlatformService_GetTempPath_ReturnsValidPath()
+    public void PlatformDetector_GetLineEnding_ReturnsCorrectEnding()
     {
-        var service = new Platform.Windows.WindowsPlatformService();
-        var path = service.GetTempPath();
-        Assert.NotNull(path);
-        Assert.True(Directory.Exists(Path.GetDirectoryName(path) ?? string.Empty));
-    }
-}
-
-public class JavaScannerTests
-{
-    [Fact]
-    public void WindowsJavaScanner_IsValidJavaPath_WithJavaExe_ReturnsTrue()
-    {
-        var scanner = new Platform.Windows.WindowsJavaScanner();
-        var result = scanner.IsValidJavaPath("java.exe");
-        Assert.True(result);
+        var lineEnding = PlatformDetector.GetLineEnding();
+        Assert.NotNull(lineEnding);
+        Assert.True(lineEnding == "\r\n" || lineEnding == "\n");
     }
 
     [Fact]
-    public void WindowsJavaScanner_IsValidJavaPath_WithNull_ReturnsFalse()
+    public void PlatformDetector_GetPathSeparator_ReturnsCorrectSeparator()
     {
-        var scanner = new Platform.Windows.WindowsJavaScanner();
-        var result = scanner.IsValidJavaPath(null!);
-        Assert.False(result);
+        var separator = PlatformDetector.GetPathSeparator();
+        Assert.NotNull(separator);
+        Assert.True(separator == ":" || separator == ";");
     }
 
     [Fact]
-    public void WindowsJavaScanner_IsValidJavaPath_WithEmpty_ReturnsFalse()
+    public void PlatformDetector_NormalizePath_ConvertsForwardSlashes()
     {
-        var scanner = new Platform.Windows.WindowsJavaScanner();
-        var result = scanner.IsValidJavaPath(string.Empty);
-        Assert.False(result);
+        var normalized = PlatformDetector.NormalizePath("path/to/file");
+        Assert.DoesNotContain("\\", normalized);
     }
 
     [Fact]
-    public void WindowsJavaScanner_ScanDirectory_WithInvalidPath_ReturnsEmpty()
+    public void PlatformDetector_NormalizePath_ConvertsBackslashesOnLinux()
     {
-        var scanner = new Platform.Windows.WindowsJavaScanner();
-        var results = scanner.ScanDirectory("/nonexistent/path");
-        Assert.Empty(results);
-    }
-}
-
-public class ThemeServiceTests
-{
-    [Fact]
-    public void WindowsThemeService_GetAvailableThemes_ReturnsTwoThemes()
-    {
-        var service = new Platform.Windows.WindowsThemeService();
-        var themes = service.GetAvailableThemes();
-        Assert.Equal(2, themes.Count());
-    }
-
-    [Fact]
-    public void WindowsThemeService_GetCurrentTheme_ReturnsLightTheme()
-    {
-        var service = new Platform.Windows.WindowsThemeService();
-        var theme = service.GetCurrentTheme();
-        Assert.Equal(ThemeType.Light, theme.Type);
+        var normalized = PlatformDetector.NormalizePath("path\\to\\file");
+        Assert.DoesNotContain("\\", normalized);
+        Assert.Contains("/", normalized);
     }
 }

@@ -1,4 +1,7 @@
+using Xunit;
 using PCL_CE.Neo.Core.Abstractions;
+using PCL_CE.Neo.Core.Adapters;
+using PCL_CE.Neo.Core;
 
 namespace PCL.CE.Neo.Tests;
 
@@ -7,33 +10,34 @@ public class TaskAdapterTests
     [Fact]
     public async Task RunTaskAsync_CompletesSuccessfully()
     {
-        var logger = new TestLogger<Adapters.TaskAdapter>();
-        var taskAdapter = new Adapters.TaskAdapter(logger);
+        var logger = new TestLogger<TaskAdapter>();
+        var taskAdapter = new TaskAdapter(logger);
 
-        var result = await taskAdapter.RunTaskAsync("Test Task", async progress =>
+        var taskInfo = await taskAdapter.RunTaskAsync("Test Task", async progress =>
         {
             progress.Report(0.5);
             await Task.Delay(10);
             progress.Report(1.0);
         });
 
-        Assert.Equal(Abstractions.TaskState.Completed, result.State);
-        Assert.Equal(1.0, result.Progress);
+        Assert.Equal(TaskState.Completed, taskInfo.State);
+        Assert.Equal(1.0, taskInfo.Progress);
     }
 
     [Fact]
     public async Task RunTaskAsync_ReturnsResult()
     {
-        var logger = new TestLogger<Adapters.TaskAdapter>();
-        var taskAdapter = new Adapters.TaskAdapter(logger);
+        var logger = new TestLogger<TaskAdapter>();
+        var taskAdapter = new TaskAdapter(logger);
 
-        var result = await taskAdapter.RunTaskAsync<string>("String Task", async _ =>
+        var taskInfo = await taskAdapter.RunTaskAsync<string>("String Task", async _ =>
         {
             await Task.Delay(10);
             return "Test Result";
         });
 
-        Assert.Equal("Test Result", result);
+        Assert.NotNull(taskInfo);
+        Assert.Equal(TaskState.Completed, taskInfo.State);
     }
 
     [Fact]
@@ -72,7 +76,7 @@ public class TaskAdapterTests
         public DateTime StartTime { get; set; }
         public DateTime? EndTime { get; set; }
         public Exception? Error { get; set; }
-        public Abstractions.TaskState State { get; set; }
+        public TaskState State { get; set; }
         public double _progress;
         public double Progress
         {

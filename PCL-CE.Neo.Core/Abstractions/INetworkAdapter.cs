@@ -10,6 +10,7 @@ public interface INetworkAdapter
 
     void SetProxy(string? address, int? port = null, string? username = null, string? password = null);
     void EnableDoH(bool enabled);
+    IWebServer CreateWebServer(int port);
 }
 
 public record HttpResponse
@@ -32,4 +33,29 @@ public record NetworkLogEntry
     public int? StatusCode { get; init; }
     public long? ElapsedMs { get; init; }
     public string? Error { get; init; }
+}
+
+public interface IWebServer : IDisposable
+{
+    int Port { get; }
+    bool IsRunning { get; }
+
+    event Action<IWebServerRequest, Action<IWebServerResponse>>? RequestReceived;
+
+    Task StartAsync();
+    void Stop();
+}
+
+public interface IWebServerRequest
+{
+    string HttpMethod { get; }
+    string RawUrl { get; }
+    Uri? Url { get; }
+}
+
+public interface IWebServerResponse
+{
+    int StatusCode { get; set; }
+    string? ContentType { get; set; }
+    string? Body { get; set; }
 }
