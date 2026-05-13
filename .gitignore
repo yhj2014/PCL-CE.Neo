@@ -354,5 +354,5 @@ MaskFiles/
 # IDE/Editor specific files
 .trae/
 
-# Documentation files (generated locally, stored in docs/)
-docs/
+# Documentation files - tracked in git
+# docs/  (not excluded anymore)
