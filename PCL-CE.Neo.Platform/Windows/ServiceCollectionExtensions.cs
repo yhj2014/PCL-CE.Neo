@@ -1,7 +1,7 @@
-using PCL.Core.Abstractions;
+using PCL.CE.Neo.Core.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace PCL.Platform.Windows;
+namespace PCL.CE.Neo.Platform.Windows;
 
 public static class ServiceCollectionExtensions
 {

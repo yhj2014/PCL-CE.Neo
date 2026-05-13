@@ -1,4 +1,4 @@
-namespace PCL.Core.Abstractions;
+namespace PCL.CE.Neo.Core.Abstractions;
 
 public interface IJavaScanner
 {

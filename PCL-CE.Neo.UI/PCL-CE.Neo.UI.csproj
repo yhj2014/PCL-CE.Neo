@@ -1,11 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <AssemblyTitle>PCL.UI</AssemblyTitle>
-        <AssemblyName>PCL.UI</AssemblyName>
-        <Description>PCL CE Uno Platform UI</Description>
+        <AssemblyTitle>PCL-CE.Neo.UI</AssemblyTitle>
+        <AssemblyName>PCL-CE.Neo.UI</AssemblyName>
+        <Description>PCL CE Neo Uno Platform UI</Description>
         <Company>PCL Community</Company>
-        <Product>PCL.UI</Product>
+        <Product>PCL-CE.Neo.UI</Product>
         <Copyright>Copyright © PCL Community</Copyright>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
         <FileVersion>1.0.0.0</FileVersion>
@@ -22,7 +22,7 @@
         <LangVersion>latest</LangVersion>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
-        <RootNamespace>PCL.UI</RootNamespace>
+        <RootNamespace>PCL.CE.Neo.UI</RootNamespace>
         <UnoFeatures>Extensions;Toolkit;Material</UnoFeatures>
     </PropertyGroup>
 
@@ -34,7 +34,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\PCL.Core.Abstractions\PCL.Core.Abstractions.csproj" />
+        <ProjectReference Include="..\PCL-CE.Neo.Core.Abstractions\PCL-CE.Neo.Core.Abstractions.csproj" />
     </ItemGroup>
 
     <ItemGroup>

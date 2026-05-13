@@ -1,11 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <AssemblyTitle>PCL.Core.Abstractions</AssemblyTitle>
-        <AssemblyName>PCL.Core.Abstractions</AssemblyName>
-        <Description>PCL CE 平台抽象接口定义</Description>
+        <AssemblyTitle>PCL-CE.Neo.Core.Abstractions</AssemblyTitle>
+        <AssemblyName>PCL-CE.Neo.Core.Abstractions</AssemblyName>
+        <Description>PCL CE Neo 平台抽象接口定义</Description>
         <Company>PCL Community</Company>
-        <Product>PCL.Core.Abstractions</Product>
+        <Product>PCL-CE.Neo.Core.Abstractions</Product>
         <Copyright>Copyright © PCL Community</Copyright>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
         <FileVersion>1.0.0.0</FileVersion>
@@ -16,7 +16,7 @@
         <LangVersion>latest</LangVersion>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
-        <RootNamespace>PCL.Core.Abstractions</RootNamespace>
+        <RootNamespace>PCL.CE.Neo.Core.Abstractions</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

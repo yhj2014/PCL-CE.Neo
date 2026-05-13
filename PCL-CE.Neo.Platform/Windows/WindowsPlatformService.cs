@@ -1,8 +1,8 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using PCL.Core.Abstractions;
+using PCL.CE.Neo.Core.Abstractions;
 
-namespace PCL.Platform.Windows;
+namespace PCL.CE.Neo.Platform.Windows;
 
 public class WindowsPlatformService : IPlatformService
 {

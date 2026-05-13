@@ -1,11 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <AssemblyTitle>PCL.Platform.Windows</AssemblyTitle>
-        <AssemblyName>PCL.Platform.Windows</AssemblyName>
-        <Description>PCL CE Windows 平台实现</Description>
+        <AssemblyTitle>PCL-CE.Neo.Platform.Windows</AssemblyTitle>
+        <AssemblyName>PCL-CE.Neo.Platform.Windows</AssemblyName>
+        <Description>PCL CE Neo Windows 平台实现</Description>
         <Company>PCL Community</Company>
-        <Product>PCL.Platform.Windows</Product>
+        <Product>PCL-CE.Neo.Platform.Windows</Product>
         <Copyright>Copyright © PCL Community</Copyright>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
         <FileVersion>1.0.0.0</FileVersion>
@@ -16,7 +16,7 @@
         <LangVersion>latest</LangVersion>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
-        <RootNamespace>PCL.Platform.Windows</RootNamespace>
+        <RootNamespace>PCL.CE.Neo.Platform.Windows</RootNamespace>
         <UseWPF>true</UseWPF>
     </PropertyGroup>
 
@@ -25,7 +25,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\PCL.Core.Abstractions\PCL.Core.Abstractions.csproj" />
+        <ProjectReference Include="..\..\PCL-CE.Neo.Core.Abstractions\PCL-CE.Neo.Core.Abstractions.csproj" />
     </ItemGroup>
 
 </Project>

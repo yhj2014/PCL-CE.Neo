@@ -1,7 +1,7 @@
 using System.Windows;
-using PCL.Core.Abstractions;
+using PCL.CE.Neo.Core.Abstractions;
 
-namespace PCL.Platform.Windows;
+namespace PCL.CE.Neo.Platform.Windows;
 
 public class WindowsClipboardService : IClipboardService
 {
