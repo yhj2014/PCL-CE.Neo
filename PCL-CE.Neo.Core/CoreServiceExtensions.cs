@@ -22,6 +22,9 @@ public static class CoreServiceExtensions
         services.AddSingleton<ITaskAdapter, TaskAdapter>();
         services.AddSingleton<IInstanceAdapter, InstanceAdapter>();
         services.AddSingleton<IModAdapter, ModAdapter>();
+        services.AddSingleton<IResourceDownloadAdapter, ResourceDownloadAdapter>();
+        services.AddSingleton<ILinkAdapter, LinkAdapter>();
+        services.AddSingleton<IEasyTierAdapter, EasyTierAdapter>();
         return services;
     }
 }
