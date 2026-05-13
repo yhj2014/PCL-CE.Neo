@@ -8,15 +8,23 @@
     <Platform Name="ARM64" />
     <Platform Name="x64" />
   </Configurations>
-  <!-- Original Projects -->
+
+  <!-- Original PCL CE Projects -->
   <Project Path="PCL.Core\PCL.Core.csproj" Type="C#" />
   <Project Path="PCL.Core.SourceGenerators\PCL.Core.SourceGenerators.csproj" Type="C#" />
   <Project Path="PCL.Core.Test\PCL.Core.Test.csproj" Type="C#">
     <Build Solution="*|*" Project="false" />
   </Project>
   <Project Path="Plain Craft Launcher 2\Plain Craft Launcher 2.csproj" Type="C#" />
-  <!-- New Cross-Platform Projects -->
-  <Project Path="PCL.Core.Abstractions\PCL.Core.Abstractions.csproj" Type="C#" />
-  <Project Path="PCL.Platform\Windows\PCL.Platform.Windows.csproj" Type="C#" />
-  <Project Path="PCL.UI\PCL.UI.csproj" Type="C#" />
+
+  <!-- PCL-CE.Neo Cross-Platform Projects -->
+  <Project Path="PCL-CE.Neo.Core.Abstractions\PCL-CE.Neo.Core.Abstractions.csproj" Type="C#" />
+  <Project Path="PCL-CE.Neo.Platform\Windows\PCL-CE.Neo.Platform.Windows.csproj" Type="C#" />
+  <Project Path="PCL-CE.Neo.Platform\macOS\PCL-CE.Neo.Platform.macOS.csproj" Type="C#" />
+  <Project Path="PCL-CE.Neo.Platform\Linux\PCL-CE.Neo.Platform.Linux.csproj" Type="C#" />
+  <Project Path="PCL-CE.Neo.UI\PCL-CE.Neo.UI.csproj" Type="C#" />
+  <Project Path="PCL-CE.Neo.App\PCL-CE.Neo.App.csproj" Type="C#" />
+  <Project Path="PCL-CE.Neo.Tests\PCL-CE.Neo.Tests.csproj" Type="C#">
+    <Build Solution="*|*" Project="false" />
+  </Project>
 </Solution>

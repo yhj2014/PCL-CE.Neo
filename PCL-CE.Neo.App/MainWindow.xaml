@@ -1,0 +1,101 @@
+<Window x:Class="PCL.CE.Neo.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="{Binding Title}"
+        Height="720" Width="1280"
+        MinHeight="600" MinWidth="900"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource BackgroundBrush}"
+        MouseLeftButtonDown="Window_MouseLeftButtonDown"
+        WindowStyle="None"
+        AllowsTransparency="True">
+
+    <Border CornerRadius="8" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="48"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0"
+                    Background="{DynamicResource PrimaryBrush}"
+                    CornerRadius="8,8,0,0"
+                    MouseLeftButtonDown="Window_MouseLeftButtonDown">
+                <Grid>
+                    <TextBlock Text="{Binding Title}"
+                               Foreground="White"
+                               FontSize="16"
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Center"
+                               Margin="16,0,0,0"/>
+
+                    <StackPanel Orientation="Horizontal"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center"
+                                Margin="0,0,8,0">
+                        <Button Content="─"
+                                Command="{Binding MinimizeCommand}"
+                                Style="{StaticResource WindowButtonStyle}"
+                                Width="36" Height="36"/>
+                        <Button Content="□"
+                                Command="{Binding MaximizeCommand}"
+                                Style="{StaticResource WindowButtonStyle}"
+                                Width="36" Height="36"/>
+                        <Button Content="✕"
+                                Command="{Binding CloseCommand}"
+                                Style="{StaticResource WindowButtonStyle}"
+                                Width="36" Height="36"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0"
+                        Background="{DynamicResource BackgroundSecondaryBrush}">
+                    <StackPanel Margin="8">
+                        <Button Content="启动游戏"
+                                Command="{Binding NavigateToCommand}"
+                                CommandParameter="Launch"
+                                Style="{StaticResource NavButtonStyle}"/>
+                        <Button Content="下载管理"
+                                Command="{Binding NavigateToCommand}"
+                                CommandParameter="Download"
+                                Style="{StaticResource NavButtonStyle}"/>
+                        <Button Content="版本设置"
+                                Command="{Binding NavigateToCommand}"
+                                CommandParameter="Setup"
+                                Style="{StaticResource NavButtonStyle}"/>
+                        <Button Content="Mod 管理"
+                                Command="{Binding NavigateToCommand}"
+                                CommandParameter="Mod"
+                                Style="{StaticResource NavButtonStyle}"/>
+                        <Button Content="游戏工具"
+                                Command="{Binding NavigateToCommand}"
+                                CommandParameter="Tools"
+                                Style="{StaticResource NavButtonStyle}"/>
+                        <Button Content="其他设置"
+                                Command="{Binding NavigateToCommand}"
+                                CommandParameter="Other"
+                                Style="{StaticResource NavButtonStyle}"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="1"
+                        Background="{DynamicResource BackgroundBrush}">
+                    <Grid>
+                        <TextBlock Text="{Binding CurrentPage}"
+                                   FontSize="24"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"/>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Grid>
+    </Border>
+</Window>
