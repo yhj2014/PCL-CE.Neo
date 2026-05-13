@@ -1,9 +1,8 @@
 using Microsoft.Win32;
-using PCL.CE.Neo.Core.Abstractions;
-using PCL.Core.Logging;
+using PCL_CE.Neo.Core.Abstractions;
 using System.IO;
 
-namespace PCL.CE.Neo.Platform.Windows;
+namespace PCL_CE.Neo.Platform.Windows;
 
 public class WindowsJavaScanner : IJavaScanner
 {

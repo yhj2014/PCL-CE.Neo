@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using PCL_CE.Neo.Core.Abstractions;
+using System.Reflection;
 
 namespace PCL_CE.Neo.Core;
 
@@ -26,31 +27,58 @@ public static class ServiceBuilder
 
     public static IServiceCollection AddPlatformServices(string platform)
     {
-        return platform.ToLowerInvariant() switch
+        var serviceCollection = Services.AddPCLCoreServices();
+        platform = platform.ToLowerInvariant();
+        
+        return platform switch
         {
-            "windows" => AddWindowsServices(),
-            "macos" or "darwin" => AddMacOSServices(),
-            "linux" => AddLinuxServices(),
+            "windows" => AddWindowsPlatformServices(serviceCollection),
+            "macos" or "darwin" => AddMacOSPlatformServices(serviceCollection),
+            "linux" => AddLinuxPlatformServices(serviceCollection),
             _ => throw new NotSupportedException($"不支持的平台: {platform}")
         };
     }
 
-    private static IServiceCollection AddWindowsServices()
+    private static IServiceCollection AddWindowsPlatformServices(IServiceCollection services)
     {
-        Services.AddPCLCoreServices();
-        return Services;
+        try
+        {
+            var assembly = Assembly.Load("PCL-CE.Neo.Platform.Windows");
+            var extensionType = assembly.GetType("PCL_CE.Neo.Platform.Windows.ServiceCollectionExtensions");
+            extensionType?.GetMethod("AddWindowsPlatformServices", BindingFlags.Public | BindingFlags.Static)?.Invoke(null, new object[] { services });
+        }
+        catch
+        {
+        }
+        return services;
     }
 
-    private static IServiceCollection AddMacOSServices()
+    private static IServiceCollection AddMacOSPlatformServices(IServiceCollection services)
     {
-        Services.AddPCLCoreServices();
-        return Services;
+        try
+        {
+            var assembly = Assembly.Load("PCL-CE.Neo.Platform.macOS");
+            var extensionType = assembly.GetType("PCL_CE.Neo.Platform.macOS.ServiceCollectionExtensions");
+            extensionType.GetMethod("AddMacOSPlatformServices", BindingFlags.Public | BindingFlags.Static)?.Invoke(null, new object[] { services });
+        }
+        catch
+        {
+        }
+        return services;
     }
 
-    private static IServiceCollection AddLinuxServices()
+    private static IServiceCollection AddLinuxPlatformServices(IServiceCollection services)
     {
-        Services.AddPCLCoreServices();
-        return Services;
+        try
+        {
+            var assembly = Assembly.Load("PCL-CE.Neo.Platform.Linux");
+            var extensionType = assembly.GetType("PCL_CE.Neo.Platform.Linux.ServiceCollectionExtensions");
+            extensionType.GetMethod("AddLinuxPlatformServices", BindingFlags.Public | BindingFlags.Static)?.Invoke(null, new object[] { services });
+        }
+        catch
+        {
+        }
+        return services;
     }
 
     public static IServiceCollection AddLogging(Action<ILoggerAdapter> configure)

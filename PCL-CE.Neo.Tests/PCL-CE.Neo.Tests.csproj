@@ -18,7 +18,7 @@
         <LangVersion>latest</LangVersion>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
-        <RootNamespace>PCL.CE.Neo.Tests</RootNamespace>
+        <RootNamespace>PCL_CE.Neo.Tests</RootNamespace>
         <EnableDefaultItems>false</EnableDefaultItems>
     </PropertyGroup>
 

@@ -1,8 +1,8 @@
 using Microsoft.Win32;
-using PCL.CE.Neo.Core.Abstractions;
+using PCL_CE.Neo.Core.Abstractions;
 using System.Windows;
 
-namespace PCL.CE.Neo.Platform.Windows;
+namespace PCL_CE.Neo.Platform.Windows;
 
 public class WindowsDialogService : IDialogService
 {

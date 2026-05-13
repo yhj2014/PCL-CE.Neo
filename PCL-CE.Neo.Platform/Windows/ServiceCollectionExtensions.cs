@@ -1,7 +1,7 @@
-using PCL.CE.Neo.Core.Abstractions;
+using PCL_CE.Neo.Core.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace PCL.CE.Neo.Platform.Windows;
+namespace PCL_CE.Neo.Platform.Windows;
 
 public static class ServiceCollectionExtensions
 {
@@ -13,6 +13,9 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IClipboardService, WindowsClipboardService>();
         services.AddSingleton<IDialogService, WindowsDialogService>();
         services.AddSingleton<IThemeService, WindowsThemeService>();
+        services.AddSingleton<IAudioService, WindowsAudioService>();
+        services.AddSingleton<INotificationService, WindowsNotificationService>();
+        services.AddSingleton<IUIAccessProvider, WindowsUIAccessProvider>();
         return services;
     }
 }

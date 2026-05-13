@@ -1,6 +1,6 @@
-using PCL.CE.Neo.Core.Abstractions;
+using PCL_CE.Neo.Core.Abstractions;
 
-namespace PCL.CE.Neo.Platform.Linux;
+namespace PCL_CE.Neo.Platform.Linux;
 
 public class LinuxDialogService : IDialogService
 {

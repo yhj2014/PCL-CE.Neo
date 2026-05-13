@@ -2,7 +2,7 @@ using Xunit;
 using PCL_CE.Neo.Core.Abstractions;
 using PCL_CE.Neo.Core;
 
-namespace PCL.CE.Neo.Tests.PlatformAbstractions;
+namespace PCL_CE.Neo.Tests.PlatformAbstractions;
 
 public class PlatformDetectorTests
 {

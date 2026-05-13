@@ -1,7 +1,7 @@
-using PCL.CE.Neo.Core.Abstractions;
+using PCL_CE.Neo.Core.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace PCL.CE.Neo.Platform.Linux;
+namespace PCL_CE.Neo.Platform.Linux;
 
 public static class ServiceCollectionExtensions
 {
@@ -13,6 +13,9 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IClipboardService, LinuxClipboardService>();
         services.AddSingleton<IDialogService, LinuxDialogService>();
         services.AddSingleton<IThemeService, LinuxThemeService>();
+        services.AddSingleton<IAudioService, LinuxAudioService>();
+        services.AddSingleton<INotificationService, LinuxNotificationService>();
+        services.AddSingleton<IUIAccessProvider, LinuxUIAccessProvider>();
         return services;
     }
 }

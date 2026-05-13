@@ -16,7 +16,7 @@
         <LangVersion>latest</LangVersion>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
-        <RootNamespace>PCL.CE.Neo.Platform.macOS</RootNamespace>
+        <RootNamespace>PCL_CE.Neo.Platform.macOS</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
