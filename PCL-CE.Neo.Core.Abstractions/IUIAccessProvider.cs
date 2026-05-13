@@ -1,4 +1,4 @@
-namespace PCL.CE.Neo.Core.Abstractions;
+namespace PCL_CE.Neo.Core.Abstractions;
 
 public interface IUIAccessProvider
 {

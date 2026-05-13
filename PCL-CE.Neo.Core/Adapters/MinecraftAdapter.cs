@@ -266,7 +266,7 @@ public class MinecraftAdapter : IMinecraftAdapter
         args.Add("--assetsDir");
         args.Add(Path.Combine(_pathsAdapter.SharedData, "assets"));
         args.Add("--assetIndex");
-        args.Add(version);
+        args.Add(options.MinecraftVersion);
         args.Add("--uuid");
         args.Add(options.Uuid);
         args.Add("--accessToken");

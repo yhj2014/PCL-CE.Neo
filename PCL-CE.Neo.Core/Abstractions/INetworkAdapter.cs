@@ -10,7 +10,6 @@ public interface INetworkAdapter
 
     void SetProxy(string? address, int? port = null, string? username = null, string? password = null);
     void EnableDoH(bool enabled);
-    IWebServer CreateWebServer(int port);
 }
 
 public record HttpResponse
@@ -19,6 +18,7 @@ public record HttpResponse
     public string? ContentType { get; init; }
     public byte[] Body { get; init; } = [];
     public Dictionary<string, string> Headers { get; init; } = [];
+    public string? ErrorMessage { get; init; }
     public bool IsSuccess => StatusCode >= 200 && StatusCode < 300;
 
     public string BodyAsString => System.Text.Encoding.UTF8.GetString(Body);
@@ -32,15 +32,4 @@ public record NetworkLogEntry
     public int? StatusCode { get; init; }
     public long? ElapsedMs { get; init; }
     public string? Error { get; init; }
-}
-
-public interface IWebServer : IDisposable
-{
-    int Port { get; }
-    bool IsRunning { get; }
-
-    event Action<HttpListenerRequest, Action<HttpListenerResponse>>? RequestReceived;
-
-    Task StartAsync();
-    void Stop();
 }

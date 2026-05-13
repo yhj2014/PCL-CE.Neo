@@ -1,6 +1,8 @@
 using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
 using PCL_CE.Neo.Core.Abstractions;
+using PclLogLevel = PCL_CE.Neo.Core.Abstractions.LogLevel;
+using MsLogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace PCL_CE.Neo.Core.Adapters;
 
@@ -10,7 +12,7 @@ public class LoggerAdapter : ILoggerAdapter
     private readonly ILogger _logger;
     private readonly ILogWriter? _logWriter;
     private readonly ConcurrentDictionary<string, Scope> _scopes = new();
-    private LogLevel _minLevel = LogLevel.Debug;
+    private PclLogLevel _minLevel = PclLogLevel.Debug;
 
     public LoggerAdapter(ILoggerFactory loggerFactory, ILogWriter? logWriter = null)
     {
@@ -21,47 +23,47 @@ public class LoggerAdapter : ILoggerAdapter
 
     public void Trace(string message, params object[] args)
     {
-        Log(LogLevel.Trace, null, message, args);
+        Log(PclLogLevel.Trace, null, message, args);
     }
 
     public void Debug(string message, params object[] args)
     {
-        Log(LogLevel.Debug, null, message, args);
+        Log(PclLogLevel.Debug, null, message, args);
     }
 
     public void Information(string message, params object[] args)
     {
-        Log(LogLevel.Information, null, message, args);
+        Log(PclLogLevel.Information, null, message, args);
     }
 
     public void Warning(string message, params object[] args)
     {
-        Log(LogLevel.Warning, null, message, args);
+        Log(PclLogLevel.Warning, null, message, args);
     }
 
     public void Warning(Exception? ex, string message, params object[] args)
     {
-        Log(LogLevel.Warning, ex, message, args);
+        Log(PclLogLevel.Warning, ex, message, args);
     }
 
     public void Error(string message, params object[] args)
     {
-        Log(LogLevel.Error, null, message, args);
+        Log(PclLogLevel.Error, null, message, args);
     }
 
     public void Error(Exception? ex, string message, params object[] args)
     {
-        Log(LogLevel.Error, ex, message, args);
+        Log(PclLogLevel.Error, ex, message, args);
     }
 
     public void Fatal(string message, params object[] args)
     {
-        Log(LogLevel.Critical, null, message, args);
+        Log(PclLogLevel.Critical, null, message, args);
     }
 
     public void Fatal(Exception? ex, string message, params object[] args)
     {
-        Log(LogLevel.Critical, ex, message, args);
+        Log(PclLogLevel.Critical, ex, message, args);
     }
 
     public IDisposable? BeginScope(string scope)
@@ -72,14 +74,14 @@ public class LoggerAdapter : ILoggerAdapter
         return s;
     }
 
-    public bool IsEnabled(LogLevel level) => level >= _minLevel;
+    public bool IsEnabled(PclLogLevel level) => level >= _minLevel;
 
-    public void SetLevel(LogLevel level)
+    public void SetLevel(PclLogLevel level)
     {
         _minLevel = level;
     }
 
-    private void Log(LogLevel level, Exception? ex, string message, params object[] args)
+    private void Log(PclLogLevel level, Exception? ex, string message, params object[] args)
     {
         if (!IsEnabled(level)) return;
 
@@ -106,20 +108,20 @@ public class LoggerAdapter : ILoggerAdapter
 
         switch (level)
         {
-            case LogLevel.Trace:
-            case LogLevel.Debug:
+            case PclLogLevel.Trace:
+            case PclLogLevel.Debug:
                 _logger.LogDebug(ex, scopeText + formattedMessage);
                 break;
-            case LogLevel.Information:
+            case PclLogLevel.Information:
                 _logger.LogInformation(ex, scopeText + formattedMessage);
                 break;
-            case LogLevel.Warning:
+            case PclLogLevel.Warning:
                 _logger.LogWarning(ex, scopeText + formattedMessage);
                 break;
-            case LogLevel.Error:
+            case PclLogLevel.Error:
                 _logger.LogError(ex, scopeText + formattedMessage);
                 break;
-            case LogLevel.Critical:
+            case PclLogLevel.Critical:
                 _logger.LogCritical(ex, scopeText + formattedMessage);
                 break;
         }

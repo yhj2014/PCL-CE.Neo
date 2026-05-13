@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using PCL_CE.Neo.Core.Abstractions;
+using PCL_CE.Neo.Core.Adapters;
 
 namespace PCL_CE.Neo.Core;
 

@@ -21,27 +21,27 @@ public static class PlatformDetector
         IsLinux = CurrentPlatform == "Linux";
     }
 
-    public static IPlatformService CreatePlatformService()
-    {
-        return CurrentPlatform switch
-        {
-            "Windows" => new Platform.Windows.WindowsPlatformService(),
-            "macOS" => new Platform.macOS.MacOSPlatformService(),
-            "Linux" => new Platform.Linux.LinuxPlatformService(),
-            _ => throw new NotSupportedException($"不支持的平台: {CurrentPlatform}")
-        };
-    }
-
-    public static IJavaScanner CreateJavaScanner()
-    {
-        return CurrentPlatform switch
-        {
-            "Windows" => new Platform.Windows.WindowsJavaScanner(),
-            "macOS" => new Platform.macOS.MacOSJavaScanner(),
-            "Linux" => new Platform.Linux.LinuxJavaScanner(),
-            _ => throw new NotSupportedException($"不支持的平台: {CurrentPlatform}")
-        };
-    }
+    // public static IPlatformService CreatePlatformService()
+    // {
+    //     return CurrentPlatform switch
+    //     {
+    //         "Windows" => new Platform.Windows.WindowsPlatformService(),
+    //         "macOS" => new Platform.macOS.MacOSPlatformService(),
+    //         "Linux" => new Platform.Linux.LinuxPlatformService(),
+    //         _ => throw new NotSupportedException($"不支持的平台: {CurrentPlatform}")
+    //     };
+    // }
+    //
+    // public static IJavaScanner CreateJavaScanner()
+    // {
+    //     return CurrentPlatform switch
+    //     {
+    //         "Windows" => new Platform.Windows.WindowsJavaScanner(),
+    //         "macOS" => new Platform.macOS.MacOSJavaScanner(),
+    //         "Linux" => new Platform.Linux.LinuxJavaScanner(),
+    //         _ => throw new NotSupportedException($"不支持的平台: {CurrentPlatform}")
+    //     };
+    // }
 
     public static string GetLineEnding()
     {

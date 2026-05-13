@@ -76,6 +76,7 @@ public record ModDownloadRequest
     public required string Url { get; init; }
     public required string InstanceId { get; init; }
     public required ModSource Source { get; init; }
+    public required string ModId { get; init; }
     public string? ExpectedHash { get; init; }
 }
 
