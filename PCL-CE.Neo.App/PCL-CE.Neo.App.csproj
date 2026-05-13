@@ -13,7 +13,7 @@
 
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
-        <RootNamespace>PCL.CE.Neo.App</RootNamespace>
+        <RootNamespace>PCL_CE.Neo.App</RootNamespace>
         <EnableDefaultApplicationDefinition>false</EnableDefaultApplicationDefinition>
         <EnableDefaultPageItems>false</EnableDefaultPageItems>
     </PropertyGroup>

@@ -1,10 +1,11 @@
 using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
-using PCL.CE.Neo.Core.Abstractions;
-using PCL.CE.Neo.Platform.Windows;
-using PCL.CE.Neo.UI;
+using PCL_CE.Neo.Core.Abstractions;
+using PCL_CE.Neo.Core;
+using PCL_CE.Neo.Platform.Windows;
+using PCL_CE.Neo.UI;
 
-namespace PCL.CE.Neo.App;
+namespace PCL_CE.Neo.App;
 
 public partial class App : Application
 {
@@ -24,7 +25,7 @@ public partial class App : Application
 
     private static void ConfigureServices(IServiceCollection services)
     {
-        services.AddWindowsPlatformServices();
+        services.AddPlatformServices("Windows");
         services.AddTransient<MainViewModel>();
     }
 }
