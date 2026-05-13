@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <AssemblyTitle>PCL-CE.Neo.UI</AssemblyTitle>
+        <AssemblyName>PCL-CE.Neo.UI</AssemblyName>
+        <Description>PCL CE Neo Uno Platform UI</Description>
+        <Company>PCL Community</Company>
+        <Product>PCL-CE.Neo.UI</Product>
+        <Copyright>Copyright © PCL Community</Copyright>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <FileVersion>1.0.0.0</FileVersion>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <TargetFrameworks>
+            net10.0-windows10.0.19041.0;
+            net10.0-maccatalyst;
+            net10.0-linux
+        </TargetFrameworks>
+        <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+        <UseWinUI>true</UseWinUI>
+        <LangVersion>latest</LangVersion>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <RootNamespace>PCL.CE.Neo.UI</RootNamespace>
+        <UnoFeatures>Extensions;Toolkit;Material</UnoFeatures>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Uno.WinUI" Version="5.0.0" />
+        <PackageReference Include="Uno.WinUI.Lottie" Version="5.0.0" />
+        <PackageReference Include="Uno.Toolkit.WinUI" Version="5.0.0" />
+        <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\PCL-CE.Neo.Core.Abstractions\PCL-CE.Neo.Core.Abstractions.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Remove="Resources\**" />
+        <Content Include="Resources\**" />
+    </ItemGroup>
+
+</Project>
