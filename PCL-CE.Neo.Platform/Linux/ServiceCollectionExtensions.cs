@@ -16,6 +16,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IAudioService, LinuxAudioService>();
         services.AddSingleton<INotificationService, LinuxNotificationService>();
         services.AddSingleton<IUIAccessProvider, LinuxUIAccessProvider>();
+        services.AddSingleton<IAnimationService, LinuxAnimationService>();
         return services;
     }
 }

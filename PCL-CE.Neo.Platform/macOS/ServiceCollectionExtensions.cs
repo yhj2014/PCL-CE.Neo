@@ -1,7 +1,7 @@
 using PCL_CE.Neo.Core.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace PCL_CE.Neo.Platform.macOS;
+namespace PCL_CE.Neo.Platform.MacOS;
 
 public static class ServiceCollectionExtensions
 {
@@ -16,6 +16,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IAudioService, MacOSAudioService>();
         services.AddSingleton<INotificationService, MacOSNotificationService>();
         services.AddSingleton<IUIAccessProvider, MacOSUIAccessProvider>();
+        services.AddSingleton<IAnimationService, MacOSAnimationService>();
         return services;
     }
 }

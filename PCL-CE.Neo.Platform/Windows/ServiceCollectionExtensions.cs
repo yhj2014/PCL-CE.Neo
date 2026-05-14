@@ -16,6 +16,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IAudioService, WindowsAudioService>();
         services.AddSingleton<INotificationService, WindowsNotificationService>();
         services.AddSingleton<IUIAccessProvider, WindowsUIAccessProvider>();
+        services.AddSingleton<IAnimationService, WindowsAnimationService>();
         return services;
     }
 }

@@ -232,12 +232,109 @@ public class MinecraftAdapter : IMinecraftAdapter
 
     private async Task<List<string>?> DownloadLibrariesAsync(string gameDir, string version)
     {
-        return new List<string>();
+        var libraries = new List<string>();
+        var librariesDir = Path.Combine(gameDir, "libraries");
+        if (!Directory.Exists(librariesDir))
+        {
+            Directory.CreateDirectory(librariesDir);
+        }
+
+        // 读取版本 JSON 获取库列表
+        var versionJsonPath = Path.Combine(gameDir, "versions", version, $"{version}.json");
+        if (!File.Exists(versionJsonPath))
+        {
+            // 如果没有 version.json，返回空列表
+            return libraries;
+        }
+
+        try
+        {
+            var versionJson = await File.ReadAllTextAsync(versionJsonPath);
+            var versionData = System.Text.Json.JsonDocument.Parse(versionJson);
+            
+            if (versionData.RootElement.TryGetProperty("libraries", out var librariesElement))
+            {
+                foreach (var lib in librariesElement.EnumerateArray())
+                {
+                    if (!lib.TryGetProperty("downloads", out var downloads)) continue;
+                    if (!downloads.TryGetProperty("artifact", out var artifact)) continue;
+                    
+                    if (artifact.TryGetProperty("path", out var path) && path.GetString() is { } libPath)
+                    {
+                        var localPath = Path.Combine(librariesDir, libPath);
+                        
+                        // 检查文件是否存在，文件大小是否匹配
+                        var isValid = true;
+                        if (File.Exists(localPath) && artifact.TryGetProperty("size", out var size) && size.GetInt32() is { } expectedSize)
+                        {
+                            var fileInfo = new FileInfo(localPath);
+                            if (fileInfo.Length != expectedSize)
+                            {
+                                isValid = false;
+                            }
+                        }
+                        else if (!File.Exists(localPath))
+                        {
+                            isValid = false;
+                        }
+
+                        if (!isValid)
+                        {
+                            // 如果文件不存在或大小不匹配，尝试下载
+                            if (artifact.TryGetProperty("url", out var url) && url.GetString() is { } downloadUrl)
+                            {
+                                try
+                                {
+                                    var libDir = Path.GetDirectoryName(localPath)!;
+                                    if (!Directory.Exists(libDir))
+                                    {
+                                        Directory.CreateDirectory(libDir);
+                                    }
+                                    
+                                    await _downloadAdapter.DownloadFileAsync(downloadUrl, localPath);
+                                }
+                                catch (Exception ex)
+                                {
+                                    _logger.LogError(ex, $"Failed to download library {libPath}");
+                                    continue;
+                                }
+                            }
+                        }
+
+                        if (File.Exists(localPath))
+                        {
+                            libraries.Add(localPath);
+                        }
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error parsing version json {versionJsonPath}");
+        }
+
+        return libraries;
     }
 
     private string BuildClassPath(List<string> libraries, string gameDir, string version)
     {
-        return "";
+        var pathSeparator = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
+            System.Runtime.InteropServices.OSPlatform.Windows) ? ";" : ":";
+        
+        var classPathParts = new List<string>();
+        
+        // 添加版本 JAR
+        var versionJar = Path.Combine(gameDir, "versions", version, $"{version}.jar");
+        if (File.Exists(versionJar))
+        {
+            classPathParts.Add(versionJar);
+        }
+        
+        // 添加所有库
+        classPathParts.AddRange(libraries);
+        
+        return string.Join(pathSeparator, classPathParts);
     }
 
     private string BuildJvmArguments(GameLaunchOptions options, string nativesDir, string classPath)
