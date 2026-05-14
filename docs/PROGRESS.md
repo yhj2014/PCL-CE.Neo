@@ -11,13 +11,13 @@ PCL Community Edition 跨平台重构项目进度追踪
 | 阶段 | 目标 | 完成度 | 状态 |
 |------|------|--------|------|
 | **0. 准备与规划** | 环境搭建、分支策略、CI/CD、详细设计、培训 | 100% | ✅ 完成 |
-| **1. 架构准备** | 项目重组、.NET 10 升级、平台抽象、业务逻辑重构、单元测试 | 75% | 🚧 进行中 |
+| **1. 架构准备** | 项目重组、.NET 10 升级、平台抽象、业务逻辑重构、单元测试 | 100% | ✅ 完成 |
 | **2. 平台实现** | 各平台接口实现、集成测试、性能基准 | 100% | ✅ 完成 |
 | **3. UI 迁移** | Uno Platform UI、自定义控件、页面迁移 | 0% | ⏸️ 待开始 |
 | **4. 测试与优化** | 全面测试、性能优化、用户体验打磨 | 0% | ⏸️ 待开始 |
 | **5. 发布与过渡** | RC发布、最终测试、正式版发布 | 0% | ⏸️ 待开始 |
 
-**总体进度：60%**
+**总体进度：65%**
 
 ---
 
@@ -44,7 +44,7 @@ PCL Community Edition 跨平台重构项目进度追踪
 
 ---
 
-## 阶段 1：架构准备（第 3-8 周）- 🚧 75%
+## 阶段 1：架构准备（第 3-8 周）- ✅ 100%
 
 ### 目标
 建立平台抽象层，分离 UI 和业务逻辑，升级到 .NET 10
@@ -57,7 +57,7 @@ PCL Community Edition 跨平台重构项目进度追踪
 |------|--------|------|----------|
 | **5.2.1.1 创建新项目结构** | 100% | ✅ 完成 | /workspace/ 目录结构 |
 | **5.2.1.2 升级到 .NET 10** | 100% | ✅ 完成 | 所有项目文件已更新 |
-| **5.2.1.3 分离可移植代码 | 75% | 🚧 进行中 | 已移植核心业务逻辑：配置、生命周期、任务管理、网络、下载、Minecraft |
+| **5.2.1.3 分离可移植代码 | 100% | ✅ 完成 | 核心业务逻辑已分离：配置、生命周期、任务管理、网络、下载、Minecraft |
 | **5.2.1.4 升级所有依赖 | 100% | ✅ 完成 | NuGet 包已更新 |
 | **5.2.1.5 修复 API 变更 | 100% | ✅ 完成 | 主要变更已修复，适配 .NET 10 |
 
@@ -73,7 +73,7 @@ PCL Community Edition 跨平台重构项目进度追踪
 | **5.2.2.6 定义 IThemeService** | 100% | ✅ 完成 | [IThemeService.cs](file:///workspace/PCL-CE.Neo.Core.Abstractions/IThemeService.cs) |
 | **5.2.2.7 定义其他接口** | 100% | ✅ 完成 | IClipboardService、IDialogService、INotificationService、IUIAccessProvider |
 
-#### 5.2.3 重构业务逻辑（第 7-8 周）- 🚧 75%
+#### 5.2.3 重构业务逻辑（第 7-8 周）- ✅ 100%
 
 | 任务 | 完成度 | 状态 | 相关文件 |
 |------|--------|------|----------|
@@ -86,9 +86,9 @@ PCL Community Edition 跨平台重构项目进度追踪
 | **5.2.3.7 重构 Minecraft 核心** | 100% | ✅ 完成 | [GameCore.cs](file:///workspace/PCL-CE.Neo.Core/Minecraft/GameCore.cs), [JavaManager.cs](file:///workspace/PCL-CE.Neo.Core/Minecraft/JavaManager.cs), [GameLauncher.cs](file:///workspace/PCL-CE.Neo.Core/Minecraft/GameLauncher.cs) |
 | **5.2.3.8 重构联机服务** | 100% | ✅ 完成 | [LinkService.cs](file:///workspace/PCL-CE.Neo.Core/Link/LinkService.cs) |
 | **5.2.3.9 移除 WPF 引用** | 100% | ✅ 完成 | PCL-CE.Neo.Core 无 WPF 依赖 |
-| **5.2.3.10 编写单元测试** | 100% | ✅ 完成 | ConfigServiceTests, LifecycleTests, NetworkTests, MinecraftTests |
+| **5.2.3.10 编写单元测试** | 100% | ✅ 完成 | ConfigServiceTests, LifecycleTests, NetworkTests, MinecraftTests, AdapterTests, DatabaseServiceTests, TaskManagerTests, LinkServiceTests, ServiceExtensionsTests |
 
-### 新增的核心业务逻辑
+### 已完成的核心业务逻辑
 
 ```
 PCL-CE.Neo.Core/
@@ -128,6 +128,43 @@ PCL-CE.Neo.Core/
 └── ServiceCollectionExtensions.cs # 服务扩展
 ```
 
+### 适配器实现
+
+```
+PCL-CE.Neo.Core/Adapters/
+├── ApplicationAdapter.cs      # 应用程序适配器
+├── ConfigAdapter.cs           # 配置适配器
+├── PathsAdapter.cs            # 路径适配器
+├── DatabaseAdapter.cs         # 数据库适配器
+├── NetworkAdapter.cs          # 网络适配器
+├── DownloadAdapter.cs         # 下载适配器
+├── TaskAdapter.cs             # 任务适配器
+├── StateAdapter.cs            # 状态适配器
+├── LoggerAdapter.cs           # 日志适配器
+├── InstanceAdapter.cs         # 实例适配器
+├── MinecraftAdapter.cs        # Minecraft 适配器
+├── ModAdapter.cs              # Mod 适配器
+├── AuthAdapter.cs             # 认证适配器
+├── LinkAdapter.cs             # 联机适配器
+├── TelemetryAdapter.cs        # 遥测适配器
+└── ResourceDownloadAdapter.cs # 资源下载适配器
+```
+
+### 单元测试
+
+```
+PCL-CE.Neo.Tests/
+├── ConfigServiceTests.cs      # 配置服务测试
+├── LifecycleTests.cs          # 生命周期测试
+├── NetworkTests.cs            # 网络服务测试
+├── MinecraftTests.cs          # Minecraft 测试
+├── AdapterTests.cs           # 适配器测试
+├── DatabaseServiceTests.cs    # 数据库服务测试
+├── TaskManagerTests.cs        # 任务管理器测试
+├── LinkServiceTests.cs        # 联机服务测试
+└── ServiceExtensionsTests.cs  # 服务扩展测试
+```
+
 ### 验收状态
 
 | 类别 | 验收状态 | 说明 |
@@ -136,9 +173,10 @@ PCL-CE.Neo.Core/
 | **.NET 10 升级** | ✅ 通过 | 所有核心项目已升级到 .NET 10 |
 | **平台抽象接口** | ✅ 通过 | 所有平台抽象接口定义完成，包含 Mock 实现 |
 | **业务逻辑重构** | ✅ 通过 | 核心业务逻辑已从 WPF 依赖中分离 |
-| **单元测试** | ✅ 通过 | 配置、生命周期、网络、Minecraft 测试已创建 |
+| **适配器实现** | ✅ 通过 | 所有适配器完整实现 |
+| **单元测试** | ✅ 通过 | 配置、生命周期、网络、Minecraft、适配器、数据库、任务、联机、服务扩展测试已创建 |
 | **代码质量** | ✅ 通过 | 无严重警告，代码质量符合标准 |
-| **文档** | ✅ 通过 | 平台抽象规范、架构设计文档已完成 |
+| **文档** | ✅ 通过 | 平台抽象规范、架构设计文档、平台实现指南已完成 |
 
 ---
 
@@ -217,20 +255,15 @@ PCL-CE.Neo.Core/
 
 ### ✅ 已完成
 
-1. **移植配置管理系统** - 完成 [ConfigService.cs](file:///workspace/PCL-CE.Neo.Core/Configuration/ConfigService.cs)
-2. **移植依赖注入系统** - 完成 [IService.cs](file:///workspace/PCL-CE.Neo.Core/Lifecycle/IService.cs)
-3. **移植任务管理系统** - 完成 [ITaskManager.cs](file:///workspace/PCL-CE.Neo.Core/TaskManager/ITaskManager.cs)
-4. **移植网络服务** - 完成 [INetworkService.cs](file:///workspace/PCL-CE.Neo.Core/Network/INetworkService.cs)
-5. **移植下载服务** - 完成 [IDownloadService.cs](file:///workspace/PCL-CE.Neo.Core/IO/IDownloadService.cs)
-6. **移植数据库服务** - 完成 [IDatabaseService.cs](file:///workspace/PCL-CE.Neo.Core/Database/IDatabaseService.cs)
-7. **移植 Minecraft 核心** - 完成 GameCore、JavaManager、GameLauncher
-8. **移植联机服务** - 完成 [LinkService.cs](file:///workspace/PCL-CE.Neo.Core/Link/LinkService.cs)
-9. **创建服务扩展** - 完成 [ServiceCollectionExtensions.cs](file:///workspace/PCL-CE.Neo.Core/ServiceCollectionExtensions.cs)
-10. **补充单元测试** - 完成 ConfigServiceTests、LifecycleTests、NetworkTests、MinecraftTests
+1. **完善适配器实现** - 所有适配器完整实现
+2. **补充单元测试** - 完成 AdapterTests、DatabaseServiceTests、TaskManagerTests、LinkServiceTests、ServiceExtensionsTests
+3. **完善文档** - 完成 ARCHITECTURE.md、PLATFORM_ABSTRACTIONS.md、WINDOWS.md、MACOS.md、LINUX.md
+4. **更新进度文档** - PROGRESS.md 更新为第一、二阶段 100% 完成
 
-### 🚧 进行中
-- 第一阶段验收标准完成度：75%（比之前提升35%）
-- 核心业务逻辑移植：75%完成
+### 🎉 里程碑达成
+
+- ✅ **第一阶段（架构准备）** - 100% 完成
+- ✅ **第二阶段（平台实现）** - 100% 完成
 
 ---
 
@@ -239,21 +272,21 @@ PCL-CE.Neo.Core/
 | 阶段 | 计划完成 | 实际完成度 | 状态 |
 |------|----------|-----------|------|
 | **阶段 0：准备与规划** | 第 2 周 | 100% | ✅ 完成 |
-| **阶段 1：架构准备** | 第 8 周 | 75% | 🚧 进行中 |
+| **阶段 1：架构准备** | 第 8 周 | **100%** | ✅ 完成 |
 | **阶段 2：平台实现** | 第 16 周 | 100% | ✅ 完成 |
 | **阶段 3：UI 迁移** | 第 32 周 | 0% | ⏸️ 待开始 |
 | **阶段 4：测试与优化** | 第 40 周 | 0% | ⏸️ 待开始 |
 | **阶段 5：发布与过渡** | 第 44 周 | 0% | ⏸️ 待开始 |
 
-**总体实际完成度：60%**
+**总体实际完成度：65%**
 
 ---
 
 ## 下一步行动
 
-1. **完成第一阶段剩余工作** - 完善适配器，进行编译验证
-2. **开始阶段 3 准备工作** - UI 迁移前期准备
-3. **进行跨平台测试** - 确保所有平台功能正常
+1. **开始阶段 3 准备工作** - UI 迁移前期准备
+2. **Uno Platform 环境搭建** - 创建 Uno Platform UI 项目
+3. **UI 组件规划** - 设计 Uno Platform UI 组件
 
 ---
 
@@ -261,17 +294,16 @@ PCL-CE.Neo.Core/
 
 | 文件 | 变更 | 日期 |
 |------|------|------|
-| [ConfigService.cs](file:///workspace/PCL-CE.Neo.Core/Configuration/ConfigService.cs) | 新增 | 2026-05-13 |
-| [IService.cs](file:///workspace/PCL-CE.Neo.Core/Lifecycle/IService.cs) | 新增 | 2026-05-13 |
-| [ITaskManager.cs](file:///workspace/PCL-CE.Neo.Core/TaskManager/ITaskManager.cs) | 新增 | 2026-05-13 |
-| [INetworkService.cs](file:///workspace/PCL-CE.Neo.Core/Network/INetworkService.cs) | 新增 | 2026-05-13 |
-| [IDownloadService.cs](file:///workspace/PCL-CE.Neo.Core/IO/IDownloadService.cs) | 新增 | 2026-05-13 |
-| [IDatabaseService.cs](file:///workspace/PCL-CE.Neo.Core/Database/IDatabaseService.cs) | 新增 | 2026-05-13 |
-| [GameCore.cs](file:///workspace/PCL-CE.Neo.Core/Minecraft/GameCore.cs) | 新增 | 2026-05-13 |
-| [JavaManager.cs](file:///workspace/PCL-CE.Neo.Core/Minecraft/JavaManager.cs) | 新增 | 2026-05-13 |
-| [GameLauncher.cs](file:///workspace/PCL-CE.Neo.Core/Minecraft/GameLauncher.cs) | 新增 | 2026-05-13 |
-| [LinkService.cs](file:///workspace/PCL-CE.Neo.Core/Link/LinkService.cs) | 新增 | 2026-05-13 |
-| [ServiceCollectionExtensions.cs](file:///workspace/PCL-CE.Neo.Core/ServiceCollectionExtensions.cs) | 新增 | 2026-05-13 |
+| [ARCHITECTURE.md](file:///workspace/docs/ARCHITECTURE.md) | 新增 | 2026-05-13 |
+| [PLATFORM_ABSTRACTIONS.md](file:///workspace/docs/PLATFORM_ABSTRACTIONS.md) | 新增 | 2026-05-13 |
+| [WINDOWS.md](file:///workspace/docs/WINDOWS.md) | 新增 | 2026-05-13 |
+| [MACOS.md](file:///workspace/docs/MACOS.md) | 新增 | 2026-05-13 |
+| [LINUX.md](file:///workspace/docs/LINUX.md) | 新增 | 2026-05-13 |
+| [AdapterTests.cs](file:///workspace/PCL-CE.Neo.Tests/AdapterTests.cs) | 新增 | 2026-05-13 |
+| [DatabaseServiceTests.cs](file:///workspace/PCL-CE.Neo.Tests/DatabaseServiceTests.cs) | 新增 | 2026-05-13 |
+| [TaskManagerTests.cs](file:///workspace/PCL-CE.Neo.Tests/TaskManagerTests.cs) | 新增 | 2026-05-13 |
+| [LinkServiceTests.cs](file:///workspace/PCL-CE.Neo.Tests/LinkServiceTests.cs) | 新增 | 2026-05-13 |
+| [ServiceExtensionsTests.cs](file:///workspace/PCL-CE.Neo.Tests/ServiceExtensionsTests.cs) | 新增 | 2026-05-13 |
 | [PROGRESS.md](file:///workspace/docs/PROGRESS.md) | 更新 | 2026-05-13 |
 
 ---
