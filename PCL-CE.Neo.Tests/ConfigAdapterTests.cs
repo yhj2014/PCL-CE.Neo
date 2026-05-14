@@ -1,56 +1,64 @@
+using PCL_CE.Neo.Core.Configuration;
 using Xunit;
-using PCL_CE.Neo.Core.Abstractions;
-using PCL_CE.Neo.Core.Adapters;
 
-namespace PCL.CE.Neo.Tests;
+namespace PCL_CE.Neo.Tests;
 
-public class ConfigAdapterTests
+public class ConfigServiceTests
 {
     [Fact]
-    public void GetConfig_ReturnsDefault_WhenKeyNotExists()
+    public void GetValue_ReturnsDefault_WhenKeyNotExists()
     {
-        var config = new ConfigAdapter();
-        var result = config.GetConfig("NonExistentKey", "default");
+        var service = new ConfigService();
+        
+        var result = service.GetValue("nonexistent", "default");
+        
         Assert.Equal("default", result);
     }
 
     [Fact]
-    public void SetConfig_StoresValue()
+    public void SetValue_StoresValue()
     {
-        var config = new ConfigAdapter();
-        config.SetConfig("TestKey", "TestValue");
-        var result = config.GetConfig("TestKey", "");
-        Assert.Equal("TestValue", result);
+        var service = new ConfigService();
+        
+        service.SetValue("key", "value");
+        
+        Assert.Equal("value", service.GetValue("key", "default"));
     }
 
     [Fact]
-    public void HasConfig_ReturnsFalse_WhenKeyNotExists()
+    public void HasKey_ReturnsTrue_WhenKeyExists()
     {
-        var config = new ConfigAdapter();
-        Assert.False(config.HasConfig("NonExistentKey"));
+        var service = new ConfigService();
+        service.SetValue("key", "value");
+        
+        Assert.True(service.HasKey("key"));
     }
 
     [Fact]
-    public void HasConfig_ReturnsTrue_WhenKeyExists()
+    public void HasKey_ReturnsFalse_WhenKeyNotExists()
     {
-        var config = new ConfigAdapter();
-        config.SetConfig("ExistingKey", "Value");
-        Assert.True(config.HasConfig("ExistingKey"));
+        var service = new ConfigService();
+        
+        Assert.False(service.HasKey("nonexistent"));
     }
 
     [Fact]
-    public void GetConfig_ReturnsDefaultInt()
+    public void GetValue_ReturnsDefault_WhenWrongType()
     {
-        var config = new ConfigAdapter();
-        var result = config.GetConfig("IntKey", 42);
-        Assert.Equal(42, result);
+        var service = new ConfigService();
+        service.SetValue("key", "value");
+        
+        var result = service.GetValue("key", 123);
+        
+        Assert.Equal(123, result);
     }
 
     [Fact]
-    public void GetConfig_ReturnsDefaultBool()
+    public void ConfigurationKeys_ContainsExpectedKeys()
     {
-        var config = new ConfigAdapter();
-        var result = config.GetConfig("BoolKey", true);
-        Assert.True(result);
+        Assert.NotEmpty(ConfigurationKeys.Theme);
+        Assert.NotEmpty(ConfigurationKeys.Language);
+        Assert.NotEmpty(ConfigurationKeys.GameDataPath);
+        Assert.NotEmpty(ConfigurationKeys.JavaPath);
     }
 }
