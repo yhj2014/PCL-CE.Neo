@@ -2,6 +2,7 @@ using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using PCL_CE.Neo.Core.Abstractions;
 using PCL_CE.Neo.Core.IO;
+using PCL_CE.Neo.Core.Network;
 
 namespace PCL_CE.Neo.Core.Minecraft;
 
@@ -21,7 +22,7 @@ public record LaunchOptions(
     string? GameArguments = null,
     string? AssetsDirectory = null,
     string? NativeDirectory = null,
-    bool EnableInnocence => false
+    bool EnableInnocence = false
 );
 
 public class GameLauncher : IGameLauncher

@@ -1,3 +1,5 @@
+using System.Net.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace PCL_CE.Neo.Core.IO;
@@ -30,7 +32,7 @@ public interface IDownloadService
 public class DownloadService : IDownloadService, IDisposable
 {
     private readonly ILogger<DownloadService> _logger;
-    private readonly Http.HttpClient _httpClient;
+    private readonly HttpClient _httpClient;
     private readonly SemaphoreSlim _semaphore;
 
     public int MaxConcurrentDownloads { get; set; } = 4;
@@ -44,7 +46,7 @@ public class DownloadService : IDownloadService, IDisposable
     public DownloadService(ILogger<DownloadService> logger)
     {
         _logger = logger;
-        _httpClient = new Http.HttpClient
+        _httpClient = new HttpClient
         {
             Timeout = TimeSpan.FromMinutes(30)
         };

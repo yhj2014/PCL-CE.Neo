@@ -262,17 +262,22 @@ public class AuthAdapter : IAuthAdapter
             }
 
             // 获取玩家资料
+            var headers = new Dictionary<string, string>
+            {
+                { "Authorization", $"Bearer {mcData.AccessToken}" }
+            };
+            
             var profileResponse = await _network.GetAsync(
                 "https://api.minecraftservices.com/minecraft/profile",
-                accessToken: mcData.AccessToken);
+                headers);
 
-            if (!profileResponse.IsSuccess)
+            if (profileResponse.StartsWith("Error") || string.IsNullOrEmpty(profileResponse))
             {
-                _logger.LogWarning("获取玩家资料失败: {Status}", profileResponse.StatusCode);
+                _logger.LogWarning("获取玩家资料失败");
                 return null;
             }
 
-            var profile = JsonSerializer.Deserialize<MinecraftProfile>(profileResponse.BodyAsString);
+            var profile = JsonSerializer.Deserialize<MinecraftProfile>(profileResponse);
             if (profile == null)
             {
                 return null;
@@ -284,8 +289,9 @@ public class AuthAdapter : IAuthAdapter
                 Username = profile.Name,
                 DisplayName = profile.Name,
                 Provider = AuthProvider.Microsoft,
-                SkinUrl = profile.Skins?.FirstOrDefault()?.Url,
-                CapeUrl = profile.Capes?.FirstOrDefault()?.Url
+                AvatarUrl = profile.Skins?.FirstOrDefault()?.Url,
+                ExpiresAt = DateTime.UtcNow.AddDays(1),
+                Properties = new Dictionary<string, string>()
             };
         }
         catch (Exception ex)
@@ -341,7 +347,6 @@ public class AuthAdapter : IAuthAdapter
         public string Url { get; set; } = "";
         public string Alias { get; set; } = "";
     }
-}
 
     private class MicrosoftToken
     {

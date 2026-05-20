@@ -6,6 +6,7 @@ public class DialogServiceMock : IDialogService
     public string? LastTitle { get; private set; }
     public DialogButtons? LastButtons { get; private set; }
     public DialogResult DefaultResult { get; set; } = DialogResult.OK;
+    public string? DefaultFilePath { get; set; }
     
     public event Func<string, string, DialogButtons, DialogResult>? OnShowDialog;
     
@@ -30,18 +31,18 @@ public class DialogServiceMock : IDialogService
         return DefaultResult == DialogResult.Yes || DefaultResult == DialogResult.OK;
     }
 
-    public string? ShowOpenFileDialog(string filter)
+    public string? ShowOpenFileDialog(string filter, string? initialDirectory = null)
     {
-        return null;
+        return DefaultFilePath;
     }
 
-    public string? ShowSaveFileDialog(string filter, string defaultFileName)
+    public string? ShowSaveFileDialog(string filter, string defaultFileName, string? initialDirectory = null)
     {
-        return null;
+        return DefaultFilePath ?? defaultFileName;
     }
 
-    public string? ShowOpenFolderDialog()
+    public string? ShowOpenFolderDialog(string? initialDirectory = null)
     {
-        return null;
+        return DefaultFilePath;
     }
 }

@@ -56,14 +56,26 @@ public class JavaManager : IJavaManager
         {
             return _cachedJavaList.AsReadOnly();
         }
-
-        await _cacheInitialized;
         
         try
         {
-            var javaList = await _javaScanner.ScanJavaAsync();
+            var javaPaths = _javaScanner.ScanJavaPaths();
             _cachedJavaList.Clear();
-            _cachedJavaList.AddRange(javaList);
+            
+            foreach (var path in javaPaths)
+            {
+                if (_javaScanner.IsValidJavaPath(path))
+                {
+                    _cachedJavaList.Add(new JavaInstallation(
+                        Path: path,
+                        Version: "Unknown",
+                        Vendor: null,
+                        Memory: 0,
+                        Brand: JavaBrandType.Unknown
+                    ));
+                }
+            }
+            
             _logger.LogInformation("Found {Count} Java installations", _cachedJavaList.Count);
         }
         catch (Exception ex)

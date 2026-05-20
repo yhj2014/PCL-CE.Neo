@@ -12,12 +12,11 @@
     </PropertyGroup>
 
     <PropertyGroup>
-        <TargetFramework>net10.0-windows</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <LangVersion>latest</LangVersion>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <RootNamespace>PCL_CE.Neo.Platform.Windows</RootNamespace>
-        <UseWPF>true</UseWPF>
     </PropertyGroup>
 
     <ItemGroup>

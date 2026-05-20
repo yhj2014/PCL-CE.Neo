@@ -8,7 +8,7 @@ using PCL_CE.Neo.Core.Lifecycle;
 using PCL_CE.Neo.Core.Link;
 using PCL_CE.Neo.Core.Minecraft;
 using PCL_CE.Neo.Core.Network;
-using PCL_CE.Neo.Core.TaskManager;
+using TaskManagerImpl = PCL_CE.Neo.Core.TaskManager.TaskManager;
 
 namespace PCL_CE.Neo.Core;
 
@@ -21,7 +21,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<INetworkService, NetworkService>();
         services.AddSingleton<IDownloadService, DownloadService>();
         services.AddSingleton<ILifecycleManager, LifecycleManager>();
-        services.AddSingleton<ITaskManager, TaskManager>();
+        // services.AddSingleton<ITaskManager, TaskManagerImpl>();
         services.AddSingleton<IJavaManager, JavaManager>();
         services.AddSingleton<IGameLauncher, GameLauncher>();
         services.AddSingleton<ILinkService, LinkService>();

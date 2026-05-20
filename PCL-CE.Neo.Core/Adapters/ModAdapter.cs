@@ -231,8 +231,7 @@ public class ModAdapter : IModAdapter
                     FilePath = "",
                     Source = ModSource.Modrinth,
                     RemoteId = modId,
-                    Version = version,
-                    IconUrl = iconUrl
+                    Version = version
                 });
             }
             
@@ -276,9 +275,7 @@ public class ModAdapter : IModAdapter
                     Name = name,
                     FilePath = "",
                     Source = ModSource.CurseForge,
-                    RemoteId = modId,
-                    Description = summary,
-                    IconUrl = thumbnail
+                    RemoteId = modId
                 });
             }
             

@@ -80,12 +80,12 @@ public class LoggerAdapter : ILoggerAdapter
         return null;
     }
 
-    public bool IsEnabled(LogLevel level)
+    public bool IsEnabled(Abstractions.LogLevel level)
     {
         return true;
     }
 
-    public void SetLevel(LogLevel level)
+    public void SetLevel(Abstractions.LogLevel level)
     {
         // TODO: Implement level setting
     }

@@ -284,20 +284,25 @@ public class MinecraftAdapter : IMinecraftAdapter
                             if (artifact.TryGetProperty("url", out var url) && url.GetString() is { } downloadUrl)
                             {
                                 try
-                                {
-                                    var libDir = Path.GetDirectoryName(localPath)!;
-                                    if (!Directory.Exists(libDir))
                                     {
-                                        Directory.CreateDirectory(libDir);
+                                        var libDir = Path.GetDirectoryName(localPath)!;
+                                        if (!Directory.Exists(libDir))
+                                        {
+                                            Directory.CreateDirectory(libDir);
+                                        }
+                                        
+                                        var request = new DownloadRequest
+                                        {
+                                            Url = downloadUrl,
+                                            DestinationPath = localPath
+                                        };
+                                        await _downloadAdapter.DownloadFileAsync(request, CancellationToken.None);
                                     }
-                                    
-                                    await _downloadAdapter.DownloadFileAsync(downloadUrl, localPath);
-                                }
-                                catch (Exception ex)
-                                {
-                                    _logger.LogError(ex, $"Failed to download library {libPath}");
-                                    continue;
-                                }
+                                    catch (Exception ex)
+                                    {
+                                        _logger.LogError(ex, $"Failed to download library {libPath}");
+                                        continue;
+                                    }
                             }
                         }
 
