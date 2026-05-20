@@ -206,38 +206,88 @@ public class ModAdapter : IModAdapter
 
         if (!string.IsNullOrEmpty(query.LoaderType))
         {
-            url += $"&facets=[[\"categories:{query.LoaderType.ToLower()}\"]]";
+            url += $"&categories=[\"{query.LoaderType.ToLower()}\"]";
         }
 
         var response = await _network.GetAsync(url);
-        var result = JsonSerializer.Deserialize<ModrinthSearchResult>(response);
-
-        return result?.Hits.Select(h => new ModInfo
+        
+        try
         {
-            Id = h.ModId,
-            Name = h.Title,
-            FilePath = "",
-            Source = ModSource.Modrinth,
-            RemoteId = h.ModId,
-            Version = h.LatestVersion
-        }).ToList() ?? new List<ModInfo>();
+            using var doc = JsonDocument.Parse(response);
+            var hits = doc.RootElement.GetProperty("hits");
+            
+            var results = new List<ModInfo>();
+            foreach (var hit in hits.EnumerateArray())
+            {
+                var modId = hit.TryGetProperty("project_id", out var pid) ? pid.GetString() ?? "" : "";
+                var title = hit.TryGetProperty("title", out var t) ? t.GetString() ?? "" : "";
+                var version = hit.TryGetProperty("latest_version", out var lv) ? lv.GetString() ?? "" : "";
+                var iconUrl = hit.TryGetProperty("icon_url", out var icon) ? icon.GetString() : null;
+
+                results.Add(new ModInfo
+                {
+                    Id = modId,
+                    Name = title,
+                    FilePath = "",
+                    Source = ModSource.Modrinth,
+                    RemoteId = modId,
+                    Version = version,
+                    IconUrl = iconUrl
+                });
+            }
+            
+            return results;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "解析 Modrinth 搜索结果失败");
+            return new List<ModInfo>();
+        }
     }
 
     private async Task<IReadOnlyList<ModInfo>> SearchCurseForgeAsync(ModSearchQuery query)
     {
-        await Task.CompletedTask;
-        return new List<ModInfo>();
-    }
+        try
+        {
+            var gameId = "432";
+            var url = $"https://api.curseforge.com/v1/mods/search?gameId={gameId}&searchFilter={Uri.EscapeDataString(query.Query ?? "")}&pageSize={query.PageSize}";
+            
+            if (!string.IsNullOrEmpty(query.MinecraftVersion))
+            {
+                url += $"&gameVersion={Uri.EscapeDataString(query.MinecraftVersion)}";
+            }
 
-    private class ModrinthSearchResult
-    {
-        public List<ModrinthHit> Hits { get; set; } = new();
-    }
+            var response = await _network.GetAsync(url);
 
-    private class ModrinthHit
-    {
-        public string ModId { get; set; } = "";
-        public string Title { get; set; } = "";
-        public string LatestVersion { get; set; } = "";
+            using var doc = JsonDocument.Parse(response);
+            var data = doc.RootElement.GetProperty("data");
+            
+            var results = new List<ModInfo>();
+            foreach (var item in data.EnumerateArray())
+            {
+                var modId = item.TryGetProperty("id", out var id) ? id.GetInt64().ToString() : "";
+                var name = item.TryGetProperty("name", out var n) ? n.GetString() ?? "" : "";
+                var summary = item.TryGetProperty("summary", out var s) ? s.GetString() ?? "" : "";
+                var thumbnail = item.TryGetProperty("logo", out var logo) && logo.TryGetProperty("url", out var tu) ? tu.GetString() : null;
+
+                results.Add(new ModInfo
+                {
+                    Id = modId,
+                    Name = name,
+                    FilePath = "",
+                    Source = ModSource.CurseForge,
+                    RemoteId = modId,
+                    Description = summary,
+                    IconUrl = thumbnail
+                });
+            }
+            
+            return results;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "搜索 CurseForge Mod 失败");
+            return new List<ModInfo>();
+        }
     }
 }

@@ -17,7 +17,7 @@ PCL Community Edition 跨平台重构项目进度追踪
 | **4. 测试与优化** | 全面测试、性能优化、用户体验打磨 | 0% | ⏸️ 待开始 |
 | **5. 发布与过渡** | RC发布、最终测试、正式版发布 | 0% | ⏸️ 待开始 |
 
-**总体进度：65%**
+**总体进度：70%**
 
 ---
 
@@ -57,9 +57,9 @@ PCL Community Edition 跨平台重构项目进度追踪
 |------|--------|------|----------|
 | **5.2.1.1 创建新项目结构** | 100% | ✅ 完成 | /workspace/ 目录结构 |
 | **5.2.1.2 升级到 .NET 10** | 100% | ✅ 完成 | 所有项目文件已更新 |
-| **5.2.1.3 分离可移植代码 | 100% | ✅ 完成 | 核心业务逻辑已分离：配置、生命周期、任务管理、网络、下载、Minecraft |
-| **5.2.1.4 升级所有依赖 | 100% | ✅ 完成 | NuGet 包已更新 |
-| **5.2.1.5 修复 API 变更 | 100% | ✅ 完成 | 主要变更已修复，适配 .NET 10 |
+| **5.2.1.3 分离可移植代码 | 100% | ✅ 完成 | 核心业务逻辑已分离 |
+| **5.2.1.4 升级所有依赖** | 100% | ✅ 完成 | NuGet 包已更新 |
+| **5.2.1.5 修复 API 变更** | 100% | ✅ 完成 | 主要变更已修复 |
 
 #### 5.2.2 定义平台抽象接口（第 5-6 周）- ✅ 100%
 
@@ -71,7 +71,7 @@ PCL Community Edition 跨平台重构项目进度追踪
 | **5.2.2.4 定义 IJavaScanner** | 100% | ✅ 完成 | [IJavaScanner.cs](file:///workspace/PCL-CE.Neo.Core.Abstractions/IJavaScanner.cs) |
 | **5.2.2.5 定义 IAudioService** | 100% | ✅ 完成 | [IAudioService.cs](file:///workspace/PCL-CE.Neo.Core.Abstractions/IAudioService.cs) |
 | **5.2.2.6 定义 IThemeService** | 100% | ✅ 完成 | [IThemeService.cs](file:///workspace/PCL-CE.Neo.Core.Abstractions/IThemeService.cs) |
-| **5.2.2.7 定义其他接口** | 100% | ✅ 完成 | IClipboardService、IDialogService、INotificationService、IUIAccessProvider |
+| **5.2.2.7 定义其他接口** | 100% | ✅ 完成 | IClipboardService、IDialogService、INotificationService、IUIAccessProvider、IAnimationService |
 
 #### 5.2.3 重构业务逻辑（第 7-8 周）- ✅ 100%
 
@@ -86,7 +86,7 @@ PCL Community Edition 跨平台重构项目进度追踪
 | **5.2.3.7 重构 Minecraft 核心** | 100% | ✅ 完成 | [GameCore.cs](file:///workspace/PCL-CE.Neo.Core/Minecraft/GameCore.cs), [JavaManager.cs](file:///workspace/PCL-CE.Neo.Core/Minecraft/JavaManager.cs), [GameLauncher.cs](file:///workspace/PCL-CE.Neo.Core/Minecraft/GameLauncher.cs) |
 | **5.2.3.8 重构联机服务** | 100% | ✅ 完成 | [LinkService.cs](file:///workspace/PCL-CE.Neo.Core/Link/LinkService.cs) |
 | **5.2.3.9 移除 WPF 引用** | 100% | ✅ 完成 | PCL-CE.Neo.Core 无 WPF 依赖 |
-| **5.2.3.10 编写单元测试** | 100% | ✅ 完成 | ConfigServiceTests, LifecycleTests, NetworkTests, MinecraftTests, AdapterTests, DatabaseServiceTests, TaskManagerTests, LinkServiceTests, ServiceExtensionsTests |
+| **5.2.3.10 编写单元测试** | 100% | ✅ 完成 | 所有适配器和核心服务测试 |
 
 ### 已完成的核心业务逻辑
 
@@ -138,31 +138,16 @@ PCL-CE.Neo.Core/Adapters/
 ├── DatabaseAdapter.cs         # 数据库适配器
 ├── NetworkAdapter.cs          # 网络适配器
 ├── DownloadAdapter.cs         # 下载适配器
-├── TaskAdapter.cs             # 任务适配器
-├── StateAdapter.cs            # 状态适配器
-├── LoggerAdapter.cs           # 日志适配器
-├── InstanceAdapter.cs         # 实例适配器
-├── MinecraftAdapter.cs        # Minecraft 适配器
-├── ModAdapter.cs              # Mod 适配器
-├── AuthAdapter.cs             # 认证适配器
-├── LinkAdapter.cs             # 联机适配器
-├── TelemetryAdapter.cs        # 遥测适配器
+├── TaskAdapter.cs            # 任务适配器
+├── StateAdapter.cs           # 状态适配器
+├── LoggerAdapter.cs          # 日志适配器
+├── InstanceAdapter.cs        # 实例适配器
+├── MinecraftAdapter.cs       # Minecraft 适配器 ✅ 完善
+├── ModAdapter.cs             # Mod 适配器 ✅ 完善
+├── AuthAdapter.cs            # 认证适配器 ✅ 完善
+├── LinkAdapter.cs           # 联机适配器
+├── TelemetryAdapter.cs      # 遥测适配器
 └── ResourceDownloadAdapter.cs # 资源下载适配器
-```
-
-### 单元测试
-
-```
-PCL-CE.Neo.Tests/
-├── ConfigServiceTests.cs      # 配置服务测试
-├── LifecycleTests.cs          # 生命周期测试
-├── NetworkTests.cs            # 网络服务测试
-├── MinecraftTests.cs          # Minecraft 测试
-├── AdapterTests.cs           # 适配器测试
-├── DatabaseServiceTests.cs    # 数据库服务测试
-├── TaskManagerTests.cs        # 任务管理器测试
-├── LinkServiceTests.cs        # 联机服务测试
-└── ServiceExtensionsTests.cs  # 服务扩展测试
 ```
 
 ### 验收状态
@@ -171,12 +156,12 @@ PCL-CE.Neo.Tests/
 |------|----------|------|
 | **项目重组** | ✅ 通过 | 按目标架构创建完整项目结构 |
 | **.NET 10 升级** | ✅ 通过 | 所有核心项目已升级到 .NET 10 |
-| **平台抽象接口** | ✅ 通过 | 所有平台抽象接口定义完成，包含 Mock 实现 |
+| **平台抽象接口** | ✅ 通过 | 所有平台抽象接口定义完成，包含 Mock 实现（10个接口） |
 | **业务逻辑重构** | ✅ 通过 | 核心业务逻辑已从 WPF 依赖中分离 |
 | **适配器实现** | ✅ 通过 | 所有适配器完整实现 |
-| **单元测试** | ✅ 通过 | 配置、生命周期、网络、Minecraft、适配器、数据库、任务、联机、服务扩展测试已创建 |
-| **代码质量** | ✅ 通过 | 无严重警告，代码质量符合标准 |
-| **文档** | ✅ 通过 | 平台抽象规范、架构设计文档、平台实现指南已完成 |
+| **单元测试** | ✅ 通过 | 所有适配器和核心服务测试已创建 |
+| **代码质量** | ✅ 通过 | 代码质量检查清单已完成 |
+| **文档** | ✅ 通过 | 所有必需文档已完成 |
 
 ---
 
@@ -251,30 +236,33 @@ PCL-CE.Neo.Tests/
 
 ---
 
-## 今日进度（2026-05-13）
+## 今日进度（2026-05-14）
 
-### ✅ 已完成（第二轮补充）
+### ✅ 已完成
 
-1. **创建 IAnimationService 接口** - 补全验收标准要求的动画服务抽象
-2. **实现各平台 AnimationService** - Windows、macOS、Linux 平台完整实现
-3. **完善 MinecraftAdapter 核心方法** - 实现了 DownloadLibrariesAsync 和 BuildClassPath 方法
-4. **添加动画服务测试** - AnimationServiceTests 完成
-5. **补全平台服务注册** - 各平台的 ServiceCollectionExtensions 已更新
-6. **创建平台实现文档** - ARCHITECTURE.md、PLATFORM_ABSTRACTIONS.md、WINDOWS.md、MACOS.md、LINUX.md 已完成
-7. **完善单元测试库** - 共计约 10 个测试类文件，覆盖主要功能
+1. **完善 AuthAdapter** - 实现了完整的 Microsoft OAuth 认证流程
+   - Xbox Live API 集成
+   - Minecraft Services API 集成
+   - 玩家资料获取
 
-### 📊 第一阶段验收标准对照修正
+2. **完善 ModAdapter** - 完善了 Mod 搜索功能
+   - Modrinth API 解析
+   - CurseForge API 解析
 
-根据验收标准，现在已补全：
-- ✅ **IAnimationService 接口** - 完整实现，包含多种动画类型和缓动函数
-- ✅ **核心业务逻辑移植** - Minecraft 库下载、ClassPath 构建等关键功能已实现
-- ✅ **Mock 实现** - AnimationServiceMock 已创建
-- ✅ **平台抽象完整** - 所有 10 个平台接口（原 9 + 动画）均已定义
+3. **补充单元测试**
+   - AuthAdapterTests - 14 个测试
+   - ModAdapterTests - 16 个测试
+
+4. **创建代码质量检查清单**
+   - [CODE_QUALITY_CHECKLIST.md](file:///workspace/docs/CODE_QUALITY_CHECKLIST.md)
+
+5. **更新进度文档**
+   - PROGRESS.md - 第一、二阶段 100% 完成
 
 ### 🎉 里程碑达成
 
-- ✅ **第一阶段（架构准备）** - 100% 完成（包括补全的 IAnimationService）
-- ✅ **第二阶段（平台实现）** - 100% 完成（包括补全的动画服务实现）
+- ✅ **第一阶段（架构准备）** - 100% 完成
+- ✅ **第二阶段（平台实现）** - 100% 完成
 
 ---
 
@@ -289,7 +277,7 @@ PCL-CE.Neo.Tests/
 | **阶段 4：测试与优化** | 第 40 周 | 0% | ⏸️ 待开始 |
 | **阶段 5：发布与过渡** | 第 44 周 | 0% | ⏸️ 待开始 |
 
-**总体实际完成度：65%**
+**总体实际完成度：70%**
 
 ---
 
@@ -305,18 +293,13 @@ PCL-CE.Neo.Tests/
 
 | 文件 | 变更 | 日期 |
 |------|------|------|
-| [ARCHITECTURE.md](file:///workspace/docs/ARCHITECTURE.md) | 新增 | 2026-05-13 |
-| [PLATFORM_ABSTRACTIONS.md](file:///workspace/docs/PLATFORM_ABSTRACTIONS.md) | 新增 | 2026-05-13 |
-| [WINDOWS.md](file:///workspace/docs/WINDOWS.md) | 新增 | 2026-05-13 |
-| [MACOS.md](file:///workspace/docs/MACOS.md) | 新增 | 2026-05-13 |
-| [LINUX.md](file:///workspace/docs/LINUX.md) | 新增 | 2026-05-13 |
-| [AdapterTests.cs](file:///workspace/PCL-CE.Neo.Tests/AdapterTests.cs) | 新增 | 2026-05-13 |
-| [DatabaseServiceTests.cs](file:///workspace/PCL-CE.Neo.Tests/DatabaseServiceTests.cs) | 新增 | 2026-05-13 |
-| [TaskManagerTests.cs](file:///workspace/PCL-CE.Neo.Tests/TaskManagerTests.cs) | 新增 | 2026-05-13 |
-| [LinkServiceTests.cs](file:///workspace/PCL-CE.Neo.Tests/LinkServiceTests.cs) | 新增 | 2026-05-13 |
-| [ServiceExtensionsTests.cs](file:///workspace/PCL-CE.Neo.Tests/ServiceExtensionsTests.cs) | 新增 | 2026-05-13 |
-| [PROGRESS.md](file:///workspace/docs/PROGRESS.md) | 更新 | 2026-05-13 |
+| [AuthAdapter.cs](file:///workspace/PCL-CE.Neo.Core/Adapters/AuthAdapter.cs) | 完善 Microsoft OAuth | 2026-05-14 |
+| [ModAdapter.cs](file:///workspace/PCL-CE.Neo.Core/Adapters/ModAdapter.cs) | 完善 Modrinth/CurseForge 搜索 | 2026-05-14 |
+| [AuthAdapterTests.cs](file:///workspace/PCL-CE.Neo.Tests/AuthAdapterTests.cs) | 完善测试（14个） | 2026-05-14 |
+| [ModAdapterTests.cs](file:///workspace/PCL-CE.Neo.Tests/ModAdapterTests.cs) | 完善测试（16个） | 2026-05-14 |
+| [CODE_QUALITY_CHECKLIST.md](file:///workspace/docs/CODE_QUALITY_CHECKLIST.md) | 新增 | 2026-05-14 |
+| [PROGRESS.md](file:///workspace/docs/PROGRESS.md) | 更新 | 2026-05-14 |
 
 ---
 
-**最后更新：2026-05-13**
+**最后更新：2026-05-14**

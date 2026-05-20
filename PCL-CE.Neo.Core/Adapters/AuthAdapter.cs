@@ -208,15 +208,140 @@ public class AuthAdapter : IAuthAdapter
         StateChanged?.Invoke(state);
     }
 
-    private Task<UserProfile?> ValidateMicrosoftTokenAsync(string accessToken)
+    private async Task<UserProfile?> ValidateMicrosoftTokenAsync(string accessToken)
     {
-        return Task.FromResult<UserProfile?>(new UserProfile
+        try
         {
-            Id = "microsoft_placeholder",
-            Username = "MicrosoftUser",
-            Provider = AuthProvider.Microsoft
-        });
+            _logger.LogDebug("验证微软访问令牌");
+
+            // 调用 Xbox Live API 获取 XSTS token
+            var xboxResponse = await _network.PostAsync(
+                "https://user.auth.xboxlive.com/user/authenticate",
+                JsonSerializer.Serialize(new
+                {
+                    Properties = new
+                    {
+                        AuthMethod = "RPS",
+                        SiteName = "user.auth.xboxlive.com",
+                        RpsTicket = $"d={accessToken}"
+                    },
+                    RelyingParty = "http://auth.xboxlive.com",
+                    TokenType = "JWT"
+                }));
+
+            if (!xboxResponse.IsSuccess)
+            {
+                _logger.LogWarning("Xbox Live 认证失败: {Status}", xboxResponse.StatusCode);
+                return null;
+            }
+
+            var xboxData = JsonSerializer.Deserialize<XboxAuthResponse>(xboxResponse.BodyAsString);
+            if (xboxData == null)
+            {
+                return null;
+            }
+
+            // 调用 Minecraft API 获取访问令牌
+            var mcResponse = await _network.PostAsync(
+                "https://api.minecraftservices.com/authentication/login_with_xbox",
+                JsonSerializer.Serialize(new
+                {
+                    identityToken = $"XBL3.0 x={xboxData.DisplayClaims?.Xui?[0]?.Xid ?? ""};{xboxData.Token}"
+                }));
+
+            if (!mcResponse.IsSuccess)
+            {
+                _logger.LogWarning("Minecraft 认证失败: {Status}", mcResponse.StatusCode);
+                return null;
+            }
+
+            var mcData = JsonSerializer.Deserialize<MinecraftAuthResponse>(mcResponse.BodyAsString);
+            if (mcData == null)
+            {
+                return null;
+            }
+
+            // 获取玩家资料
+            var profileResponse = await _network.GetAsync(
+                "https://api.minecraftservices.com/minecraft/profile",
+                accessToken: mcData.AccessToken);
+
+            if (!profileResponse.IsSuccess)
+            {
+                _logger.LogWarning("获取玩家资料失败: {Status}", profileResponse.StatusCode);
+                return null;
+            }
+
+            var profile = JsonSerializer.Deserialize<MinecraftProfile>(profileResponse.BodyAsString);
+            if (profile == null)
+            {
+                return null;
+            }
+
+            return new UserProfile
+            {
+                Id = profile.Id,
+                Username = profile.Name,
+                DisplayName = profile.Name,
+                Provider = AuthProvider.Microsoft,
+                SkinUrl = profile.Skins?.FirstOrDefault()?.Url,
+                CapeUrl = profile.Capes?.FirstOrDefault()?.Url
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "验证微软令牌失败");
+            return null;
+        }
     }
+
+    private class XboxAuthResponse
+    {
+        public string Token { get; set; } = "";
+        public DisplayClaims? DisplayClaims { get; set; }
+    }
+
+    private class DisplayClaims
+    {
+        public List<XboxUser>? Xui { get; set; }
+    }
+
+    private class XboxUser
+    {
+        public string? Xid { get; set; }
+        public string? UserHash { get; set; }
+    }
+
+    private class MinecraftAuthResponse
+    {
+        public string AccessToken { get; set; } = "";
+        public string TokenType { get; set; } = "";
+    }
+
+    private class MinecraftProfile
+    {
+        public string Id { get; set; } = "";
+        public string Name { get; set; } = "";
+        public List<MinecraftSkin>? Skins { get; set; }
+        public List<MinecraftCape>? Capes { get; set; }
+    }
+
+    private class MinecraftSkin
+    {
+        public string Id { get; set; } = "";
+        public string State { get; set; } = "";
+        public string Url { get; set; } = "";
+        public string? Variant { get; set; }
+    }
+
+    private class MinecraftCape
+    {
+        public string Id { get; set; } = "";
+        public string State { get; set; } = "";
+        public string Url { get; set; } = "";
+        public string Alias { get; set; } = "";
+    }
+}
 
     private class MicrosoftToken
     {
