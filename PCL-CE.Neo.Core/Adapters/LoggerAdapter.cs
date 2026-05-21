@@ -1,59 +1,95 @@
 using System.Collections.Concurrent;
-using Microsoft.Extensions.Logging;
 using PCL_CE.Neo.Core.Abstractions;
+using PCL_CE.Neo.Core.Logging;
 
-namespace PCL_CE.Neo.Core.Adapters;
+namespace PCL_CE.Neo.Core.Abstractions;
 
 public class LoggerAdapter : ILoggerAdapter
 {
     private readonly string _categoryName;
-    private readonly ILogService? _logService;
     private readonly ConcurrentDictionary<string, object> _scopes = new ConcurrentDictionary<string, object>();
     private Abstractions.LogLevel _minLevel = Abstractions.LogLevel.Information;
 
-    public LoggerAdapter(string categoryName, ILogService? logService = null)
+    public LoggerAdapter(string categoryName)
     {
         _categoryName = categoryName;
-        _logService = logService;
     }
 
-    public void Log(Abstractions.LogLevel level, string message, Exception? exception = null)
+    private static Logging.LogLevel ToCoreLogLevel(Abstractions.LogLevel level)
     {
-        var logEntry = new LogEntry
+        return level switch
         {
-            Level = level,
-            Category = _categoryName,
-            Message = message,
-            Exception = exception,
-            Timestamp = DateTime.Now
+            Abstractions.LogLevel.Trace => Logging.LogLevel.Trace,
+            Abstractions.LogLevel.Debug => Logging.LogLevel.Debug,
+            Abstractions.LogLevel.Information => Logging.LogLevel.Info,
+            Abstractions.LogLevel.Warning => Logging.LogLevel.Warning,
+            Abstractions.LogLevel.Error => Logging.LogLevel.Error,
+            Abstractions.LogLevel.Critical => Logging.LogLevel.Fatal,
+            _ => Logging.LogLevel.Info
         };
-
-        _logService?.Log(logEntry);
     }
 
-    public void Debug(string message)
+    public void Trace(string message, params object[] args)
     {
-        Log(Abstractions.LogLevel.Debug, message);
+        if (!IsEnabled(Abstractions.LogLevel.Trace)) return;
+        var formattedMessage = args.Length > 0 ? string.Format(message, args) : message;
+        LogWrapper.Trace(formattedMessage, _categoryName);
     }
 
-    public void Info(string message)
+    public void Debug(string message, params object[] args)
     {
-        Log(Abstractions.LogLevel.Information, message);
+        if (!IsEnabled(Abstractions.LogLevel.Debug)) return;
+        var formattedMessage = args.Length > 0 ? string.Format(message, args) : message;
+        LogWrapper.Debug(formattedMessage, _categoryName);
     }
 
-    public void Warning(string message)
+    public void Information(string message, params object[] args)
     {
-        Log(Abstractions.LogLevel.Warning, message);
+        if (!IsEnabled(Abstractions.LogLevel.Information)) return;
+        var formattedMessage = args.Length > 0 ? string.Format(message, args) : message;
+        LogWrapper.Info(formattedMessage, _categoryName);
     }
 
-    public void Error(string message, Exception? exception = null)
+    public void Warning(string message, params object[] args)
     {
-        Log(Abstractions.LogLevel.Error, message, exception);
+        if (!IsEnabled(Abstractions.LogLevel.Warning)) return;
+        var formattedMessage = args.Length > 0 ? string.Format(message, args) : message;
+        LogWrapper.Warn(formattedMessage, _categoryName);
     }
 
-    public void Fatal(string message, Exception? exception = null)
+    public void Warning(Exception? ex, string message, params object[] args)
     {
-        Log(Abstractions.LogLevel.Critical, message, exception);
+        if (!IsEnabled(Abstractions.LogLevel.Warning)) return;
+        var formattedMessage = args.Length > 0 ? string.Format(message, args) : message;
+        LogWrapper.Error(ex, _categoryName, formattedMessage);
+    }
+
+    public void Error(string message, params object[] args)
+    {
+        if (!IsEnabled(Abstractions.LogLevel.Error)) return;
+        var formattedMessage = args.Length > 0 ? string.Format(message, args) : message;
+        LogWrapper.Error(formattedMessage, _categoryName);
+    }
+
+    public void Error(Exception? ex, string message, params object[] args)
+    {
+        if (!IsEnabled(Abstractions.LogLevel.Error)) return;
+        var formattedMessage = args.Length > 0 ? string.Format(message, args) : message;
+        LogWrapper.Error(ex, _categoryName, formattedMessage);
+    }
+
+    public void Fatal(string message, params object[] args)
+    {
+        if (!IsEnabled(Abstractions.LogLevel.Critical)) return;
+        var formattedMessage = args.Length > 0 ? string.Format(message, args) : message;
+        LogWrapper.Fatal(formattedMessage, _categoryName);
+    }
+
+    public void Fatal(Exception? ex, string message, params object[] args)
+    {
+        if (!IsEnabled(Abstractions.LogLevel.Critical)) return;
+        var formattedMessage = args.Length > 0 ? string.Format(message, args) : message;
+        LogWrapper.Fatal(ex, _categoryName, formattedMessage);
     }
 
     public IDisposable? BeginScope(string scope)

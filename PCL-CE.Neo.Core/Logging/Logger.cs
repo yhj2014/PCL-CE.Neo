@@ -113,7 +113,7 @@ public sealed class Logger : IAsyncDisposable
         }
         catch
         {
-            Debug.WriteLine(message);
+            System.Diagnostics.Debug.WriteLine(message);
         }
     }
 
@@ -132,7 +132,7 @@ public sealed class Logger : IAsyncDisposable
                 if (_logChannel.Reader.TryRead(out var message))
                 {
 #if DEBUG
-                    Debug.WriteLine(message);
+                    System.Diagnostics.Debug.WriteLine(message);
 #endif
                     batch.AppendLine(message);
                     lineCount++;
