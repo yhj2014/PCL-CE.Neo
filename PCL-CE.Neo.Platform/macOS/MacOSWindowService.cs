@@ -1,9 +1,8 @@
-using PCL_CE.Neo.Core.Abstractions;
-
 namespace PCL_CE.Neo.Platform.macOS;
 
-public class MacOSWindowService : IWindowService
+public class MacOSWindowService : Core.Abstractions.IWindowService
 {
+#if MACCATALYST
     public event EventHandler? WindowClosed;
     public event EventHandler? WindowMinimized;
     public event EventHandler? WindowMaximized;
@@ -80,4 +79,62 @@ public class MacOSWindowService : IWindowService
     {
         return SystemDpi;
     }
+#else
+    public object? MainWindow => throw new PlatformNotSupportedException("此功能在 macOS 上尚未实现");
+
+    public void Initialize()
+    {
+        throw new PlatformNotSupportedException("此功能在 macOS 上尚未实现");
+    }
+
+    public void ShowMainWindow()
+    {
+        throw new PlatformNotSupportedException("此功能在 macOS 上尚未实现");
+    }
+
+    public void CloseMainWindow()
+    {
+        throw new PlatformNotSupportedException("此功能在 macOS 上尚未实现");
+    }
+
+    public void SetTitle(string title)
+    {
+        throw new PlatformNotSupportedException("此功能在 macOS 上尚未实现");
+    }
+
+    public void SetSize(int width, int height)
+    {
+        throw new PlatformNotSupportedException("此功能在 macOS 上尚未实现");
+    }
+
+    public void SetPosition(int x, int y)
+    {
+        throw new PlatformNotSupportedException("此功能在 macOS 上尚未实现");
+    }
+
+    public void Minimize()
+    {
+        throw new PlatformNotSupportedException("此功能在 macOS 上尚未实现");
+    }
+
+    public void Maximize()
+    {
+        throw new PlatformNotSupportedException("此功能在 macOS 上尚未实现");
+    }
+
+    public void Restore()
+    {
+        throw new PlatformNotSupportedException("此功能在 macOS 上尚未实现");
+    }
+
+    public void SetTopmost(bool topmost)
+    {
+        throw new PlatformNotSupportedException("此功能在 macOS 上尚未实现");
+    }
+
+    public double GetSystemDpi()
+    {
+        throw new PlatformNotSupportedException("此功能在 macOS 上尚未实现");
+    }
+#endif
 }

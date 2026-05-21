@@ -1,33 +1,32 @@
-using PCL_CE.Neo.Core.Abstractions;
-
 namespace PCL_CE.Neo.Platform.macOS;
 
-public class MacOSNotificationService : INotificationService
+public class MacOSNotificationService : Core.Abstractions.INotificationService
 {
-    public List<NotificationInfo> Notifications { get; private set; } = new List<NotificationInfo>();
+#if MACCATALYST
+    public List<Core.Abstractions.NotificationInfo> Notifications { get; private set; } = new List<Core.Abstractions.NotificationInfo>();
 
-    public void ShowNotification(NotificationInfo notification)
+    public void ShowNotification(Core.Abstractions.NotificationInfo notification)
     {
         Notifications.Add(notification);
     }
 
     public void ShowUpdateNotification(string version, string notes)
     {
-        Notifications.Add(new NotificationInfo
+        Notifications.Add(new Core.Abstractions.NotificationInfo
         {
             Title = $"Update {version}",
             Message = notes,
-            Type = NotificationType.Info
+            Type = Core.Abstractions.NotificationType.Info
         });
     }
 
     public void ShowDownloadCompleteNotification(string fileName)
     {
-        Notifications.Add(new NotificationInfo
+        Notifications.Add(new Core.Abstractions.NotificationInfo
         {
             Title = "Download Complete",
             Message = $"File '{fileName}' downloaded successfully",
-            Type = NotificationType.Success
+            Type = Core.Abstractions.NotificationType.Success
         });
     }
 
@@ -35,4 +34,25 @@ public class MacOSNotificationService : INotificationService
     {
         Notifications.Clear();
     }
+#else
+    public void ShowNotification(Core.Abstractions.NotificationInfo notification)
+    {
+        throw new PlatformNotSupportedException("此功能在 macOS 上尚未实现");
+    }
+
+    public void ShowUpdateNotification(string version, string notes)
+    {
+        throw new PlatformNotSupportedException("此功能在 macOS 上尚未实现");
+    }
+
+    public void ShowDownloadCompleteNotification(string fileName)
+    {
+        throw new PlatformNotSupportedException("此功能在 macOS 上尚未实现");
+    }
+
+    public void ClearAllNotifications()
+    {
+        throw new PlatformNotSupportedException("此功能在 macOS 上尚未实现");
+    }
+#endif
 }

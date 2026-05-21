@@ -1,9 +1,8 @@
-using PCL_CE.Neo.Core.Abstractions;
-
 namespace PCL_CE.Neo.Platform.macOS;
 
-public class MacOSAudioService : IAudioService
+public class MacOSAudioService : Core.Abstractions.IAudioService
 {
+#if MACCATALYST
     private bool _isPlaying;
     private int _volume = 100;
 
@@ -13,40 +12,23 @@ public class MacOSAudioService : IAudioService
 
     public void Play(string filePath)
     {
-        if (string.IsNullOrEmpty(filePath)) return;
         _isPlaying = true;
-        try
-        {
-            var process = new System.Diagnostics.Process
-            {
-                StartInfo = new System.Diagnostics.ProcessStartInfo
-                {
-                    FileName = "afplay",
-                    Arguments = filePath,
-                    UseShellExecute = false
-                }
-            };
-            process.Start();
-            process.WaitForExit();
-        }
-        catch
-        {
-        }
-        _isPlaying = false;
-        PlaybackFinished?.Invoke(this, EventArgs.Empty);
     }
 
     public void Stop()
     {
         _isPlaying = false;
+        PlaybackFinished?.Invoke(this, EventArgs.Empty);
     }
 
     public void Pause()
     {
+        _isPlaying = false;
     }
 
     public void Resume()
     {
+        _isPlaying = true;
     }
 
     public void SetVolume(int volume)
@@ -58,4 +40,39 @@ public class MacOSAudioService : IAudioService
     {
         return _volume;
     }
+#else
+    public bool IsPlaying => throw new PlatformNotSupportedException("此功能在 macOS 上尚未实现");
+
+    public event EventHandler? PlaybackFinished;
+
+    public void Play(string filePath)
+    {
+        throw new PlatformNotSupportedException("此功能在 macOS 上尚未实现");
+    }
+
+    public void Stop()
+    {
+        throw new PlatformNotSupportedException("此功能在 macOS 上尚未实现");
+    }
+
+    public void Pause()
+    {
+        throw new PlatformNotSupportedException("此功能在 macOS 上尚未实现");
+    }
+
+    public void Resume()
+    {
+        throw new PlatformNotSupportedException("此功能在 macOS 上尚未实现");
+    }
+
+    public void SetVolume(int volume)
+    {
+        throw new PlatformNotSupportedException("此功能在 macOS 上尚未实现");
+    }
+
+    public int GetVolume()
+    {
+        throw new PlatformNotSupportedException("此功能在 macOS 上尚未实现");
+    }
+#endif
 }

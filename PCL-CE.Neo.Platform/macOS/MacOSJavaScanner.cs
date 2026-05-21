@@ -1,9 +1,12 @@
+using System.Diagnostics;
+using System.Runtime.InteropServices;
 using PCL_CE.Neo.Core.Abstractions;
 
 namespace PCL_CE.Neo.Platform.macOS;
 
 public class MacOSJavaScanner : IJavaScanner
 {
+#if MACCATALYST
     private static readonly string[] CommonJavaPaths =
     [
         "/Library/Java/JavaVirtualMachines",
@@ -68,9 +71,9 @@ public class MacOSJavaScanner : IJavaScanner
     {
         try
         {
-            var process = new System.Diagnostics.Process
+            var process = new Process
             {
-                StartInfo = new System.Diagnostics.ProcessStartInfo
+                StartInfo = new ProcessStartInfo
                 {
                     FileName = "/usr/libexec/java_home",
                     Arguments = "-v 1.8+",
@@ -95,4 +98,20 @@ public class MacOSJavaScanner : IJavaScanner
         {
         }
     }
+#else
+    public IEnumerable<string> ScanJavaPaths()
+    {
+        throw new PlatformNotSupportedException("此功能在 macOS 上尚未实现");
+    }
+
+    public IEnumerable<string> ScanDirectory(string directory)
+    {
+        throw new PlatformNotSupportedException("此功能在 macOS 上尚未实现");
+    }
+
+    public bool IsValidJavaPath(string path)
+    {
+        throw new PlatformNotSupportedException("此功能在 macOS 上尚未实现");
+    }
+#endif
 }

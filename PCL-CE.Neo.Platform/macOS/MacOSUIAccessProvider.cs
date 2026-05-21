@@ -1,9 +1,8 @@
-using PCL_CE.Neo.Core.Abstractions;
-
 namespace PCL_CE.Neo.Platform.macOS;
 
-public class MacOSUIAccessProvider : IUIAccessProvider
+public class MacOSUIAccessProvider : Core.Abstractions.IUIAccessProvider
 {
+#if MACCATALYST
     public double ScreenDpi { get; set; } = 144;
     public (int Width, int Height) ScreenSize { get; set; } = (2560, 1600);
     public List<Action> PendingActions { get; private set; } = new List<Action>();
@@ -43,4 +42,30 @@ public class MacOSUIAccessProvider : IUIAccessProvider
         }
         PendingActions.Clear();
     }
+#else
+    public double GetScreenDpi()
+    {
+        throw new PlatformNotSupportedException("此功能在 macOS 上尚未实现");
+    }
+
+    public (int Width, int Height) GetScreenSize()
+    {
+        throw new PlatformNotSupportedException("此功能在 macOS 上尚未实现");
+    }
+
+    public void Invoke(Action action)
+    {
+        throw new PlatformNotSupportedException("此功能在 macOS 上尚未实现");
+    }
+
+    public Task InvokeAsync(Action action)
+    {
+        throw new PlatformNotSupportedException("此功能在 macOS 上尚未实现");
+    }
+
+    public bool CheckAccess()
+    {
+        throw new PlatformNotSupportedException("此功能在 macOS 上尚未实现");
+    }
+#endif
 }
