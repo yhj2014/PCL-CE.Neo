@@ -1,59 +1,38 @@
+using PCL_CE.Neo.Core.Abstractions;
+
 namespace PCL_CE.Neo.Platform.Linux;
 
 public class LinuxNotificationService : INotificationService
 {
+    public List<NotificationInfo> Notifications { get; private set; } = new List<NotificationInfo>();
+
     public void ShowNotification(NotificationInfo notification)
     {
-        try
-        {
-            var urgency = notification.Type switch
-            {
-                NotificationType.Info => "low",
-                NotificationType.Success => "normal",
-                NotificationType.Warning => "critical",
-                NotificationType.Error => "critical",
-                _ => "normal"
-            };
-
-            var process = new System.Diagnostics.Process
-            {
-                StartInfo = new System.Diagnostics.ProcessStartInfo
-                {
-                    FileName = "notify-send",
-                    Arguments = $"--urgency={urgency} \"{notification.Title}\" \"{notification.Message}\"",
-                    UseShellExecute = false
-                }
-            };
-            process.Start();
-        }
-        catch
-        {
-            // Fallback - no notification
-        }
+        Notifications.Add(notification);
     }
 
-    public void ShowUpdateNotification(string version, string releaseNotes)
+    public void ShowUpdateNotification(string version, string notes)
     {
-        ShowNotification(new NotificationInfo
+        Notifications.Add(new NotificationInfo
         {
-            Title = "PCL 更新通知",
-            Message = $"新版本 {version} 已可用！\n\n{releaseNotes}",
+            Title = "PCL Update",
+            Message = $"New version {version} is available!\n\n{notes}",
             Type = NotificationType.Info
         });
     }
 
     public void ShowDownloadCompleteNotification(string fileName)
     {
-        ShowNotification(new NotificationInfo
+        Notifications.Add(new NotificationInfo
         {
-            Title = "下载完成",
-            Message = $"下载完成：{fileName}",
+            Title = "Download Complete",
+            Message = $"File '{fileName}' downloaded successfully",
             Type = NotificationType.Success
         });
     }
 
     public void ClearAllNotifications()
     {
-        // notify-send doesn't support clearing notifications
+        Notifications.Clear();
     }
 }

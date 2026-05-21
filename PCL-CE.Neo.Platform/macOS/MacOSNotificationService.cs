@@ -4,29 +4,35 @@ namespace PCL_CE.Neo.Platform.macOS;
 
 public class MacOSNotificationService : INotificationService
 {
-    public void ShowNotification(string title, string message, NotificationType type = NotificationType.Info)
+    public List<NotificationInfo> Notifications { get; private set; } = new List<NotificationInfo>();
+
+    public void ShowNotification(NotificationInfo notification)
     {
-        try
-        {
-            var script = $"-e 'display notification \"{message.Replace("\"", "\\\"")}\" with title \"{title.Replace("\"", "\\\"")}\"'";
-            var process = new System.Diagnostics.Process
-            {
-                StartInfo = new System.Diagnostics.ProcessStartInfo
-                {
-                    FileName = "osascript",
-                    Arguments = script,
-                    UseShellExecute = false
-                }
-            };
-            process.Start();
-        }
-        catch
-        {
-        }
+        Notifications.Add(notification);
     }
 
-    public void ShowToast(string title, string message, int durationMs = 3000)
+    public void ShowUpdateNotification(string version, string notes)
     {
-        ShowNotification(title, message);
+        Notifications.Add(new NotificationInfo
+        {
+            Title = $"Update {version}",
+            Message = notes,
+            Type = NotificationType.Info
+        });
+    }
+
+    public void ShowDownloadCompleteNotification(string fileName)
+    {
+        Notifications.Add(new NotificationInfo
+        {
+            Title = "Download Complete",
+            Message = $"File '{fileName}' downloaded successfully",
+            Type = NotificationType.Success
+        });
+    }
+
+    public void ClearAllNotifications()
+    {
+        Notifications.Clear();
     }
 }

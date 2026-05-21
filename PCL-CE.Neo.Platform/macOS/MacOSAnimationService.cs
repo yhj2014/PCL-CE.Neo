@@ -1,10 +1,7 @@
 using PCL_CE.Neo.Core.Abstractions;
 
-namespace PCL_CE.Neo.Platform.MacOS;
+namespace PCL_CE.Neo.Platform.macOS;
 
-/// <summary>
-/// macOS 平台动画服务实现
-/// </summary>
 public class MacOSAnimationService : IAnimationService
 {
     private readonly List<object> _animatingElements = [];
@@ -16,7 +13,6 @@ public class MacOSAnimationService : IAnimationService
             _animatingElements.Add(element);
         }
 
-        // macOS 可以使用 Core Animation 或 Uno Platform 的动画系统
         await Task.Delay(description.Duration);
 
         _animatingElements.Remove(element);

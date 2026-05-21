@@ -1,10 +1,26 @@
+using PCL_CE.Neo.Core.Abstractions;
+
 namespace PCL_CE.Neo.Platform.Linux;
 
 public class LinuxUIAccessProvider : IUIAccessProvider
 {
+    public double ScreenDpi { get; set; } = 96;
+    public (int Width, int Height) ScreenSize { get; set; } = (1920, 1080);
+    public List<Action> PendingActions { get; private set; } = new List<Action>();
+
+    public double GetScreenDpi()
+    {
+        return ScreenDpi;
+    }
+
+    public (int Width, int Height) GetScreenSize()
+    {
+        return ScreenSize;
+    }
+
     public void Invoke(Action action)
     {
-        // No UI thread marshalling needed for basic implementation
+        PendingActions.Add(action);
         action();
     }
 
@@ -19,73 +35,12 @@ public class LinuxUIAccessProvider : IUIAccessProvider
         return true;
     }
 
-    public double GetScreenDpi()
+    public void ExecuteAllPendingActions()
     {
-        try
+        foreach (var action in PendingActions)
         {
-            var process = new System.Diagnostics.Process
-            {
-                StartInfo = new System.Diagnostics.ProcessStartInfo
-                {
-                    FileName = "xrdb",
-                    Arguments = "-query",
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true
-                }
-            };
-            process.Start();
-            var output = process.StandardOutput.ReadToEnd();
-            process.WaitForExit();
-
-            foreach (var line in output.Split('\n'))
-            {
-                if (line.StartsWith("Xft.dpi:"))
-                {
-                    var parts = line.Split(':', StringSplitOptions.RemoveEmptyEntries);
-                    if (parts.Length > 1 && double.TryParse(parts[1].Trim(), out var dpi))
-                    {
-                        return dpi;
-                    }
-                }
-            }
+            action();
         }
-        catch
-        {
-            // Fallback
-        }
-
-        return 96.0;
-    }
-
-    public (int Width, int Height) GetScreenSize()
-    {
-        try
-        {
-            var process = new System.Diagnostics.Process
-            {
-                StartInfo = new System.Diagnostics.ProcessStartInfo
-                {
-                    FileName = "xdotool",
-                    Arguments = "getdisplaygeometry",
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true
-                }
-            };
-            process.Start();
-            var output = process.StandardOutput.ReadToEnd().Trim();
-            process.WaitForExit();
-
-            var parts = output.Split(' ');
-            if (parts.Length >= 2 && int.TryParse(parts[0], out var width) && int.TryParse(parts[1], out var height))
-            {
-                return (width, height);
-            }
-        }
-        catch
-        {
-            // Fallback
-        }
-
-        return (1920, 1080);
+        PendingActions.Clear();
     }
 }

@@ -1,7 +1,7 @@
 using PCL_CE.Neo.Core.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace PCL_CE.Neo.Platform.MacOS;
+namespace PCL_CE.Neo.Platform.macOS;
 
 public static class ServiceCollectionExtensions
 {
