@@ -1,45 +1,65 @@
-using System.Diagnostics;
 using System.Runtime.InteropServices;
-using PCL_CE.Neo.Core.Abstractions;
 
 namespace PCL_CE.Neo.Platform.Windows;
 
-public class WindowsPlatformService : IPlatformService
+public class WindowsPlatformService : Core.Abstractions.IPlatformService
 {
-    public string PlatformName => "Windows";
-    public string OSVersion => GetWindowsVersion();
-    public string Architecture => RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant();
+    public string PlatformName
+    {
+        get
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                return "Windows";
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                return "macOS";
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                return "Linux";
+            return "Unknown";
+        }
+    }
+
+    public string OSVersion => RuntimeInformation.OSDescription;
+
+    public string Architecture => RuntimeInformation.OSArchitecture.ToString();
 
     public void OpenUrl(string url)
     {
-        try
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            Process.Start(new ProcessStartInfo
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
             {
                 FileName = url,
                 UseShellExecute = true
             });
         }
-        catch (Exception ex)
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
-            Debug.WriteLine($"Failed to open URL: {ex.Message}");
+            System.Diagnostics.Process.Start("open", url);
+        }
+        else
+        {
+            System.Diagnostics.Process.Start("xdg-open", url);
         }
     }
 
     public void OpenFolder(string path)
     {
-        try
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            Process.Start(new ProcessStartInfo
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
             {
                 FileName = "explorer.exe",
-                Arguments = $"\"{path}\"",
+                Arguments = path,
                 UseShellExecute = true
             });
         }
-        catch (Exception ex)
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
-            Debug.WriteLine($"Failed to open folder: {ex.Message}");
+            System.Diagnostics.Process.Start("open", path);
+        }
+        else
+        {
+            System.Diagnostics.Process.Start("xdg-open", path);
         }
     }
 
@@ -55,49 +75,7 @@ public class WindowsPlatformService : IPlatformService
 
     public string GetGameDataPath()
     {
-        return Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            ".minecraft"
-        );
-    }
-
-    private string GetWindowsVersion()
-    {
-        try
-        {
-            // 尝试获取更详细的 Windows 版本信息
-            var osVersion = Environment.OSVersion;
-            var version = $"{osVersion.Platform} {osVersion.Version}";
-
-            // 尝试获取 Windows 10/11 友好名称
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                try
-                {
-                    using var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(
-                        @"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
-                    if (key != null)
-                    {
-                        var productName = key.GetValue("ProductName")?.ToString();
-                        var releaseId = key.GetValue("ReleaseId")?.ToString();
-                        if (!string.IsNullOrEmpty(productName))
-                        {
-                            return !string.IsNullOrEmpty(releaseId)
-                                ? $"{productName} {releaseId}"
-                                : productName;
-                        }
-                    }
-                }
-                catch
-                {
-                    // 忽略注册表访问错误
-                }
-            }
-            return version;
-        }
-        catch
-        {
-            return Environment.OSVersion.VersionString;
-        }
+        var basePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        return Path.Combine(basePath, "PCL-CE.Neo", "GameData");
     }
 }

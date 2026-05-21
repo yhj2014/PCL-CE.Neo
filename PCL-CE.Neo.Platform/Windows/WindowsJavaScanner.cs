@@ -1,177 +1,124 @@
-using Microsoft.Win32;
-using PCL_CE.Neo.Core.Abstractions;
-using System.IO;
+using System.Runtime.InteropServices;
 
 namespace PCL_CE.Neo.Platform.Windows;
 
-public class WindowsJavaScanner : IJavaScanner
+public class WindowsJavaScanner : Core.Abstractions.IJavaScanner
 {
-    private static readonly string[] RegistryPaths =
-    [
-        @"SOFTWARE\JavaSoft\Java Development Kit",
-        @"SOFTWARE\JavaSoft\Java Runtime Environment",
-        @"SOFTWARE\WOW6432Node\JavaSoft\Java Development Kit",
-        @"SOFTWARE\WOW6432Node\JavaSoft\Java Runtime Environment"
-    ];
+    private static readonly string[] WindowsJavaPaths = new[]
+    {
+        @"C:\Program Files\Java",
+        @"C:\Program Files (x86)\Java",
+        @"C:\Program Files\Eclipse Adoptium",
+        @"C:\Program Files\Amazon Corretto",
+    };
 
-    private static readonly string[] BrandRegistryPaths =
-    [
-        @"SOFTWARE\Azul Systems\Zulu",
-        @"SOFTWARE\BellSoft\Liberica"
-    ];
+    private static readonly string[] UnixJavaPaths = new[]
+    {
+        "/usr/lib/jvm",
+        "/usr/java",
+        "/Library/Java/JavaVirtualMachines",
+        "/opt/java",
+        "/opt/jdk",
+    };
 
     public IEnumerable<string> ScanJavaPaths()
     {
-        var results = new List<string>();
-        try
+        var javaPaths = new List<string>();
+        var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+
+        var paths = isWindows ? WindowsJavaPaths : UnixJavaPaths;
+        foreach (var basePath in paths)
         {
-            ScanJavaSoftRegistry(results);
-            ScanBrandRegistry(results);
-            // 也扫描常见的 Java 安装目录
-            ScanCommonDirectories(results);
+            if (Directory.Exists(basePath))
+            {
+                javaPaths.AddRange(ScanDirectory(basePath));
+            }
         }
-        catch (Exception ex)
+
+        var jdkPath = Environment.GetEnvironmentVariable("JAVA_HOME");
+        if (!string.IsNullOrEmpty(jdkPath) && Directory.Exists(jdkPath))
         {
-            System.Diagnostics.Debug.WriteLine($"Java 注册表扫描失败: {ex.Message}");
+            javaPaths.Add(jdkPath);
         }
-        return results;
+
+        var userHome = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        if (!string.IsNullOrEmpty(userHome))
+        {
+            var userJdks = Path.Combine(userHome, ".jdks");
+            if (Directory.Exists(userJdks))
+            {
+                javaPaths.AddRange(ScanDirectory(userJdks));
+            }
+
+            var sdkMan = Path.Combine(userHome, ".sdkman", "candidates", "java");
+            if (Directory.Exists(sdkMan))
+            {
+                javaPaths.AddRange(ScanDirectory(sdkMan));
+            }
+        }
+
+        return javaPaths.Where(IsValidJavaPath).Distinct();
     }
 
     public IEnumerable<string> ScanDirectory(string directory)
     {
-        var results = new List<string>();
-        if (!Directory.Exists(directory)) return results;
+        var paths = new List<string>();
 
         try
         {
-            var javaExePath = Path.Combine(directory, "bin", "java.exe");
-            if (File.Exists(javaExePath))
+            if (!Directory.Exists(directory))
+                return paths;
+
+            var javaExeName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "java.exe" : "java";
+
+            foreach (var dir in Directory.GetDirectories(directory))
             {
-                results.Add(javaExePath);
+                var javaExe = Path.Combine(dir, "bin", javaExeName);
+                if (File.Exists(javaExe))
+                {
+                    paths.Add(dir);
+                }
             }
         }
-        catch (Exception ex)
+        catch
         {
-            System.Diagnostics.Debug.WriteLine($"Java 目录扫描失败 ({directory}): {ex.Message}");
         }
-        return results;
+
+        return paths;
     }
 
     public bool IsValidJavaPath(string path)
     {
-        if (string.IsNullOrEmpty(path)) return false;
-        if (!File.Exists(path)) return false;
-        return Path.GetFileName(path).Equals("java.exe", StringComparison.OrdinalIgnoreCase);
-    }
+        if (string.IsNullOrEmpty(path))
+            return false;
 
-    private void ScanJavaSoftRegistry(List<string> results)
-    {
-        foreach (var regPath in RegistryPaths)
+        try
         {
-            try
-            {
-                using var regKey = Registry.LocalMachine.OpenSubKey(regPath);
-                if (regKey == null) continue;
+            var javaExeName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "java.exe" : "java";
+            var javaExe = Path.Combine(path, "bin", javaExeName);
+            if (!File.Exists(javaExe))
+                return false;
 
-                foreach (var subKeyName in regKey.GetSubKeyNames())
+            var process = new System.Diagnostics.Process
+            {
+                StartInfo = new System.Diagnostics.ProcessStartInfo
                 {
-                    try
-                    {
-                        using var subKey = regKey.OpenSubKey(subKeyName);
-                        var javaHome = subKey?.GetValue("JavaHome") as string;
-                        if (string.IsNullOrEmpty(javaHome) ||
-                            Path.GetInvalidPathChars().Any(c => javaHome.Contains(c))) continue;
-
-                        var javaExePath = Path.Combine(javaHome, "bin", "java.exe");
-                        if (File.Exists(javaExePath) && !results.Contains(javaExePath))
-                        {
-                            results.Add(javaExePath);
-                        }
-                    }
-                    catch
-                    {
-                        // 忽略单个子键的错误
-                    }
+                    FileName = javaExe,
+                    Arguments = "-version",
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true
                 }
-            }
-            catch
-            {
-                // 忽略单个注册表路径的错误
-            }
+            };
+
+            process.Start();
+            process.WaitForExit(5000);
+            return process.ExitCode == 0;
         }
-    }
-
-    private void ScanBrandRegistry(List<string> results)
-    {
-        foreach (var keyPath in BrandRegistryPaths)
+        catch
         {
-            try
-            {
-                using var brandKey = Registry.LocalMachine.OpenSubKey(keyPath);
-                if (brandKey == null) continue;
-
-                foreach (var subKeyName in brandKey.GetSubKeyNames())
-                {
-                    try
-                    {
-                        using var subKey = brandKey.OpenSubKey(subKeyName);
-                        var installPath = subKey?.GetValue("InstallationPath") as string;
-                        if (string.IsNullOrEmpty(installPath) ||
-                            Path.GetInvalidPathChars().Any(c => installPath.Contains(c))) continue;
-
-                        var javaExePath = Path.Combine(installPath, "bin", "java.exe");
-                        if (File.Exists(javaExePath) && !results.Contains(javaExePath))
-                        {
-                            results.Add(javaExePath);
-                        }
-                    }
-                    catch
-                    {
-                        // 忽略单个子键的错误
-                    }
-                }
-            }
-            catch
-            {
-                // 忽略单个注册表路径的错误
-            }
-        }
-    }
-
-    private void ScanCommonDirectories(List<string> results)
-    {
-        // 常见的 Java 安装目录
-        var commonDirectories = new[]
-        {
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Java"),
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Java"),
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "Java"),
-            "C:\\Program Files\\Eclipse Adoptium",
-            "C:\\Program Files\\Microsoft",
-            "C:\\Program Files\\Zulu"
-        };
-
-        foreach (var directory in commonDirectories)
-        {
-            if (Directory.Exists(directory))
-            {
-                try
-                {
-                    // 查找子目录
-                    foreach (var subDir in Directory.GetDirectories(directory))
-                    {
-                        var javaExePath = Path.Combine(subDir, "bin", "java.exe");
-                        if (File.Exists(javaExePath) && !results.Contains(javaExePath))
-                        {
-                            results.Add(javaExePath);
-                        }
-                    }
-                }
-                catch
-                {
-                    // 忽略单个目录的错误
-                }
-            }
+            return false;
         }
     }
 }

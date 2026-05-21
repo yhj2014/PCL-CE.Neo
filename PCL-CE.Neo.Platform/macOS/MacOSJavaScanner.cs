@@ -1,54 +1,82 @@
-using System.Diagnostics;
 using System.Runtime.InteropServices;
-using PCL_CE.Neo.Core.Abstractions;
 
 namespace PCL_CE.Neo.Platform.macOS;
 
-public class MacOSJavaScanner : IJavaScanner
+public class MacOSJavaScanner : Core.Abstractions.IJavaScanner
 {
-#if MACCATALYST
-    private static readonly string[] CommonJavaPaths =
-    [
+    private static readonly string[] WindowsJavaPaths = new[]
+    {
+        @"C:\Program Files\Java",
+        @"C:\Program Files (x86)\Java",
+        @"C:\Program Files\Eclipse Adoptium",
+        @"C:\Program Files\Amazon Corretto",
+    };
+
+    private static readonly string[] UnixJavaPaths = new[]
+    {
+        "/usr/lib/jvm",
+        "/usr/java",
         "/Library/Java/JavaVirtualMachines",
-        "/Library/Java/JavaVirtualMachines/jdk",
-        "/Library/Java/JavaVirtualMachines/openjdk",
-        "/System/Library/Java/JavaVirtualMachines",
-        "/usr/libexec/java_home"
-    ];
+        "/opt/java",
+        "/opt/jdk",
+    };
 
     public IEnumerable<string> ScanJavaPaths()
     {
-        var results = new List<string>();
+        var javaPaths = new List<string>();
+        var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
-        foreach (var path in CommonJavaPaths)
+        var paths = isWindows ? WindowsJavaPaths : UnixJavaPaths;
+        foreach (var basePath in paths)
         {
-            results.AddRange(ScanDirectory(path));
+            if (Directory.Exists(basePath))
+            {
+                javaPaths.AddRange(ScanDirectory(basePath));
+            }
         }
 
-        TryScanJavaHome(results);
+        var jdkPath = Environment.GetEnvironmentVariable("JAVA_HOME");
+        if (!string.IsNullOrEmpty(jdkPath) && Directory.Exists(jdkPath))
+        {
+            javaPaths.Add(jdkPath);
+        }
 
-        return results.Distinct();
+        var userHome = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        if (!string.IsNullOrEmpty(userHome))
+        {
+            var userJdks = Path.Combine(userHome, ".jdks");
+            if (Directory.Exists(userJdks))
+            {
+                javaPaths.AddRange(ScanDirectory(userJdks));
+            }
+
+            var sdkMan = Path.Combine(userHome, ".sdkman", "candidates", "java");
+            if (Directory.Exists(sdkMan))
+            {
+                javaPaths.AddRange(ScanDirectory(sdkMan));
+            }
+        }
+
+        return javaPaths.Where(IsValidJavaPath).Distinct();
     }
 
     public IEnumerable<string> ScanDirectory(string directory)
     {
-        var results = new List<string>();
-        if (!Directory.Exists(directory)) return results;
+        var paths = new List<string>();
 
         try
         {
+            if (!Directory.Exists(directory))
+                return paths;
+
+            var javaExeName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "java.exe" : "java";
+
             foreach (var dir in Directory.GetDirectories(directory))
             {
-                var javaExePath = Path.Combine(dir, "Contents", "Home", "bin", "java");
-                if (File.Exists(javaExePath))
+                var javaExe = Path.Combine(dir, "bin", javaExeName);
+                if (File.Exists(javaExe))
                 {
-                    results.Add(javaExePath);
-                }
-
-                var javaHomeBinPath = Path.Combine(dir, "bin", "java");
-                if (File.Exists(javaHomeBinPath))
-                {
-                    results.Add(javaHomeBinPath);
+                    paths.Add(dir);
                 }
             }
         }
@@ -56,62 +84,41 @@ public class MacOSJavaScanner : IJavaScanner
         {
         }
 
-        return results;
+        return paths;
     }
 
     public bool IsValidJavaPath(string path)
     {
-        if (string.IsNullOrEmpty(path)) return false;
-        if (!File.Exists(path)) return false;
-        return Path.GetFileName(path).Equals("java", StringComparison.OrdinalIgnoreCase) ||
-               Path.GetFileName(path).Equals("java.exe", StringComparison.OrdinalIgnoreCase);
-    }
+        if (string.IsNullOrEmpty(path))
+            return false;
 
-    private void TryScanJavaHome(List<string> results)
-    {
         try
         {
-            var process = new Process
+            var javaExeName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "java.exe" : "java";
+            var javaExe = Path.Combine(path, "bin", javaExeName);
+            if (!File.Exists(javaExe))
+                return false;
+
+            var process = new System.Diagnostics.Process
             {
-                StartInfo = new ProcessStartInfo
+                StartInfo = new System.Diagnostics.ProcessStartInfo
                 {
-                    FileName = "/usr/libexec/java_home",
-                    Arguments = "-v 1.8+",
+                    FileName = javaExe,
+                    Arguments = "-version",
+                    UseShellExecute = false,
                     RedirectStandardOutput = true,
-                    UseShellExecute = false
+                    RedirectStandardError = true,
+                    CreateNoWindow = true
                 }
             };
-            process.Start();
-            var javaHome = process.StandardOutput.ReadToEnd().Trim();
-            process.WaitForExit();
 
-            if (!string.IsNullOrEmpty(javaHome) && Directory.Exists(javaHome))
-            {
-                var javaPath = Path.Combine(javaHome, "bin", "java");
-                if (File.Exists(javaPath))
-                {
-                    results.Add(javaPath);
-                }
-            }
+            process.Start();
+            process.WaitForExit(5000);
+            return process.ExitCode == 0;
         }
         catch
         {
+            return false;
         }
     }
-#else
-    public IEnumerable<string> ScanJavaPaths()
-    {
-        throw new PlatformNotSupportedException("此功能在 macOS 上尚未实现");
-    }
-
-    public IEnumerable<string> ScanDirectory(string directory)
-    {
-        throw new PlatformNotSupportedException("此功能在 macOS 上尚未实现");
-    }
-
-    public bool IsValidJavaPath(string path)
-    {
-        throw new PlatformNotSupportedException("此功能在 macOS 上尚未实现");
-    }
-#endif
 }

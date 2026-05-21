@@ -1,39 +1,71 @@
-using System.Diagnostics;
 using System.Runtime.InteropServices;
-using PCL_CE.Neo.Core.Abstractions;
 
 namespace PCL_CE.Neo.Platform.Linux;
 
-public class LinuxPlatformService : IPlatformService
+public class LinuxPlatformService : Core.Abstractions.IPlatformService
 {
-    public string PlatformName => "Linux";
-    public string OSVersion => Environment.OSVersion.VersionString;
-    public string Architecture => RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant();
+    public string PlatformName
+    {
+        get
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                return "Windows";
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                return "macOS";
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                return "Linux";
+            return "Unknown";
+        }
+    }
+
+    public string OSVersion => RuntimeInformation.OSDescription;
+
+    public string Architecture => RuntimeInformation.OSArchitecture.ToString();
 
     public void OpenUrl(string url)
     {
-        Process.Start(new ProcessStartInfo
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            FileName = "xdg-open",
-            Arguments = url,
-            UseShellExecute = false
-        });
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = url,
+                UseShellExecute = true
+            });
+        }
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+            System.Diagnostics.Process.Start("open", url);
+        }
+        else
+        {
+            System.Diagnostics.Process.Start("xdg-open", url);
+        }
     }
 
     public void OpenFolder(string path)
     {
-        Process.Start(new ProcessStartInfo
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            FileName = "xdg-open",
-            Arguments = path,
-            UseShellExecute = false
-        });
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = "explorer.exe",
+                Arguments = path,
+                UseShellExecute = true
+            });
+        }
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+            System.Diagnostics.Process.Start("open", path);
+        }
+        else
+        {
+            System.Diagnostics.Process.Start("xdg-open", path);
+        }
     }
 
     public string GetLocalApplicationDataPath()
     {
-        var home = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        return Path.Combine(home, ".local", "share", "PCL");
+        return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
     }
 
     public string GetTempPath()
@@ -43,9 +75,7 @@ public class LinuxPlatformService : IPlatformService
 
     public string GetGameDataPath()
     {
-        return Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            ".minecraft"
-        );
+        var basePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        return Path.Combine(basePath, "PCL-CE.Neo", "GameData");
     }
 }
