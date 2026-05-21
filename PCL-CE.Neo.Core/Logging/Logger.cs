@@ -96,7 +96,24 @@ public sealed class Logger : IAsyncDisposable
         if (!_logChannel.Writer.TryWrite(message))
         {
             Interlocked.Increment(ref _droppedCount);
-            Console.WriteLine($"Log dropped error: {message}");
+            WriteToErrorLog($"Log dropped: {message}");
+        }
+    }
+
+    private static void WriteToErrorLog(string message)
+    {
+        try
+        {
+            var errorLogPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "PCL-CE.Neo",
+                "Error.log");
+            Directory.CreateDirectory(Path.GetDirectoryName(errorLogPath)!);
+            File.AppendAllText(errorLogPath, $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {message}\n");
+        }
+        catch
+        {
+            Debug.WriteLine(message);
         }
     }
 
@@ -115,8 +132,7 @@ public sealed class Logger : IAsyncDisposable
                 if (_logChannel.Reader.TryRead(out var message))
                 {
 #if DEBUG
-                    Console.WriteLine(message);
-                    System.Diagnostics.Debug.WriteLine(message);
+                    Debug.WriteLine(message);
 #endif
                     batch.AppendLine(message);
                     lineCount++;
@@ -147,7 +163,7 @@ public sealed class Logger : IAsyncDisposable
         }
         catch (Exception e)
         {
-            Console.WriteLine($"[{_GetTimeFormatted()}] [ERROR] An error occured while processing log queue: {e.Message}");
+            WriteToErrorLog($"[ERROR] An error occured while processing log queue: {e.Message}");
             throw;
         }
     }
@@ -165,16 +181,7 @@ public sealed class Logger : IAsyncDisposable
         }
         catch (Exception e)
         {
-            Console.WriteLine($"[{_GetTimeFormatted()}] [ERROR] An error occured while writing log file: {e.Message}");
-            try
-            {
-                await File.AppendAllTextAsync(Path.Combine(Configuration.StoreFolder, "Error.log"), 
-                    $"[{_GetTimeFormatted()}] LogCycle Error: {e}\n");
-            }
-            catch
-            {
-                // Ignore
-            }
+            WriteToErrorLog($"[ERROR] An error occured while writing log file: {e.Message}");
             throw;
         }
     }

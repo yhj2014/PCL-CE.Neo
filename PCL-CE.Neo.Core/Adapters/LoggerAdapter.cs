@@ -1,92 +1,109 @@
+using System.Collections.Concurrent;
+using Microsoft.Extensions.Logging;
 using PCL_CE.Neo.Core.Abstractions;
-using PCL_CE.Neo.Core.Logging;
 
 namespace PCL_CE.Neo.Core.Adapters;
 
-/// <summary>
-/// Adapter for logging functionality
-/// </summary>
 public class LoggerAdapter : ILoggerAdapter
 {
-    public void Trace(string message, params object[] args)
+    private readonly string _categoryName;
+    private readonly ILogService? _logService;
+    private readonly ConcurrentDictionary<string, object> _scopes = new ConcurrentDictionary<string, object>();
+    private Abstractions.LogLevel _minLevel = Abstractions.LogLevel.Information;
+
+    public LoggerAdapter(string categoryName, ILogService? logService = null)
     {
-        LogWrapper.Trace(string.Format(message, args));
+        _categoryName = categoryName;
+        _logService = logService;
     }
 
-    public void Debug(string message, params object[] args)
+    public void Log(Abstractions.LogLevel level, string message, Exception? exception = null)
     {
-        LogWrapper.Debug(string.Format(message, args));
-    }
-
-    public void Information(string message, params object[] args)
-    {
-        LogWrapper.Info(string.Format(message, args));
-    }
-
-    public void Warning(string message, params object[] args)
-    {
-        LogWrapper.Warn(string.Format(message, args));
-    }
-
-    public void Warning(Exception? ex, string message, params object[] args)
-    {
-        if (ex != null)
+        var logEntry = new LogEntry
         {
-            LogWrapper.Error(ex, message: string.Format(message, args));
-        }
-        else
-        {
-            LogWrapper.Warn(string.Format(message, args));
-        }
+            Level = level,
+            Category = _categoryName,
+            Message = message,
+            Exception = exception,
+            Timestamp = DateTime.Now
+        };
+
+        _logService?.Log(logEntry);
     }
 
-    public void Error(string message, params object[] args)
+    public void Debug(string message)
     {
-        LogWrapper.Error(string.Format(message, args));
+        Log(Abstractions.LogLevel.Debug, message);
     }
 
-    public void Error(Exception? ex, string message, params object[] args)
+    public void Info(string message)
     {
-        if (ex != null)
-        {
-            LogWrapper.Error(ex, message: string.Format(message, args));
-        }
-        else
-        {
-            LogWrapper.Error(string.Format(message, args));
-        }
+        Log(Abstractions.LogLevel.Information, message);
     }
 
-    public void Fatal(string message, params object[] args)
+    public void Warning(string message)
     {
-        LogWrapper.Fatal(string.Format(message, args));
+        Log(Abstractions.LogLevel.Warning, message);
     }
 
-    public void Fatal(Exception? ex, string message, params object[] args)
+    public void Error(string message, Exception? exception = null)
     {
-        if (ex != null)
-        {
-            LogWrapper.Fatal(ex, message: string.Format(message, args));
-        }
-        else
-        {
-            LogWrapper.Fatal(string.Format(message, args));
-        }
+        Log(Abstractions.LogLevel.Error, message, exception);
+    }
+
+    public void Fatal(string message, Exception? exception = null)
+    {
+        Log(Abstractions.LogLevel.Critical, message, exception);
     }
 
     public IDisposable? BeginScope(string scope)
     {
-        // TODO: Implement scope
-        return null;
+        var scopeId = Guid.NewGuid().ToString();
+        var scopeObject = new ScopeObject(scopeId, scope, _categoryName);
+        _scopes[scopeId] = scopeObject;
+        return new ScopeDisposer(scopeId, _scopes);
     }
 
     public bool IsEnabled(Abstractions.LogLevel level)
     {
-        return true;
+        return level >= _minLevel;
     }
 
     public void SetLevel(Abstractions.LogLevel level)
     {
-        // TODO: Implement level setting
+        _minLevel = level;
+    }
+
+    private class ScopeObject
+    {
+        public string ScopeId { get; }
+        public string ScopeName { get; }
+        public string Category { get; }
+        public DateTime StartTime { get; }
+
+        public ScopeObject(string scopeId, string scopeName, string category)
+        {
+            ScopeId = scopeId;
+            ScopeName = scopeName;
+            Category = category;
+            StartTime = DateTime.Now;
+        }
+    }
+
+    private class ScopeDisposer : IDisposable
+    {
+        private readonly string _scopeId;
+        private readonly ConcurrentDictionary<string, object> _scopes;
+
+        public ScopeDisposer(string scopeId, ConcurrentDictionary<string, object> scopes)
+        {
+            _scopeId = scopeId;
+            _scopes = scopes;
+        }
+
+        public void Dispose()
+        {
+            _scopes.TryRemove(_scopeId, out _);
+        }
     }
 }

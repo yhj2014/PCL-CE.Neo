@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using PCL_CE.Neo.Core.Logging;
 
 namespace PCL_CE.Neo.Core.App;
@@ -36,7 +37,24 @@ public static class LogService
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"日志服务初始化失败: {ex}");
+            WriteInitializationError(ex);
+        }
+    }
+
+    private static void WriteInitializationError(Exception ex)
+    {
+        try
+        {
+            var errorLogPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "PCL-CE.Neo",
+                "Error.log");
+            Directory.CreateDirectory(Path.GetDirectoryName(errorLogPath)!);
+            File.AppendAllText(errorLogPath, $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] LogService initialization failed: {ex}\n");
+        }
+        catch
+        {
+            Debug.WriteLine($"LogService initialization failed: {ex}");
         }
     }
 
