@@ -15,22 +15,35 @@ public record ServerInfo(
     string? IconUrl = null
 );
 
+public record LobbyInfo(
+    string Code,
+    string HostName,
+    int PlayerCount,
+    int MaxPlayers,
+    long CreatedAt,
+    string? Version = null
+);
+
 public interface ILinkService
 {
     Task<ServerInfo?> PingServerAsync(string address, int port);
     Task<string> GetLobbyCodeAsync();
     Task<bool> JoinLobbyAsync(string code);
+    Task<LobbyInfo?> GetLobbyInfoAsync(string code);
+    Task<bool> CreateLobbyAsync(string code, string playerName);
 }
 
 public class LinkService : ILinkService
 {
     private readonly ILogger<LinkService> _logger;
     private readonly INetworkService _networkService;
+    private readonly string _lobbyServerUrl;
 
     public LinkService(ILogger<LinkService> logger, INetworkService networkService)
     {
         _logger = logger;
         _networkService = networkService;
+        _lobbyServerUrl = "https://pcl-link.example.com";
     }
 
     public async Task<ServerInfo?> PingServerAsync(string address, int port)
@@ -73,12 +86,94 @@ public class LinkService : ILinkService
     public Task<string> GetLobbyCodeAsync()
     {
         var code = GenerateLobbyCode();
+        _logger.LogInformation("Generated lobby code: {Code}", code);
         return Task.FromResult(code);
     }
 
-    public Task<bool> JoinLobbyAsync(string code)
+    public async Task<bool> JoinLobbyAsync(string code)
     {
-        return Task.FromResult(true);
+        _logger.LogInformation("Attempting to join lobby: {Code}", code);
+
+        if (string.IsNullOrEmpty(code) || code.Length != 6)
+        {
+            _logger.LogWarning("Invalid lobby code format: {Code}", code);
+            return false;
+        }
+
+        try
+        {
+            var response = await _networkService.GetStringAsync($"{_lobbyServerUrl}/api/lobby/join/{code}");
+            
+            if (string.IsNullOrEmpty(response) || response.Contains("error", StringComparison.OrdinalIgnoreCase))
+            {
+                _logger.LogWarning("Lobby {Code} not found or no longer available", code);
+                return false;
+            }
+
+            _logger.LogInformation("Successfully joined lobby: {Code}", code);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to join lobby: {Code}", code);
+            return false;
+        }
+    }
+
+    public async Task<LobbyInfo?> GetLobbyInfoAsync(string code)
+    {
+        if (string.IsNullOrEmpty(code) || code.Length != 6)
+        {
+            return null;
+        }
+
+        try
+        {
+            var response = await _networkService.GetStringAsync($"{_lobbyServerUrl}/api/lobby/info/{code}");
+            
+            if (string.IsNullOrEmpty(response))
+            {
+                return null;
+            }
+
+            var info = System.Text.Json.JsonSerializer.Deserialize<LobbyInfo>(response);
+            return info;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to get lobby info: {Code}", code);
+            return null;
+        }
+    }
+
+    public async Task<bool> CreateLobbyAsync(string code, string playerName)
+    {
+        _logger.LogInformation("Creating lobby with code: {Code}", code);
+
+        try
+        {
+            var payload = System.Text.Json.JsonSerializer.Serialize(new
+            {
+                Code = code,
+                HostName = playerName,
+                CreatedAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
+            });
+
+            var response = await _networkService.PostStringAsync($"{_lobbyServerUrl}/api/lobby/create", payload);
+            
+            if (string.IsNullOrEmpty(response))
+            {
+                return false;
+            }
+
+            _logger.LogInformation("Lobby created successfully: {Code}", code);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to create lobby: {Code}", code);
+            return false;
+        }
     }
 
     private static byte[] CreateHandshake(string address, int port)

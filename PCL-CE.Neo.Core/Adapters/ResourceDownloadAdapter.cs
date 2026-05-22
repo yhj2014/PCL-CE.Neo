@@ -148,14 +148,107 @@ public class ResourceDownloadAdapter : IResourceDownloadAdapter
             var nativesPath = Path.Combine(_paths.SharedLocalData, "versions", versionId, "natives");
             Directory.CreateDirectory(nativesPath);
 
-            _logger.LogDebug("下载原生库到: {Path}", nativesPath);
-            return ResourceDownloadResult.Succeeded(nativesPath, 0);
+            _logger.LogInformation("下载原生库: {Version}", versionId);
+
+            var versionJson = await _network.GetAsync($"https://launchermeta.mojang.com/mc/game/version_manifest_v2.json");
+            var manifest = JsonSerializer.Deserialize<VersionManifest>(versionJson);
+            var version = manifest?.Versions?.FirstOrDefault(v => v.Id == versionId);
+
+            if (version == null)
+            {
+                _logger.LogWarning("未找到版本: {Version}", versionId);
+                return ResourceDownloadResult.Failed(versionId, $"未找到版本: {versionId}");
+            }
+
+            var versionManifestJson = await _network.GetAsync(version.Url);
+            var versionManifest = JsonSerializer.Deserialize<VersionDetail>(versionManifestJson);
+
+            if (versionManifest?.Natives == null)
+            {
+                return ResourceDownloadResult.Succeeded(nativesPath, 0);
+            }
+
+            var platformKey = GetPlatformKey();
+            if (!versionManifest.Natives.TryGetValue(platformKey, out var nativeEntry))
+            {
+                platformKey = "linux";
+                if (!versionManifest.Natives.TryGetValue(platformKey, out nativeEntry))
+                {
+                    return ResourceDownloadResult.Succeeded(nativesPath, 0);
+                }
+            }
+
+            var nativeLibs = versionManifest.Libraries?
+                .Where(l => l.Downloads?.Artifact != null && 
+                           (l.Name.Contains("lwjgl") || 
+                            l.Name.Contains("native") ||
+                            l.Rules?.Any(r => r.OS?.Name == "linux") == true))
+                .ToList() ?? new();
+
+            long totalBytes = 0;
+            long downloadedBytes = 0;
+
+            foreach (var lib in nativeLibs)
+            {
+                if (lib.Downloads?.Artifact != null)
+                {
+                    totalBytes += lib.Downloads.Artifact.Size;
+                }
+            }
+
+            foreach (var lib in nativeLibs)
+            {
+                if (lib.Downloads?.Artifact == null) continue;
+
+                var artifact = lib.Downloads.Artifact;
+                var nativeFileName = Path.GetFileName(artifact.Path);
+                var targetPath = Path.Combine(nativesPath, nativeFileName);
+
+                if (File.Exists(targetPath))
+                {
+                    downloadedBytes += artifact.Size;
+                    progress?.Report((double)downloadedBytes / totalBytes);
+                    continue;
+                }
+
+                var request = new DownloadRequest
+                {
+                    Url = artifact.Url,
+                    DestinationPath = targetPath,
+                    ExpectedHash = artifact.Sha1
+                };
+
+                var result = await _download.DownloadFileAsync(request);
+                if (result.Success)
+                {
+                    downloadedBytes += artifact.Size;
+                    progress?.Report((double)downloadedBytes / totalBytes);
+                }
+                else
+                {
+                    _logger.LogWarning("原生库下载失败: {Lib}", lib.Name);
+                }
+            }
+
+            _logger.LogInformation("原生库下载完成: {Path}", nativesPath);
+            return ResourceDownloadResult.Succeeded(nativesPath, downloadedBytes);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "下载原生库失败: {Version}", versionId);
             return ResourceDownloadResult.Failed(versionId, ex.Message, ex);
         }
+    }
+
+    private static string GetPlatformKey()
+    {
+        if (OperatingSystem.IsWindows())
+            return "windows";
+        if (OperatingSystem.IsMacOS())
+            return "osx";
+        if (OperatingSystem.IsLinux())
+            return "linux";
+        return "linux";
     }
 
     public async Task<string?> GetVersionManifestAsync()
@@ -194,6 +287,44 @@ public class ResourceDownloadAdapter : IResourceDownloadAdapter
         public string Id { get; set; } = "";
         public string Url { get; set; } = "";
         public string Sha1 { get; set; } = "";
+    }
+
+    private class VersionDetail
+    {
+        public string Id { get; set; } = "";
+        public Dictionary<string, string>? Natives { get; set; }
+        public List<LibraryInfo>? Libraries { get; set; }
+    }
+
+    private class LibraryInfo
+    {
+        public string Name { get; set; } = "";
+        public LibraryDownloads? Downloads { get; set; }
+        public List<OSRule>? Rules { get; set; }
+    }
+
+    private class LibraryDownloads
+    {
+        public ArtifactInfo? Artifact { get; set; }
+    }
+
+    private class ArtifactInfo
+    {
+        public string Path { get; set; } = "";
+        public string Url { get; set; } = "";
+        public string Sha1 { get; set; } = "";
+        public long Size { get; set; }
+    }
+
+    private class OSRule
+    {
+        public string Action { get; set; } = "";
+        public OSInfo? OS { get; set; }
+    }
+
+    private class OSInfo
+    {
+        public string? Name { get; set; }
     }
 
     private class AssetIndex
