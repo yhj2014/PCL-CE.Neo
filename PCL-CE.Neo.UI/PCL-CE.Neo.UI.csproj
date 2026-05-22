@@ -12,11 +12,9 @@
     </PropertyGroup>
 
     <PropertyGroup>
-        <TargetFrameworks>
-            net10.0-windows10.0.19041.0;
-            net10.0-maccatalyst;
-            net10.0-linux
-        </TargetFrameworks>
+        <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('Windows'))">net10.0-windows10.0.19041.0;net10.0-linux;net10.0-maccatalyst</TargetFrameworks>
+        <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('Linux'))">net10.0-linux</TargetFrameworks>
+        <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('OSX'))">net10.0-maccatalyst;net10.0-linux</TargetFrameworks>
         <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
         <UseWinUI>true</UseWinUI>
         <LangVersion>latest</LangVersion>
