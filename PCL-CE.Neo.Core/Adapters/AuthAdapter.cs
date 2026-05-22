@@ -358,18 +358,176 @@ public class AuthAdapter : IAuthAdapter
 
     public async Task<AuthToken?> RefreshTokenAsync()
     {
-        if (_currentToken?.RefreshToken == null) return null;
+        if (_currentToken?.RefreshToken == null)
+        {
+            _logger.LogWarning("刷新令牌失败：无可用刷新令牌");
+            return null;
+        }
+
+        if (_currentUser == null)
+        {
+            _logger.LogWarning("刷新令牌失败：无当前用户");
+            return null;
+        }
 
         try
         {
-            _logger.LogDebug("刷新令牌");
-            return _currentToken;
+            if (_currentUser.Provider == AuthProvider.Microsoft)
+            {
+                return await RefreshMicrosoftTokenAsync();
+            }
+            else if (_currentUser.Provider == AuthProvider.Yggdrasil || _currentUser.Provider == AuthProvider.AuthLib)
+            {
+                return await RefreshYggdrasilTokenAsync();
+            }
+            else
+            {
+                _logger.LogWarning("刷新令牌失败：离线账号不支持刷新");
+                return null;
+            }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "刷新令牌失败");
+            _logger.LogError(ex, "刷新令牌时发生异常");
+            ClearToken();
             return null;
         }
+    }
+
+    private async Task<AuthToken?> RefreshMicrosoftTokenAsync()
+    {
+        _logger.LogInformation("刷新微软令牌");
+
+        var bodyData = new Dictionary<string, string>
+        {
+            { "client_id", "000000004C12AE6F" },
+            { "grant_type", "refresh_token" },
+            { "refresh_token", _currentToken!.RefreshToken! }
+        };
+
+        var response = await _network.PostAsync(
+            "https://login.live.com/oauth20_token.srf",
+            string.Join("&", bodyData.Select(kv => $"{kv.Key}={Uri.EscapeDataString(kv.Value)}")),
+            new Dictionary<string, string> { { "Content-Type", "application/x-www-form-urlencoded" } });
+
+        if (!response.IsSuccess)
+        {
+            _logger.LogWarning("微软令牌刷新失败: {StatusCode}", response.StatusCode);
+            ClearToken();
+            return null;
+        }
+
+        var tokenResponse = JsonSerializer.Deserialize<MicrosoftRefreshResponse>(response.BodyAsString);
+        if (tokenResponse == null || string.IsNullOrEmpty(tokenResponse.access_token))
+        {
+            _logger.LogWarning("微软令牌刷新响应无效");
+            ClearToken();
+            return null;
+        }
+
+        var newExpiresAt = DateTimeOffset.FromUnixTimeSeconds(tokenResponse.expires_in + DateTimeOffset.Now.ToUnixTimeSeconds()).DateTime;
+        _currentToken = new AuthToken
+        {
+            AccessToken = tokenResponse.access_token,
+            RefreshToken = tokenResponse.refresh_token ?? _currentToken.RefreshToken,
+            ExpiresAt = newExpiresAt,
+            Xuid = _currentToken.Xuid
+        };
+
+        SaveMicrosoftToken(tokenResponse);
+        _logger.LogInformation("微软令牌刷新成功，新过期时间: {ExpiresAt}", newExpiresAt);
+        return _currentToken;
+    }
+
+    private async Task<AuthToken?> RefreshYggdrasilTokenAsync()
+    {
+        var server = _currentUser?.Properties.GetValueOrDefault("Server");
+        if (string.IsNullOrEmpty(server))
+        {
+            _logger.LogWarning("Yggdrasil令牌刷新失败：未找到服务器地址");
+            return null;
+        }
+
+        _logger.LogInformation("刷新Yggdrasil令牌: {Server}", server);
+
+        var bodyData = new Dictionary<string, string>
+        {
+            { "clientToken", Guid.NewGuid().ToString() },
+            { "accessToken", _currentToken!.AccessToken }
+        };
+
+        var response = await _network.PostAsync(
+            $"{server}/authserver/refresh",
+            JsonSerializer.Serialize(bodyData));
+
+        if (!response.IsSuccess)
+        {
+            if (response.StatusCode == 403 || response.StatusCode == 401)
+            {
+                _logger.LogWarning("Yggdrasil令牌刷新失败，令牌已失效: {StatusCode}", response.StatusCode);
+            }
+            else
+            {
+                _logger.LogWarning("Yggdrasil令牌刷新失败: {StatusCode}", response.StatusCode);
+            }
+            ClearToken();
+            return null;
+        }
+
+        var refreshResponse = JsonSerializer.Deserialize<YggdrasilRefreshResponse>(response.BodyAsString);
+        if (refreshResponse == null || string.IsNullOrEmpty(refreshResponse.AccessToken))
+        {
+            _logger.LogWarning("Yggdrasil令牌刷新响应无效");
+            ClearToken();
+            return null;
+        }
+
+        var newExpiresAt = refreshResponse.ExpiresAt > 0
+            ? DateTimeOffset.FromUnixTimeMilliseconds(refreshResponse.ExpiresAt).DateTime
+            : DateTime.UtcNow.AddDays(30);
+
+        _currentToken = new AuthToken
+        {
+            AccessToken = refreshResponse.AccessToken,
+            RefreshToken = refreshResponse.AccessToken,
+            ExpiresAt = newExpiresAt,
+            Xuid = _currentToken.Xuid
+        };
+
+        _logger.LogInformation("Yggdrasil令牌刷新成功，新过期时间: {ExpiresAt}", newExpiresAt);
+        return _currentToken;
+    }
+
+    private void ClearToken()
+    {
+        _currentToken = null;
+        _config.SetConfig("LoginMsJson", "{}");
+    }
+
+    private void SaveMicrosoftToken(MicrosoftRefreshResponse tokenResponse)
+    {
+        var token = new MicrosoftToken
+        {
+            access_token = tokenResponse.access_token,
+            refresh_token = tokenResponse.refresh_token ?? _currentToken?.RefreshToken ?? "",
+            expires_at = tokenResponse.expires_in + DateTimeOffset.Now.ToUnixTimeSeconds(),
+            xuid = _currentToken?.Xuid ?? ""
+        };
+        _config.SetConfig("LoginMsJson", JsonSerializer.Serialize(token));
+    }
+
+    private class MicrosoftRefreshResponse
+    {
+        public string access_token { get; set; } = "";
+        public string refresh_token { get; set; } = "";
+        public int expires_in { get; set; }
+        public string token_type { get; set; } = "";
+    }
+
+    private class YggdrasilRefreshResponse
+    {
+        public string AccessToken { get; set; } = "";
+        public long ExpiresAt { get; set; }
     }
 
     private void AddOrUpdateProfile(UserProfile profile)
