@@ -2,47 +2,72 @@ namespace PCL_CE.Neo.UI.Services;
 
 public class ThemeService : Core.Abstractions.IThemeService
 {
-    private Core.Abstractions.AppTheme _cachedTheme = Core.Abstractions.AppTheme.Light;
-    private string _cachedAccentColor = "#0078D4";
+    public event EventHandler? ThemeChanged;
+
+    private Core.Abstractions.ThemeInfo _currentTheme = new() { Name = "Light", Type = Core.Abstractions.ThemeType.Light, ResourcePath = "Themes/Light" };
     private bool _initialized = false;
 
-    public Core.Abstractions.AppTheme GetSystemTheme()
+    public Core.Abstractions.ThemeInfo GetCurrentTheme()
     {
         if (!_initialized)
         {
             InitializeTheme();
         }
-        return _cachedTheme;
+        return _currentTheme;
     }
 
-    public bool IsDarkMode()
+    public void SetTheme(Core.Abstractions.ThemeInfo theme)
     {
-        return GetSystemTheme() == Core.Abstractions.AppTheme.Dark;
+        _currentTheme = theme;
+        ThemeChanged?.Invoke(this, EventArgs.Empty);
     }
 
-    public string GetAccentColor()
+    public IEnumerable<Core.Abstractions.ThemeInfo> GetAvailableThemes()
+    {
+        return new List<Core.Abstractions.ThemeInfo>
+        {
+            new() { Name = "Light", Type = Core.Abstractions.ThemeType.Light, ResourcePath = "Themes/Light" },
+            new() { Name = "Dark", Type = Core.Abstractions.ThemeType.Dark, ResourcePath = "Themes/Dark" },
+            new() { Name = "System", Type = Core.Abstractions.ThemeType.System, ResourcePath = "Themes/System" }
+        };
+    }
+
+    public Core.Abstractions.ThemeType DetectSystemTheme()
     {
         if (!_initialized)
         {
             InitializeTheme();
         }
-        return _cachedAccentColor;
+        return _currentTheme.Type;
     }
 
     private void InitializeTheme()
     {
-#if WINDOWS
-        InitializeWindowsTheme();
-#elif MACCATALYST
-        InitializeMacOSTheme();
-#elif LINUX
-        InitializeLinuxTheme();
-#endif
+        var systemThemeType = DetectSystemThemeCore();
+        _currentTheme = new Core.Abstractions.ThemeInfo
+        {
+            Name = systemThemeType.ToString(),
+            Type = systemThemeType,
+            ResourcePath = $"Themes/{systemThemeType}"
+        };
         _initialized = true;
     }
 
+    private Core.Abstractions.ThemeType DetectSystemThemeCore()
+    {
 #if WINDOWS
-    private void InitializeWindowsTheme()
+        return DetectWindowsTheme();
+#elif MACCATALYST
+        return DetectMacOSTheme();
+#elif LINUX
+        return DetectLinuxTheme();
+#else
+        return Core.Abstractions.ThemeType.Light;
+#endif
+    }
+
+#if WINDOWS
+    private Core.Abstractions.ThemeType DetectWindowsTheme()
     {
         try
         {
@@ -53,36 +78,19 @@ public class ThemeService : Core.Abstractions.IThemeService
                 var value = key.GetValue("AppsUseLightTheme");
                 if (value is int lightTheme)
                 {
-                    _cachedTheme = lightTheme == 0
-                        ? Core.Abstractions.AppTheme.Dark
-                        : Core.Abstractions.AppTheme.Light;
-                }
-            }
-
-            using var accentKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(
-                @"Software\Microsoft\Windows\DWM");
-            if (accentKey != null)
-            {
-                var colorValue = accentKey.GetValue("AccentColor");
-                if (colorValue is int color)
-                {
-                    var r = (color >> 16) & 0xFF;
-                    var g = (color >> 8) & 0xFF;
-                    var b = color & 0xFF;
-                    _cachedAccentColor = $"#{r:X2}{g:X2}{b:X2}";
+                    return lightTheme == 0 ? Core.Abstractions.ThemeType.Dark : Core.Abstractions.ThemeType.Light;
                 }
             }
         }
         catch
         {
-            _cachedTheme = Core.Abstractions.AppTheme.Light;
-            _cachedAccentColor = "#0078D4";
         }
+        return Core.Abstractions.ThemeType.Light;
     }
 #endif
 
 #if MACCATALYST
-    private void InitializeMacOSTheme()
+    private Core.Abstractions.ThemeType DetectMacOSTheme()
     {
         try
         {
@@ -110,25 +118,18 @@ end tell";
 
             if (output.Contains("dark aura") || output.Contains("dark"))
             {
-                _cachedTheme = Core.Abstractions.AppTheme.Dark;
+                return Core.Abstractions.ThemeType.Dark;
             }
-            else
-            {
-                _cachedTheme = Core.Abstractions.AppTheme.Light;
-            }
-
-            _cachedAccentColor = "#007AFF";
         }
         catch
         {
-            _cachedTheme = Core.Abstractions.AppTheme.Light;
-            _cachedAccentColor = "#007AFF";
         }
+        return Core.Abstractions.ThemeType.Light;
     }
 #endif
 
 #if LINUX
-    private void InitializeLinuxTheme()
+    private Core.Abstractions.ThemeType DetectLinuxTheme()
     {
         try
         {
@@ -137,20 +138,13 @@ end tell";
                 (gtkTheme.Contains("dark", StringComparison.OrdinalIgnoreCase) ||
                  gtkTheme.Contains("Dark", StringComparison.OrdinalIgnoreCase)))
             {
-                _cachedTheme = Core.Abstractions.AppTheme.Dark;
+                return Core.Abstractions.ThemeType.Dark;
             }
-            else
-            {
-                _cachedTheme = Core.Abstractions.AppTheme.Light;
-            }
-
-            _cachedAccentColor = GetLinuxAccentColor() ?? "#0078D4";
         }
         catch
         {
-            _cachedTheme = Core.Abstractions.AppTheme.Light;
-            _cachedAccentColor = "#0078D4";
         }
+        return Core.Abstractions.ThemeType.Light;
     }
 
     private string? GetGtkThemeSetting()
@@ -181,44 +175,6 @@ end tell";
         {
         }
         return null;
-    }
-
-    private string? GetLinuxAccentColor()
-    {
-        try
-        {
-            var process = new System.Diagnostics.Process
-            {
-                StartInfo = new System.Diagnostics.ProcessStartInfo
-                {
-                    FileName = "gsettings",
-                    Arguments = "get org.gnome.desktop.interface accent-color-style",
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true
-                }
-            };
-            process.Start();
-            var output = process.StandardOutput.ReadLine();
-            process.WaitForExit(2000);
-
-            if (!string.IsNullOrEmpty(output))
-            {
-                var value = output.Trim();
-                return value switch
-                {
-                    "1" => "#D7780D",
-                    "2" => "#9141AC",
-                    "3" => "#0F52BA",
-                    "4" => "#1A5F2A",
-                    _ => "#0078D4"
-                };
-            }
-        }
-        catch
-        {
-        }
-        return "#0078D4";
     }
 #endif
 }
