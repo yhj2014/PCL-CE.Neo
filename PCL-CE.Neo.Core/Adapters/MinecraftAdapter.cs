@@ -94,8 +94,9 @@ public class MinecraftAdapter : IMinecraftAdapter
                     });
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogDebug(ex, "获取 Java 版本失败: {Path}", path);
             }
         }
         return versions;
@@ -219,8 +220,9 @@ public class MinecraftAdapter : IMinecraftAdapter
             var match = System.Text.RegularExpressions.Regex.Match(error, @"version\s+""(.+?)""");
             return match.Success ? match.Groups[1].Value : "";
         }
-        catch
+        catch (Exception ex)
         {
+            _logger.LogDebug(ex, "获取 Java 版本信息失败: {Path}", javaPath);
             return "";
         }
     }
