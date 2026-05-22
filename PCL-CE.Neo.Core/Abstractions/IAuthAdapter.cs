@@ -1,24 +1,5 @@
 namespace PCL_CE.Neo.Core.Abstractions;
 
-public interface IAuthAdapter
-{
-    event Action<AuthState>? StateChanged;
-
-    AuthState CurrentState { get; }
-    UserProfile? CurrentUser { get; }
-
-    Task<AuthResult> LoginMicrosoftAsync();
-    Task<AuthResult> LoginOfflineAsync(string username);
-    Task<AuthResult> LoginThirdPartyAsync(string server, string username, string password);
-    Task LogoutAsync();
-
-    Task<UserProfile?> GetCurrentUserAsync();
-    Task<AuthToken?> RefreshTokenAsync();
-
-    bool IsLoggedIn { get; }
-    string? AccessToken { get; }
-}
-
 public enum AuthState
 {
     LoggedOut,
@@ -36,6 +17,27 @@ public enum AuthProvider
     AuthLib
 }
 
+public record AuthToken
+{
+    public required string AccessToken { get; init; }
+    public string? RefreshToken { get; init; }
+    public required DateTime ExpiresAt { get; init; }
+    public string? TokenType { get; init; }
+    public string? Xuid { get; init; }
+}
+
+public record UserProfile
+{
+    public required string Id { get; init; }
+    public required string Username { get; init; }
+    public string? DisplayName { get; init; }
+    public string? AvatarUrl { get; init; }
+    public DateTime? ExpiresAt { get; init; }
+    public AuthProvider Provider { get; init; }
+    public Dictionary<string, string> Properties { get; init; } = new();
+    public bool IsSelected { get; init; }
+}
+
 public record AuthResult
 {
     public bool Success { get; init; }
@@ -50,22 +52,30 @@ public record AuthResult
         new() { Success = false, ErrorMessage = message, Exception = ex };
 }
 
-public record UserProfile
+public interface IAuthAdapter
 {
-    public required string Id { get; init; }
-    public required string Username { get; init; }
-    public string? DisplayName { get; init; }
-    public string? AvatarUrl { get; init; }
-    public DateTime? ExpiresAt { get; init; }
-    public AuthProvider Provider { get; init; }
-    public Dictionary<string, string> Properties { get; init; } = new();
-}
+    event Action<AuthState>? StateChanged;
+    event Action? ProfilesChanged;
 
-public record AuthToken
-{
-    public required string AccessToken { get; init; }
-    public string? RefreshToken { get; init; }
-    public required DateTime ExpiresAt { get; init; }
-    public string? TokenType { get; init; }
-    public string? Xuid { get; init; }
+    AuthState CurrentState { get; }
+    UserProfile? CurrentUser { get; }
+
+    Task<AuthResult> LoginMicrosoftAsync();
+    Task<AuthResult> LoginOfflineAsync(string username);
+    Task<AuthResult> LoginThirdPartyAsync(string server, string username, string password);
+    Task LogoutAsync();
+
+    Task<UserProfile?> GetCurrentUserAsync();
+    Task<AuthToken?> RefreshTokenAsync();
+
+    bool IsLoggedIn { get; }
+    string? AccessToken { get; }
+
+    IReadOnlyList<UserProfile> GetProfiles();
+    UserProfile? GetSelectedProfile();
+    void SetSelectedProfile(string profileId);
+    void AddProfile(UserProfile profile);
+    void RemoveProfile(string profileId);
+    bool HasVerifiedAccount();
+    bool CanCreateOfflineProfile();
 }

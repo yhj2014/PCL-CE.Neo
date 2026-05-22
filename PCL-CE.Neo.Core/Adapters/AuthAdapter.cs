@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
 using PCL_CE.Neo.Core.Abstractions;
 
@@ -14,8 +15,13 @@ public class AuthAdapter : IAuthAdapter
     private AuthState _currentState = AuthState.LoggedOut;
     private UserProfile? _currentUser;
     private AuthToken? _currentToken;
+    private List<UserProfile> _profiles = new();
+    private string? _selectedProfileId;
+    private bool _isRestrictedFeatureAllowed;
+    private bool _hasNetwork = true;
 
     public event Action<AuthState>? StateChanged;
+    public event Action? ProfilesChanged;
 
     public AuthState CurrentState => _currentState;
     public UserProfile? CurrentUser => _currentUser;
@@ -32,6 +38,150 @@ public class AuthAdapter : IAuthAdapter
         _network = network;
         _config = config;
         _paths = paths;
+        LoadProfiles();
+        CheckRestrictedFeature();
+    }
+
+    private void CheckRestrictedFeature()
+    {
+        try
+        {
+            var timeZone = TimeZoneInfo.Local.Id;
+            var culture = System.Globalization.CultureInfo.CurrentCulture.Name;
+            _isRestrictedFeatureAllowed = timeZone == "China Standard Time" &&
+                                           (culture == "zh-CN" || culture == "zh-Hans");
+            _logger.LogDebug("区域限制功能状态: {IsRestricted}", _isRestrictedFeatureAllowed);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "检查区域限制功能失败");
+            _isRestrictedFeatureAllowed = false;
+        }
+    }
+
+    private void LoadProfiles()
+    {
+        try
+        {
+            var profilesJson = _config.GetConfig("Profiles", "[]");
+            if (!string.IsNullOrEmpty(profilesJson) && profilesJson != "[]")
+            {
+                _profiles = JsonSerializer.Deserialize<List<UserProfile>>(profilesJson) ?? new();
+                _logger.LogInformation("已加载 {Count} 个档案", _profiles.Count);
+            }
+
+            _selectedProfileId = _config.GetConfig<string>("SelectedProfileId", null);
+            if (string.IsNullOrEmpty(_selectedProfileId) && _profiles.Count > 0)
+            {
+                _selectedProfileId = _profiles[0].Id;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "加载档案失败");
+            _profiles = new List<UserProfile>();
+        }
+    }
+
+    private void SaveProfiles()
+    {
+        try
+        {
+            var profilesJson = JsonSerializer.Serialize(_profiles);
+            _config.SetConfig("Profiles", profilesJson);
+
+            if (_selectedProfileId != null)
+            {
+                _config.SetConfig("SelectedProfileId", _selectedProfileId);
+            }
+
+            ProfilesChanged?.Invoke();
+            _logger.LogDebug("档案已保存");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "保存档案失败");
+        }
+    }
+
+    public IReadOnlyList<UserProfile> GetProfiles() => _profiles.AsReadOnly();
+
+    public UserProfile? GetSelectedProfile()
+    {
+        return _profiles.FirstOrDefault(p => p.Id == _selectedProfileId);
+    }
+
+    public void SetSelectedProfile(string profileId)
+    {
+        if (_profiles.Any(p => p.Id == profileId))
+        {
+            _selectedProfileId = profileId;
+            _config.SetConfig("SelectedProfileId", profileId);
+            ProfilesChanged?.Invoke();
+            _logger.LogInformation("已选择档案: {ProfileId}", profileId);
+        }
+        else
+        {
+            _logger.LogWarning("档案不存在: {ProfileId}", profileId);
+        }
+    }
+
+    public void AddProfile(UserProfile profile)
+    {
+        if (_profiles.Any(p => p.Id == profile.Id))
+        {
+            _logger.LogWarning("档案已存在: {ProfileId}", profile.Id);
+            return;
+        }
+
+        _profiles.Add(profile);
+        SaveProfiles();
+        _logger.LogInformation("已添加档案: {Username} ({Provider})", profile.Username, profile.Provider);
+    }
+
+    public void RemoveProfile(string profileId)
+    {
+        var profile = _profiles.FirstOrDefault(p => p.Id == profileId);
+        if (profile == null)
+        {
+            _logger.LogWarning("档案不存在: {ProfileId}", profileId);
+            return;
+        }
+
+        _profiles.Remove(profile);
+
+        if (_selectedProfileId == profileId)
+        {
+            _selectedProfileId = _profiles.FirstOrDefault()?.Id;
+        }
+
+        SaveProfiles();
+        _logger.LogInformation("已移除档案: {Username}", profile.Username);
+    }
+
+    public bool HasVerifiedAccount()
+    {
+        return _profiles.Any(p => p.Provider == AuthProvider.Microsoft || p.Provider == AuthProvider.Yggdrasil || p.Provider == AuthProvider.AuthLib);
+    }
+
+    public bool CanCreateOfflineProfile()
+    {
+        if (HasVerifiedAccount())
+        {
+            return true;
+        }
+
+        if (_isRestrictedFeatureAllowed && _profiles.Count > 0)
+        {
+            return true;
+        }
+
+        if (!_hasNetwork)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     public async Task<AuthResult> LoginMicrosoftAsync()
@@ -58,6 +208,10 @@ public class AuthAdapter : IAuthAdapter
                             Xuid = token.xuid
                         };
                         _currentUser = user;
+
+                        AddOrUpdateProfile(user);
+                        SetSelectedProfile(user.Id);
+
                         SetState(AuthState.LoggedIn);
                         _logger.LogInformation("微软登录成功: {Username}", user.Username);
                         return AuthResult.Succeeded(user, _currentToken);
@@ -82,13 +236,18 @@ public class AuthAdapter : IAuthAdapter
         {
             _logger.LogInformation("离线登录: {Username}", username);
 
-            var offlineName = _config.GetConfig("LoginLegacyName", username);
+            if (!CanCreateOfflineProfile())
+            {
+                _logger.LogWarning("离线登录功能受限，需要先验证一个账号");
+                return AuthResult.Failed("离线登录功能受限，需要先验证一个账号");
+            }
 
+            var offlineId = GenerateOfflineUuid(username);
             _currentUser = new UserProfile
             {
-                Id = Guid.NewGuid().ToString(),
-                Username = offlineName,
-                DisplayName = offlineName,
+                Id = offlineId,
+                Username = username,
+                DisplayName = username,
                 Provider = AuthProvider.Offline
             };
 
@@ -97,6 +256,9 @@ public class AuthAdapter : IAuthAdapter
                 AccessToken = "offline",
                 ExpiresAt = DateTime.MaxValue
             };
+
+            AddOrUpdateProfile(_currentUser);
+            SetSelectedProfile(offlineId);
 
             SetState(AuthState.LoggedIn);
             _logger.LogInformation("离线登录成功: {Username}", username);
@@ -135,7 +297,11 @@ public class AuthAdapter : IAuthAdapter
                         Id = result.SelectedProfile.Id,
                         Username = result.SelectedProfile.Name,
                         DisplayName = result.SelectedProfile.Name,
-                        Provider = AuthProvider.Yggdrasil
+                        Provider = AuthProvider.Yggdrasil,
+                        Properties = new Dictionary<string, string>
+                        {
+                            { "Server", server }
+                        }
                     };
 
                     _currentToken = new AuthToken
@@ -144,7 +310,11 @@ public class AuthAdapter : IAuthAdapter
                         ExpiresAt = DateTimeOffset.FromUnixTimeMilliseconds(result.ExpiresAt).DateTime
                     };
 
+                    AddOrUpdateProfile(_currentUser);
+                    SetSelectedProfile(_currentUser.Id);
+
                     SetState(AuthState.LoggedIn);
+                    _logger.LogInformation("第三方登录成功: {Username}", _currentUser.Username);
                     return AuthResult.Succeeded(_currentUser, _currentToken);
                 }
             }
@@ -202,6 +372,41 @@ public class AuthAdapter : IAuthAdapter
         }
     }
 
+    private void AddOrUpdateProfile(UserProfile profile)
+    {
+        var existingIndex = _profiles.FindIndex(p => p.Id == profile.Id);
+        if (existingIndex >= 0)
+        {
+            _profiles[existingIndex] = profile;
+            _logger.LogDebug("更新档案: {Username}", profile.Username);
+        }
+        else
+        {
+            _profiles.Add(profile);
+            _logger.LogDebug("新增档案: {Username}", profile.Username);
+        }
+        SaveProfiles();
+    }
+
+    private string GenerateOfflineUuid(string username)
+    {
+        using var sha = System.Security.Cryptography.SHA1.Create();
+        var hash = sha.ComputeHash(System.Text.Encoding.UTF8.GetBytes("OfflinePlayer:" + username));
+        var uuidBytes = new byte[16];
+        Array.Copy(hash, uuidBytes, 16);
+        uuidBytes[6] = (byte)((uuidBytes[6] & 0x0f) | 0x30);
+        uuidBytes[8] = (byte)((uuidBytes[8] & 0x3f) | 0x80);
+
+        var uuid = new System.Text.StringBuilder();
+        for (int i = 0; i < 16; i++)
+        {
+            if (i == 4 || i == 6 || i == 8 || i == 10)
+                uuid.Append('-');
+            uuid.AppendFormat("{0:x2}", uuidBytes[i]);
+        }
+        return uuid.ToString();
+    }
+
     private void SetState(AuthState state)
     {
         _currentState = state;
@@ -214,7 +419,6 @@ public class AuthAdapter : IAuthAdapter
         {
             _logger.LogDebug("验证微软访问令牌");
 
-            // 调用 Xbox Live API 获取 XSTS token
             var xboxResponse = await _network.PostAsync(
                 "https://user.auth.xboxlive.com/user/authenticate",
                 JsonSerializer.Serialize(new
@@ -241,7 +445,6 @@ public class AuthAdapter : IAuthAdapter
                 return null;
             }
 
-            // 调用 Minecraft API 获取访问令牌
             var mcResponse = await _network.PostAsync(
                 "https://api.minecraftservices.com/authentication/login_with_xbox",
                 JsonSerializer.Serialize(new
@@ -261,12 +464,11 @@ public class AuthAdapter : IAuthAdapter
                 return null;
             }
 
-            // 获取玩家资料
             var headers = new Dictionary<string, string>
             {
                 { "Authorization", $"Bearer {mcData.AccessToken}" }
             };
-            
+
             var profileResponse = await _network.GetAsync(
                 "https://api.minecraftservices.com/minecraft/profile",
                 headers);
