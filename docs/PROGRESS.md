@@ -13,11 +13,11 @@ PCL Community Edition 跨平台重构项目进度追踪
 | **0. 准备与规划** | 环境搭建、分支策略、CI/CD、详细设计、培训 | 100% | ✅ 完成 |
 | **1. 架构准备** | 项目重组、.NET 10 升级、平台抽象、业务逻辑重构、单元测试 | 100% | ✅ 完成 |
 | **2. 平台实现** | 各平台接口实现、集成测试、性能基准 | 100% | ✅ 完成 |
-| **3. UI 迁移** | Uno Platform UI、自定义控件、页面迁移 | 50% | 🚧 进行中 |
+| **3. UI 迁移** | Uno Platform UI、自定义控件、页面迁移 | 75% | 🚧 进行中 |
 | **4. 测试与优化** | 全面测试、性能优化、用户体验打磨 | 0% | ⏸️ 待开始 |
 | **5. 发布与过渡** | RC发布、最终测试、正式版发布 | 0% | ⏸️ 待开始 |
 
-**总体进度：80%**
+**总体进度：85%**
 
 ---
 
@@ -153,18 +153,59 @@ PCL Community Edition 跨平台重构项目进度追踪
    - 缩放动画
    - 统一的动画接口
 
-#### 页面
-6. **VersionSelectPage** - [VersionSelectPage.xaml](file:///workspace/PCL-CE.Neo.UI/Pages/VersionSelectPage.xaml)
-   - 版本列表展示
-   - 搜索功能
-   - 版本选择导航
+#### 自定义控件（续）
+4. **MyCheckBox** - [MyCheckBox.xaml](file:///workspace/PCL-CE.Neo.UI/Controls/MyCheckBox.xaml)
+   - 完整的复选框控件
+   - 选中/未选中状态
+   - 命令绑定支持
 
-7. **DownloadPage** - [DownloadPage.xaml](file:///workspace/PCL-CE.Neo.UI/Pages/DownloadPage.xaml)
-   - 下载队列管理
-   - 下载进度展示
-   - 暂停/继续/取消功能
+5. **MyLoading** - [MyLoading.xaml](file:///workspace/PCL-CE.Neo.UI/Controls/MyLoading.xaml)
+   - 加载动画控件
+   - 三点跳动动画
+   - 显示/隐藏控制
 
-### 📋 阶段 3 进度（50% 完成）
+6. **MyComboBox** - [MyComboBox.xaml](file:///workspace/PCL-CE.Neo.UI/Controls/MyComboBox.xaml)
+   - 下拉选择框控件
+   - 弹出列表支持
+   - 选择事件处理
+
+#### MVVM 架构
+7. **ViewModelBase** - [ViewModelBase.cs](file:///workspace/PCL-CE.Neo.UI/ViewModels/ViewModelBase.cs)
+   - ViewModel 基类
+   - 加载状态管理
+   - 状态消息处理
+
+8. **SettingsViewModel** - [SettingsViewModel.cs](file:///workspace/PCL-CE.Neo.UI/ViewModels/SettingsViewModel.cs)
+   - 设置页面的 ViewModel
+   - MVVM 命令支持
+   - 主题切换逻辑
+
+9. **InstanceViewModel** - [InstanceViewModel.cs](file:///workspace/PCL-CE.Neo.UI/ViewModels/InstanceViewModel.cs)
+   - 实例管理页面的 ViewModel
+   - 实例列表管理
+   - 搜索和过滤功能
+
+#### 页面（续）
+10. **SettingsPage** - [SettingsPage.xaml](file:///workspace/PCL-CE.Neo.UI/Pages/SettingsPage.xaml)
+    - 完整的设置页面
+    - 常规设置
+    - 下载设置
+    - 外观设置
+    - 游戏设置
+
+11. **InstancePage** - [InstancePage.xaml](file:///workspace/PCL-CE.Neo.UI/Pages/InstancePage.xaml)
+    - 实例管理页面
+    - 实例列表展示
+    - 搜索和过滤
+    - 启动/编辑/删除功能
+
+12. **ToolsPage** - [ToolsPage.xaml](file:///workspace/PCL-CE.Neo.UI/Pages/ToolsPage.xaml)
+    - 工具箱页面
+    - 游戏工具
+    - 系统工具
+    - 诊断工具
+
+### 📋 阶段 3 进度（75% 完成）
 
 #### 已完成
 - ✅ 5.4.1.1 创建 Uno Platform 项目
@@ -178,14 +219,21 @@ PCL Community Edition 跨平台重构项目进度追踪
 - ✅ 5.4.2.3 实现图标按钮（MyIconButton）
 - ✅ 5.4.2.4 实现 BlurBorder 模糊边框
 - ✅ 5.4.2.5 实现文本框（MyTextBox）
+- ✅ 5.4.2.6 实现复选框（MyCheckBox）
+- ✅ 5.4.2.7 实现加载动画（MyLoading）
+- ✅ 5.4.2.8 实现下拉框（MyComboBox）
 - ✅ 5.4.3.1 创建版本选择页面（VersionSelectPage）
 - ✅ 5.4.3.2 创建下载页面（DownloadPage）
+- ✅ 5.4.3.3 创建设置页面（SettingsPage）
+- ✅ 5.4.3.4 创建实例管理页面（InstancePage）
+- ✅ 5.4.3.5 创建工具页面（ToolsPage）
+- ✅ 5.4.3.6 实现 MVVM ViewModel 基类
 
 #### 待完成
-- ⏸️ 5.4.2.6 实现其他自定义控件
-- ⏸️ 5.4.3.3 迁移设置页面
-- ⏸️ 5.4.3.4 迁移工具页面
-- ⏸️ 5.4.3.5 迁移实例管理
+- ⏸️ 5.4.3.7 迁移游戏启动页面
+- ⏸️ 5.4.3.8 迁移登录页面
+- ⏸️ 5.4.3.9 实现响应式布局
+- ⏸️ 5.4.4 动画和过渡效果优化
 
 ---
 
@@ -196,7 +244,7 @@ PCL Community Edition 跨平台重构项目进度追踪
 | **阶段 0：准备与规划** | 第 2 周 | 100% | ✅ 完成 |
 | **阶段 1：架构准备** | 第 8 周 | **100%** | ✅ 完成 |
 | **阶段 2：平台实现** | 第 16 周 | **100%** | ✅ 完成 |
-| **阶段 3：UI 迁移** | 第 32 周 | **50%** | 🚧 进行中 |
+| **阶段 3：UI 迁移** | 第 32 周 | **75%** | 🚧 进行中 |
 | **阶段 4：测试与优化** | 第 40 周 | 0% | ⏸️ 待开始 |
 | **阶段 5：发布与过渡** | 第 44 周 | 0% | ⏸️ 待开始 |
 
