@@ -110,6 +110,6 @@ public partial class LaunchViewModel : ViewModelBase
     [RelayCommand]
     private void OpenSettings()
     {
-        // TODO: 导航到设置页面
+        StatusMessage = "设置功能开发中...";
     }
 }
