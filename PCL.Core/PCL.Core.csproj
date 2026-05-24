@@ -10,6 +10,7 @@
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
         <FileVersion>1.0.0.0</FileVersion>
     </PropertyGroup>
+
     <PropertyGroup>
         <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
         <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
@@ -17,18 +18,22 @@
         <Platforms>AnyCPU;x64;ARM64</Platforms>
         <ProjectGuid>{A0C2209D-64FB-4C11-9459-8E86304B6F94}</ProjectGuid>
         <RootNamespace>PCL.Core</RootNamespace>
-        <TargetFramework>net8.0-windows</TargetFramework>
-        <UseWPF>true</UseWPF>
-        <EnableWindowsTargeting>true</EnableWindowsTargeting>
+        <!-- 升级到 .NET 10，支持多目标框架以便跨平台 -->
+        <TargetFrameworks>net10.0;netstandard2.1</TargetFrameworks>
+        <!-- 移除 WPF 相关设置 -->
+        <!-- UseWPF 已移除 -->
+        <!-- EnableWindowsTargeting 已移除 -->
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <LangVersion>14.0</LangVersion>
+        <LangVersion>latest</LangVersion>
         <Nullable>enable</Nullable>
         <ErrorReport>prompt</ErrorReport>
         <WarningLevel>4</WarningLevel>
         <OutputPath>bin\$(Configuration)-$(Platform)\</OutputPath>
         <PlatformTarget>$(Platform)</PlatformTarget>
         <NoWarn>$(NoWarn);CS9113</NoWarn>
+        <ImplicitUsings>enable</ImplicitUsings>
     </PropertyGroup>
+
     <!-- 构建配置 -->
     <PropertyGroup Condition="'$(Configuration)' == 'Debug' Or '$(Configuration)' == 'CI' Or '$(Configuration)' == 'DebugCI'">
         <DebugSymbols>true</DebugSymbols>
@@ -43,16 +48,13 @@
         <DefineConstants Condition="'$(Configuration)' == 'Release' Or '$(Configuration)' == 'Publish'">RELEASE;PUBLISH</DefineConstants>
         <DefineConstants Condition="'$(Configuration)' == 'Beta'">BETA;PUBLISH</DefineConstants>
     </PropertyGroup>
-    <!-- NuGet 引用 -->
+
+    <!-- NuGet 引用 - 跨平台兼容的包 -->
     <ItemGroup>
-        <!-- UI -->
+        <!-- MVVM -->
         <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
-        <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.135" />
-        <PackageReference Include="Wacton.Unicolour" Version="6.4.0" />
         <!-- 语言和系统特性 -->
         <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-        <PackageReference Include="System.Management" Version="10.0.3" />
-        <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.3" />
         <!-- 归档文件 -->
         <PackageReference Include="SharpZipLib" Version="1.4.2" />
         <!-- 配置文件和数据库 -->
@@ -71,12 +73,24 @@
         <!-- 日志与遥测 -->
         <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.3" />
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.3" />
-        <PackageReference Include="Sentry" Version="6.3.1" />
         <!-- 身份认证 -->
         <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.16.0" />
         <!-- 验证 -->
         <PackageReference Include="FluentValidation" Version="12.1.1" />
     </ItemGroup>
+
+    <!-- 平台特定包 - 仅在 Windows 上包含 -->
+    <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
+        <PackageReference Include="System.Management" Version="10.0.3" />
+        <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.3" />
+        <PackageReference Include="Wacton.Unicolour" Version="6.4.0" />
+    </ItemGroup>
+
+    <!-- 平台抽象层引用 -->
+    <ItemGroup>
+        <ProjectReference Include="..\PCL.Core.Abstractions\PCL.Core.Abstractions.csproj" />
+    </ItemGroup>
+
     <!-- 信不过巨硬的智障代码，手动包含需要的文件 -->
     <PropertyGroup>
         <EnableDefaultItems>false</EnableDefaultItems>
@@ -86,14 +100,50 @@
         <EnableDefaultApplicationDefinition>false</EnableDefaultApplicationDefinition>
         <EnableDefaultPageItems>false</EnableDefaultPageItems>
     </PropertyGroup>
-    <ItemGroup>
+
+    <!-- 根据目标框架决定包含哪些文件 -->
+    <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
+        <!-- netstandard2.1: 仅包含无 WPF 依赖的代码 -->
+        <Compile Include="App\Configuration\**\*.cs" Exclude="bin\**;obj\**;publish\**;**\*.g.cs;SourceGenerators\**" />
+        <Compile Include="App\Database\**\*.cs" Exclude="bin\**;obj\**;publish\**;**\*.g.cs;SourceGenerators\**" />
+        <Compile Include="App\IoC\**\*.cs" Exclude="bin\**;obj\**;publish\**;**\*.g.cs;SourceGenerators\**" />
+        <Compile Include="App\Tasks\**\*.cs" Exclude="bin\**;obj\**;publish\**;**\*.g.cs;SourceGenerators\**" />
+        <Compile Include="App\Cli\**\*.cs" Exclude="bin\**;obj\**;publish\**;**\*.g.cs;SourceGenerators\**" />
+        <Compile Include="IO\**\*.cs" Exclude="bin\**;obj\**;publish\**;**\*.g.cs;SourceGenerators\**" />
+        <Compile Include="Link\**\*.cs" Exclude="bin\**;obj\**;publish\**;**\*.g.cs;SourceGenerators\**" />
+        <Compile Include="Logging\**\*.cs" Exclude="bin\**;obj\**;publish\**;**\*.g.cs;SourceGenerators\**" />
+        <Compile Include="Minecraft\**\*.cs" Exclude="bin\**;obj\**;publish\**;**\*.g.cs;SourceGenerators\**" />
+        <Compile Include="Model\**\*.cs" Exclude="bin\**;obj\**;publish\**;**\*.g.cs;SourceGenerators\**" />
+        <Compile Include="Utils\Codecs\**\*.cs" Exclude="bin\**;obj\**;publish\**;**\*.g.cs;SourceGenerators\**" />
+        <Compile Include="Utils\Diagnostics\**\*.cs" Exclude="bin\**;obj\**;publish\**;**\*.g.cs;SourceGenerators\**" />
+        <Compile Include="Utils\Diff\**\*.cs" Exclude="bin\**;obj\**;publish\**;**\*.g.cs;SourceGenerators\**" />
+        <Compile Include="Utils\Encryption\**\*.cs" Exclude="bin\**;obj\**;publish\**;**\*.g.cs;SourceGenerators\**" />
+        <Compile Include="Utils\Exts\**\*.cs" Exclude="bin\**;obj\**;publish\**;**\*.g.cs;SourceGenerators\**;Utils\Exts\UiExtension.cs" />
+        <Compile Include="Utils\Hash\**\*.cs" Exclude="bin\**;obj\**;publish\**;**\*.g.cs;SourceGenerators\**" />
+        <Compile Include="Utils\Threading\**\*.cs" Exclude="bin\**;obj\**;publish\**;**\*.g.cs;SourceGenerators\**" />
+        <Compile Include="Utils\Validate\**\*.cs" Exclude="bin\**;obj\**;publish\**;**\*.g.cs;SourceGenerators\**" />
+        <Compile Include="Utils\VersionControl\**\*.cs" Exclude="bin\**;obj\**;publish\**;**\*.g.cs;SourceGenerators\**" />
+        <Compile Include="Utils\*.cs" Exclude="bin\**;obj\**;publish\**;**\*.g.cs;SourceGenerators\**;Utils\WpfUtils.cs;Utils\Exts\UiExtension.cs" />
+        <Compile Include="ViewModel\**\*.cs" Exclude="bin\**;obj\**;publish\**;**\*.g.cs;SourceGenerators\**" />
+        <Compile Include="App\Basics.cs" />
+        <Compile Include="App\Config.cs" />
+        <Compile Include="App\ConfigEnums.cs" />
+        <Compile Include="App\Metadata.cs" />
+        <Compile Include="App\Paths.cs" />
+        <Compile Include="App\Secrets.cs" />
+        <Compile Include="App\States.cs" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
+        <!-- net10.0: 包含所有代码，包括平台特定代码 -->
         <Compile Include="**\*.cs" Exclude="bin\**;obj\**;publish\**;**\*.g.cs;SourceGenerators\**" />
         <Page Include="**\*.xaml" Exclude="bin\**;obj\**;publish\**" />
         <Resource Include="UI\Assets\*" />
         <Resource Include="UI\Assets\Shaders\*.ps" />
     </ItemGroup>
+
     <!-- 项目自定义源生成器 -->
-    <ItemGroup>
+    <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
         <AdditionalFiles Include="App\IoC\LifecycleState.cs" />
         <ProjectReference Include="..\PCL.Core.SourceGenerators\PCL.Core.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     </ItemGroup>

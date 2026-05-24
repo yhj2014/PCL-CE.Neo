@@ -346,3 +346,13 @@ MaskFiles/
 # macOS
 
 **/.DS_Store
+
+# --------------------------------------------------------------------------------------------
+# PCL-CE.Neo Project Specific
+# --------------------------------------------------------------------------------------------
+
+# IDE/Editor specific files
+.trae/
+
+# Documentation files - tracked in git
+# docs/  (not excluded anymore)
