@@ -13,11 +13,11 @@ PCL Community Edition 跨平台重构项目进度追踪
 | **0. 准备与规划** | 环境搭建、分支策略、CI/CD、详细设计、培训 | 100% | ✅ 完成 |
 | **1. 架构准备** | 项目重组、.NET 10 升级、平台抽象、业务逻辑重构、单元测试 | 100% | ✅ 完成 |
 | **2. 平台实现** | 各平台接口实现、集成测试、性能基准 | 100% | ✅ 完成 |
-| **3. UI 迁移** | Uno Platform UI、自定义控件、页面迁移 | 25% | 🚧 进行中 |
+| **3. UI 迁移** | Uno Platform UI、自定义控件、页面迁移 | 50% | 🚧 进行中 |
 | **4. 测试与优化** | 全面测试、性能优化、用户体验打磨 | 0% | ⏸️ 待开始 |
 | **5. 发布与过渡** | RC发布、最终测试、正式版发布 | 0% | ⏸️ 待开始 |
 
-**总体进度：75%**
+**总体进度：80%**
 
 ---
 
@@ -125,47 +125,46 @@ PCL Community Edition 跨平台重构项目进度追踪
 
 ## 今日进度（2026-05-24）
 
-### ✅ 本次新增完成（阶段 3 进展）
+### ✅ 本次新增完成（阶段 3 进展 - 25% 到 50%）
 
-1. **Uno Platform 项目配置** - [PCL-CE.Neo.UI.csproj](file:///workspace/PCL-CE.Neo.UI/PCL-CE.Neo.UI.csproj)
-   - 支持多目标框架（Windows/macOS/Linux）
-   - Uno.WinUI 5.0 集成
-   - CommunityToolkit.Mvvm 依赖
-   - 项目引用配置
+#### 自定义控件
+1. **MyButton** - [MyButton.xaml](file:///workspace/PCL-CE.Neo.UI/Controls/MyButton.xaml)
+   - 完整的按钮交互
+   - 悬停、按下动画
+   - 命令绑定支持
 
-2. **主题系统** - [ThemeManager.cs](file:///workspace/PCL-CE.Neo.UI/Themes/ThemeManager.cs)
-   - 亮色/暗色主题切换
-   - 主题持久化保存
-   - 动态资源切换
+2. **MyIconButton** - [MyIconButton.xaml](file:///workspace/PCL-CE.Neo.UI/Controls/MyIconButton.xaml)
+   - 图标按钮控件
+   - 工具提示支持
 
-3. **暗色主题资源** - [DarkColors.xaml](file:///workspace/PCL-CE.Neo.UI/Resources/DarkColors.xaml)
-   - 完整的暗色主题配色
-   - 与亮色主题配套的所有颜色
+3. **MyTextBox** - [MyTextBox.xaml](file:///workspace/PCL-CE.Neo.UI/Controls/MyTextBox.xaml)
+   - 自定义文本输入框
+   - 占位符文本
+   - 焦点状态管理
 
-4. **导航服务** - [NavigationService.cs](file:///workspace/PCL-CE.Neo.UI/Navigation/NavigationService.cs)
-   - 单例导航服务
-   - 页面导航
-   - 回退功能
-   - 导航项目管理
+4. **BlurBorder** - [BlurBorder.xaml](file:///workspace/PCL-CE.Neo.UI/Controls/BlurBorder.xaml)
+   - 跨平台模糊边框
+   - 模糊效果控制
 
-5. **主窗口** - [MainWindow.xaml](file:///workspace/PCL-CE.Neo.UI/MainWindow.xaml)
-   - 基础布局结构
-   - 标题栏和主题切换按钮
-   - 导航框架集成
+#### 动画系统
+5. **AnimationService** - [AnimationService.cs](file:///workspace/PCL-CE.Neo.UI/Animations/AnimationService.cs)
+   - 淡入/淡出动画
+   - 滑动动画
+   - 缩放动画
+   - 统一的动画接口
 
-6. **首页** - [HomePage.xaml](file:///workspace/PCL-CE.Neo.UI/Pages/HomePage.xaml)
-   - 项目展示页面
-   - 进度信息展示
+#### 页面
+6. **VersionSelectPage** - [VersionSelectPage.xaml](file:///workspace/PCL-CE.Neo.UI/Pages/VersionSelectPage.xaml)
+   - 版本列表展示
+   - 搜索功能
+   - 版本选择导航
 
-7. **基础控件** - [Card.xaml](file:///workspace/PCL-CE.Neo.UI/Controls/Card.xaml)
-   - 卡片控件
-   - 可复用布局组件
+7. **DownloadPage** - [DownloadPage.xaml](file:///workspace/PCL-CE.Neo.UI/Pages/DownloadPage.xaml)
+   - 下载队列管理
+   - 下载进度展示
+   - 暂停/继续/取消功能
 
-8. **应用入口** - [App.xaml.cs](file:///workspace/PCL-CE.Neo.UI/App.xaml.cs)
-   - 应用启动逻辑
-   - 主窗口激活
-
-### 📋 阶段 3 进度（25% 完成）
+### 📋 阶段 3 进度（50% 完成）
 
 #### 已完成
 - ✅ 5.4.1.1 创建 Uno Platform 项目
@@ -174,10 +173,19 @@ PCL Community Edition 跨平台重构项目进度追踪
 - ✅ 5.4.1.4 移植基础样式
 - ✅ 5.4.1.5 实现导航框架
 - ✅ 5.4.1.6 主窗口框架
+- ✅ 5.4.2.1 重构动画系统（AnimationService）
+- ✅ 5.4.2.2 实现自定义按钮（MyButton）
+- ✅ 5.4.2.3 实现图标按钮（MyIconButton）
+- ✅ 5.4.2.4 实现 BlurBorder 模糊边框
+- ✅ 5.4.2.5 实现文本框（MyTextBox）
+- ✅ 5.4.3.1 创建版本选择页面（VersionSelectPage）
+- ✅ 5.4.3.2 创建下载页面（DownloadPage）
 
 #### 待完成
-- ⏸️ 5.4.2 自定义控件迁移
-- ⏸️ 5.4.3 页面迁移
+- ⏸️ 5.4.2.6 实现其他自定义控件
+- ⏸️ 5.4.3.3 迁移设置页面
+- ⏸️ 5.4.3.4 迁移工具页面
+- ⏸️ 5.4.3.5 迁移实例管理
 
 ---
 
@@ -188,7 +196,7 @@ PCL Community Edition 跨平台重构项目进度追踪
 | **阶段 0：准备与规划** | 第 2 周 | 100% | ✅ 完成 |
 | **阶段 1：架构准备** | 第 8 周 | **100%** | ✅ 完成 |
 | **阶段 2：平台实现** | 第 16 周 | **100%** | ✅ 完成 |
-| **阶段 3：UI 迁移** | 第 32 周 | **25%** | 🚧 进行中 |
+| **阶段 3：UI 迁移** | 第 32 周 | **50%** | 🚧 进行中 |
 | **阶段 4：测试与优化** | 第 40 周 | 0% | ⏸️ 待开始 |
 | **阶段 5：发布与过渡** | 第 44 周 | 0% | ⏸️ 待开始 |
 
