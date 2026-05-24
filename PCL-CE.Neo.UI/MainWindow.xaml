@@ -14,6 +14,7 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
+        <!-- Title Bar -->
         <Border Grid.Row="0"
                 Background="{StaticResource BackgroundSecondaryBrush}"
                 Padding="16,8">
@@ -29,6 +30,7 @@
                            Style="{StaticResource HeadingStyle}"
                            VerticalAlignment="Center"/>
 
+                <!-- Theme Switch -->
                 <StackPanel Grid.Column="2"
                             Orientation="Horizontal"
                             Spacing="8">
@@ -44,8 +46,146 @@
             </Grid>
         </Border>
 
-        <Frame Grid.Row="1"
-               x:Name="MainFrame"
-               Margin="16"/>
+        <!-- Main Content -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <!-- Navigation Sidebar -->
+                <ColumnDefinition Width="Auto" x:Name="NavColumn"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Navigation Sidebar -->
+            <Border Grid.Column="0"
+                    Background="{StaticResource BackgroundSecondaryBrush}"
+                    Padding="8">
+                <StackPanel Spacing="4">
+                    <!-- Home -->
+                    <Button x:Name="NavHome"
+                            Style="{StaticResource BaseButtonStyle}"
+                            Background="Transparent"
+                            Click="OnNavHomeClick"
+                            Padding="12,8"
+                            HorizontalAlignment="Stretch">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="🏠" FontSize="20" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="1" Text="首页" Style="{StaticResource BodyStyle}" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                        </Grid>
+                    </Button>
+
+                    <!-- Launch -->
+                    <Button x:Name="NavLaunch"
+                            Style="{StaticResource BaseButtonStyle}"
+                            Background="Transparent"
+                            Click="OnNavLaunchClick"
+                            Padding="12,8"
+                            HorizontalAlignment="Stretch">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="🎮" FontSize="20" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="1" Text="启动游戏" Style="{StaticResource BodyStyle}" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                        </Grid>
+                    </Button>
+
+                    <!-- Version Select -->
+                    <Button x:Name="NavVersions"
+                            Style="{StaticResource BaseButtonStyle}"
+                            Background="Transparent"
+                            Click="OnNavVersionsClick"
+                            Padding="12,8"
+                            HorizontalAlignment="Stretch">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="📦" FontSize="20" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="1" Text="版本下载" Style="{StaticResource BodyStyle}" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                        </Grid>
+                    </Button>
+
+                    <!-- Instances -->
+                    <Button x:Name="NavInstances"
+                            Style="{StaticResource BaseButtonStyle}"
+                            Background="Transparent"
+                            Click="OnNavInstancesClick"
+                            Padding="12,8"
+                            HorizontalAlignment="Stretch">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="💾" FontSize="20" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="1" Text="实例管理" Style="{StaticResource BodyStyle}" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                        </Grid>
+                    </Button>
+
+                    <!-- Login -->
+                    <Button x:Name="NavLogin"
+                            Style="{StaticResource BaseButtonStyle}"
+                            Background="Transparent"
+                            Click="OnNavLoginClick"
+                            Padding="12,8"
+                            HorizontalAlignment="Stretch">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="👤" FontSize="20" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="1" Text="账号登录" Style="{StaticResource BodyStyle}" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                        </Grid>
+                    </Button>
+
+                    <Border Height="1" Background="{StaticResource BorderBrush}" Margin="0,8"/>
+
+                    <!-- Tools -->
+                    <Button x:Name="NavTools"
+                            Style="{StaticResource BaseButtonStyle}"
+                            Background="Transparent"
+                            Click="OnNavToolsClick"
+                            Padding="12,8"
+                            HorizontalAlignment="Stretch">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="🛠️" FontSize="20" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="1" Text="工具箱" Style="{StaticResource BodyStyle}" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                        </Grid>
+                    </Button>
+
+                    <!-- Settings -->
+                    <Button x:Name="NavSettings"
+                            Style="{StaticResource BaseButtonStyle}"
+                            Background="Transparent"
+                            Click="OnNavSettingsClick"
+                            Padding="12,8"
+                            HorizontalAlignment="Stretch">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="⚙️" FontSize="20" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="1" Text="设置" Style="{StaticResource BodyStyle}" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                        </Grid>
+                    </Button>
+                </StackPanel>
+            </Border>
+
+            <!-- Content Frame -->
+            <Frame Grid.Column="1"
+                   x:Name="MainFrame"
+                   Margin="16"/>
+        </Grid>
     </Grid>
 </Window>
