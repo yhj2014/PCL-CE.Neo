@@ -13,11 +13,11 @@ PCL Community Edition 跨平台重构项目进度追踪
 | **0. 准备与规划** | 环境搭建、分支策略、CI/CD、详细设计、培训 | 100% | ✅ 完成 |
 | **1. 架构准备** | 项目重组、.NET 10 升级、平台抽象、业务逻辑重构、单元测试 | 100% | ✅ 完成 |
 | **2. 平台实现** | 各平台接口实现、集成测试、性能基准 | 100% | ✅ 完成 |
-| **3. UI 迁移** | Uno Platform UI、自定义控件、页面迁移 | 0% | ⏸️ 待开始 |
+| **3. UI 迁移** | Uno Platform UI、自定义控件、页面迁移 | 25% | 🚧 进行中 |
 | **4. 测试与优化** | 全面测试、性能优化、用户体验打磨 | 0% | ⏸️ 待开始 |
 | **5. 发布与过渡** | RC发布、最终测试、正式版发布 | 0% | ⏸️ 待开始 |
 
-**总体进度：70%**
+**总体进度：75%**
 
 ---
 
@@ -123,60 +123,61 @@ PCL Community Edition 跨平台重构项目进度追踪
 
 ---
 
-## 今日进度（2026-05-14）
+## 今日进度（2026-05-24）
 
-### ✅ 本次新增完成
+### ✅ 本次新增完成（阶段 3 进展）
 
-1. **macOS 集成测试** - [MacOSIntegrationTests.cs](file:///workspace/PCL-CE.Neo.Tests/PlatformIntegration/macOS/MacOSIntegrationTests.cs)
-   - PlatformService 集成测试
-   - JavaScanner 集成测试
-   - ThemeService 集成测试
-   - AudioService 集成测试
-   - ClipboardService 集成测试
-   - DialogService 集成测试
-   - NotificationService 集成测试
-   - ServiceBuilder 集成测试
+1. **Uno Platform 项目配置** - [PCL-CE.Neo.UI.csproj](file:///workspace/PCL-CE.Neo.UI/PCL-CE.Neo.UI.csproj)
+   - 支持多目标框架（Windows/macOS/Linux）
+   - Uno.WinUI 5.0 集成
+   - CommunityToolkit.Mvvm 依赖
+   - 项目引用配置
 
-2. **Linux 集成测试** - [LinuxIntegrationTests.cs](file:///workspace/PCL-CE.Neo.Tests/PlatformIntegration/Linux/LinuxIntegrationTests.cs)
-   - PlatformService 集成测试
-   - JavaScanner 集成测试
-   - ThemeService 集成测试
-   - AudioService 集成测试
-   - ClipboardService 集成测试
-   - DialogService 集成测试
-   - NotificationService 集成测试
-   - ServiceBuilder 集成测试
+2. **主题系统** - [ThemeManager.cs](file:///workspace/PCL-CE.Neo.UI/Themes/ThemeManager.cs)
+   - 亮色/暗色主题切换
+   - 主题持久化保存
+   - 动态资源切换
 
-3. **性能基准测试** - [BenchmarkTests.cs](file:///workspace/PCL-CE.Neo.Tests/Performance/BenchmarkTests.cs)
-   - StartupPerformanceTests - 启动性能测试
-   - DatabasePerformanceTests - 数据库性能测试
-   - NetworkPerformanceTests - 网络性能测试
-   - MemoryPerformanceTests - 内存性能测试
-   - BenchmarkSummary - 基准总结
+3. **暗色主题资源** - [DarkColors.xaml](file:///workspace/PCL-CE.Neo.UI/Resources/DarkColors.xaml)
+   - 完整的暗色主题配色
+   - 与亮色主题配套的所有颜色
 
-4. **性能基准文档** - [PERFORMANCE_BENCHMARKS.md](file:///workspace/docs/PERFORMANCE_BENCHMARKS.md)
-   - 性能要求定义
-   - 跨平台性能对比
-   - 性能优化建议
-   - 性能监控说明
+4. **导航服务** - [NavigationService.cs](file:///workspace/PCL-CE.Neo.UI/Navigation/NavigationService.cs)
+   - 单例导航服务
+   - 页面导航
+   - 回退功能
+   - 导航项目管理
 
-5. **跨平台功能验证文档** - [CROSS_PLATFORM_VERIFICATION.md](file:///workspace/docs/CROSS_PLATFORM_VERIFICATION.md)
-   - 验证环境要求
-   - 功能验证矩阵
-   - 验证流程说明
-   - 手动验证清单
+5. **主窗口** - [MainWindow.xaml](file:///workspace/PCL-CE.Neo.UI/MainWindow.xaml)
+   - 基础布局结构
+   - 标题栏和主题切换按钮
+   - 导航框架集成
 
-6. **测试覆盖率说明** - [TEST_COVERAGE.md](file:///workspace/docs/TEST_COVERAGE.md)
-   - 测试策略
-   - 测试文件结构
-   - 覆盖率统计
-   - 运行测试说明
-   - CI/CD 集成
+6. **首页** - [HomePage.xaml](file:///workspace/PCL-CE.Neo.UI/Pages/HomePage.xaml)
+   - 项目展示页面
+   - 进度信息展示
 
-### 🎉 里程碑达成
+7. **基础控件** - [Card.xaml](file:///workspace/PCL-CE.Neo.UI/Controls/Card.xaml)
+   - 卡片控件
+   - 可复用布局组件
 
-- ✅ **第一阶段（架构准备）** - 100% 完成
-- ✅ **第二阶段（平台实现）** - 100% 完成
+8. **应用入口** - [App.xaml.cs](file:///workspace/PCL-CE.Neo.UI/App.xaml.cs)
+   - 应用启动逻辑
+   - 主窗口激活
+
+### 📋 阶段 3 进度（25% 完成）
+
+#### 已完成
+- ✅ 5.4.1.1 创建 Uno Platform 项目
+- ✅ 5.4.1.2 移植资源系统（颜色、字体、尺寸）
+- ✅ 5.4.1.3 实现主题系统
+- ✅ 5.4.1.4 移植基础样式
+- ✅ 5.4.1.5 实现导航框架
+- ✅ 5.4.1.6 主窗口框架
+
+#### 待完成
+- ⏸️ 5.4.2 自定义控件迁移
+- ⏸️ 5.4.3 页面迁移
 
 ---
 
@@ -187,11 +188,11 @@ PCL Community Edition 跨平台重构项目进度追踪
 | **阶段 0：准备与规划** | 第 2 周 | 100% | ✅ 完成 |
 | **阶段 1：架构准备** | 第 8 周 | **100%** | ✅ 完成 |
 | **阶段 2：平台实现** | 第 16 周 | **100%** | ✅ 完成 |
-| **阶段 3：UI 迁移** | 第 32 周 | 0% | ⏸️ 待开始 |
+| **阶段 3：UI 迁移** | 第 32 周 | **25%** | 🚧 进行中 |
 | **阶段 4：测试与优化** | 第 40 周 | 0% | ⏸️ 待开始 |
 | **阶段 5：发布与过渡** | 第 44 周 | 0% | ⏸️ 待开始 |
 
-**总体实际完成度：70%**
+**总体实际完成度：75%**
 
 ---
 
@@ -210,14 +211,16 @@ PCL Community Edition 跨平台重构项目进度追踪
 | 性能基准 | /workspace/docs/PERFORMANCE_BENCHMARKS.md | ✅ |
 | 跨平台验证 | /workspace/docs/CROSS_PLATFORM_VERIFICATION.md | ✅ |
 | 测试覆盖率 | /workspace/docs/TEST_COVERAGE.md | ✅ |
+| UI 迁移指南 | /workspace/docs/guides/UI_MIGRATION_GUIDE.md | 🚧 进行中 |
 
 ---
 
 ## 下一步行动
 
-1. **开始阶段 3 准备工作** - UI 迁移前期准备
-2. **Uno Platform 环境搭建** - 创建 Uno Platform UI 项目
-3. **UI 组件规划** - 设计 Uno Platform UI 组件
+1. **继续阶段 3 工作** - 自定义控件迁移
+2. **移植动画系统** - Uno Platform 合成动画
+3. **实现更多控件** - MyButton, BlurBorder 等
+4. **迁移更多页面** - 版本选择、下载页面等
 
 ---
 
@@ -225,14 +228,20 @@ PCL Community Edition 跨平台重构项目进度追踪
 
 | 文件 | 变更 | 日期 |
 |------|------|------|
-| MacOSIntegrationTests.cs | 新增 | 2026-05-14 |
-| LinuxIntegrationTests.cs | 新增 | 2026-05-14 |
-| BenchmarkTests.cs | 新增 | 2026-05-14 |
-| PERFORMANCE_BENCHMARKS.md | 新增 | 2026-05-14 |
-| CROSS_PLATFORM_VERIFICATION.md | 新增 | 2026-05-14 |
-| TEST_COVERAGE.md | 新增 | 2026-05-14 |
-| PROGRESS.md | 更新 | 2026-05-14 |
+| PCL-CE.Neo.UI.csproj | 更新配置 | 2026-05-24 |
+| App.xaml | 重构为 Application | 2026-05-24 |
+| App.xaml.cs | 新增应用入口 | 2026-05-24 |
+| MainWindow.xaml | 新增主窗口 | 2026-05-24 |
+| MainWindow.xaml.cs | 新增主窗口代码 | 2026-05-24 |
+| Themes/ThemeManager.cs | 新增主题管理 | 2026-05-24 |
+| Navigation/NavigationService.cs | 新增导航服务 | 2026-05-24 |
+| Pages/HomePage.xaml | 新增首页 | 2026-05-24 |
+| Pages/HomePage.xaml.cs | 新增首页代码 | 2026-05-24 |
+| Controls/Card.xaml | 新增卡片控件 | 2026-05-24 |
+| Controls/Card.xaml.cs | 新增卡片控件代码 | 2026-05-24 |
+| Resources/DarkColors.xaml | 新增暗色主题 | 2026-05-24 |
+| PROGRESS.md | 更新进度 | 2026-05-24 |
 
 ---
 
-**最后更新：2026-05-14**
+**最后更新：2026-05-24**
