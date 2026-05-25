@@ -1,0 +1,43 @@
+<Page
+    x:Class="PCL_CE.Neo.UI.Pages.HomePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <ScrollViewer>
+        <StackPanel Spacing="16">
+            <TextBlock Text="Welcome to PCL CE Neo!"
+                       Style="{StaticResource HeadingStyle}"/>
+
+            <TextBlock Text="跨平台 Minecraft 启动器"
+                       Style="{StaticResource SubheadingStyle}"/>
+
+            <Border Background="{StaticResource BackgroundSecondaryBrush}"
+                    Padding="16"
+                    CornerRadius="8">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="项目状态"
+                               Style="{StaticResource TitleStyle}"/>
+
+                    <TextBlock Text="• 平台抽象层：✅ 完成"
+                               Style="{StaticResource BodyStyle}"/>
+                    <TextBlock Text="• Windows 平台：✅ 完成"
+                               Style="{StaticResource BodyStyle}"/>
+                    <TextBlock Text="• macOS 平台：✅ 完成"
+                               Style="{StaticResource BodyStyle}"/>
+                    <TextBlock Text="• Linux 平台：✅ 完成"
+                               Style="{StaticResource BodyStyle}"/>
+                    <TextBlock Text="• UI 框架：🚧 进行中"
+                               Style="{StaticResource BodyStyle}"/>
+                </StackPanel>
+            </Border>
+
+            <Button Content="开始使用"
+                    Style="{StaticResource BaseButtonStyle}"
+                    HorizontalAlignment="Left"
+                    Click="OnGetStartedClick"/>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

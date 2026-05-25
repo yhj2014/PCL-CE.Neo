@@ -1,401 +1,457 @@
-# PCL-CE.Neo UI 迁移指南
+# UI 迁移指南
 
-本文档描述如何将 PCL Community Edition 的 WPF UI 像素级迁移到 Uno Platform。
+本文档介绍将 PCL CE 的 WPF UI 迁移到 Uno Platform 的详细指南。
+
+---
 
 ## 目录
 
-1. [概述](#1-概述)
-2. [像素级还原原则](#2-像素级还原原则)
-3. [迁移步骤](#3-迁移步骤)
-4. [控件迁移规范](#4-控件迁移规范)
-5. [资源提取](#5-资源提取)
-6. [验证清单](#6-验证清单)
+1. [架构概述](#架构概述)
+2. [项目结构](#项目结构)
+3. [XAML 差异](#xaml-差异)
+4. [资源系统](#资源系统)
+5. [主题系统](#主题系统)
+6. [自定义控件](#自定义控件)
+7. [页面迁移](#页面迁移)
+8. [最佳实践](#最佳实践)
 
 ---
 
-## 1. 概述
+## 架构概述
 
-### 1.1 项目背景
+### WPF 与 Uno Platform 的主要区别
 
-PCL-CE.Neo 是 PCL Community Edition 的跨平台重构项目，由社区开发者发起。
-
-### 1.2 目标
-
-将现有的 WPF UI 完整迁移到 Uno Platform，同时保持：
-- 100% 的视觉一致性
-- 相同的行为和交互
-- 相同的功能
-
-### 1.2 迁移范围
-
-**需要迁移的内容**：
-- 所有 XAML 页面和控件
-- 所有自定义控件
-- 样式和模板
-- 动画效果
-- 资源文件（图片、颜色、字体等）
-
-**特殊处理**：
-- Win32 API 调用 → 平台抽象
-- WPF 特定特效 → Uno 兼容实现
-- WPF 内部反射 → 跨平台替代方案
+| 特性 | WPF | Uno Platform |
+|------|-----|-------------|
+| XAML 命名空间 | `System.Windows.Controls` | `Microsoft.UI.Xaml.Controls` |
+| 动画系统 | WPF Storyboard | Composition API |
+| 特效系统 | WPF Effects | Composition Effects |
+| 窗口管理 | `Window` 类 | `Window` 类（跨平台适配）|
+| 平台支持 | Windows 仅 | Windows/macOS/Linux/WebAssembly |
 
 ---
 
-## 2. 像素级还原原则
+## 项目结构
 
-### 2.1 视觉一致性
-
-**颜色**：
-```xaml
-<!-- 原 WPF -->
-<SolidColorBrush x:Key="ColorBrush1" Color="#FF3498DB"/>
-
-<!-- Uno Platform -->
-<SolidColorBrush x:Key="ColorBrush1" Color="#FF3498DB"/>
 ```
-
-- 所有颜色值必须完全一致
-- 使用资源字典统一管理
-- 支持主题切换时自动切换颜色
-
-**尺寸和间距**：
-- 所有 Margin 和 Padding 必须保持一致
-- 使用 Grid 的 Star sizing 时比例一致
-- 使用像素值而非相对值
-
-**字体**：
-- 字体家族必须相同
-- 字号必须相同
-- 字重必须相同
-
-### 2.2 行为一致性
-
-**交互**：
-- 点击、悬停、按下效果必须相同
-- 焦点样式必须相同
-- 键盘导航必须相同
-
-**动画**：
-- 动画时长必须相同
-- 缓动函数必须相同
-- 动画曲线必须相同
+PCL-CE.Neo.UI/
+├── App.xaml                    # 应用入口
+├── App.xaml.cs
+├── MainWindow.xaml             # 主窗口
+├── MainWindow.xaml.cs
+├── PCL-CE.Neo.UI.csproj
+├── Resources/                  # 资源文件
+│   ├── Colors.xaml
+│   ├── DarkColors.xaml
+│   ├── Dimensions.xaml
+│   ├── TextStyles.xaml
+│   └── ControlStyles.xaml
+├── Themes/                     # 主题管理
+│   └── ThemeManager.cs
+├── Navigation/                 # 导航服务
+│   └── NavigationService.cs
+├── Controls/                   # 自定义控件
+│   ├── Card.xaml
+│   └── Card.xaml.cs
+├── Services/                   # UI 服务
+└── Pages/                      # 页面
+    ├── HomePage.xaml
+    └── HomePage.xaml.cs
+```
 
 ---
 
-## 3. 迁移步骤
+## XAML 差异
 
-### 3.1 第一步：资源提取
+### 1. 命名空间变更
 
-提取所有 UI 资源为统一定义：
-
-```
-PCL.UI/
-├── Resources/
-│   ├── Colors.xaml          # 所有颜色定义
-│   ├── Brushes.xaml          # 画刷定义
-│   ├── TextStyles.xaml      # 文本样式
-│   ├── ControlStyles.xaml   # 控件样式
-│   └── Dimensions.xaml      # 尺寸常量
-├── Controls/                 # 自定义控件
-└── Pages/                   # 页面
+**WPF 原代码：**
+```xml
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StackPanel>
+        <Button Content="点击我"/>
+    </StackPanel>
+</Window>
 ```
 
-### 3.2 第二步：创建 Uno 项目
+**Uno Platform 新代码：**
+```xml
+<Page xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StackPanel>
+        <Button Content="点击我"/>
+    </StackPanel>
+</Page>
+```
+
+### 2. 控件属性变化
+
+**WPF：**
+```xml
+<TextBlock Text="示例"
+           TextWrapping="Wrap"
+           FontFamily="微软雅黑"
+           FontSize="14"/>
+```
+
+**Uno Platform：**
+```xml
+<TextBlock Text="示例"
+           TextWrapping="Wrap"
+           FontFamily="ms-appx:///Assets/Fonts/MyFont.ttf#MyFont"
+           FontSize="14"/>
+```
+
+### 3. 事件处理
+
+**WPF：**
+```xml
+<Button Click="Button_Click"/>
+```
+
+**Uno Platform（相同）：**
+```xml
+<Button Click="Button_Click"/>
+```
+
+---
+
+## 资源系统
+
+### 颜色资源
+
+**亮色主题（Colors.xaml）：**
+```xml
+<Color x:Key="PrimaryColor">#FF3498DB</Color>
+<Color x:Key="BackgroundColor">#FFFFFFFF</Color>
+<Color x:Key="TextPrimaryColor">#FF2C3E50</Color>
+
+<SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}"/>
+<SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}"/>
+```
+
+**暗色主题（DarkColors.xaml）：**
+```xml
+<Color x:Key="PrimaryColor">#FF3498DB</Color>
+<Color x:Key="BackgroundColor">#FF1A1A2E</Color>
+<Color x:Key="TextPrimaryColor">#FFECF0F1</Color>
+
+<SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}"/>
+<SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}"/>
+```
+
+### 尺寸资源
 
 ```xml
-<!-- PCL.UI.csproj -->
-<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFrameworks>
-      net10.0-windows10.0.19041.0;
-      net10.0-maccatalyst;
-      net10.0-linux
-    </TargetFrameworks>
-    <UseWinUI>true</UseWinUI>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Uno.WinUI" Version="5.0.0" />
-    <PackageReference Include="Uno.Toolkit.WinUI" Version="5.0.0" />
-  </ItemGroup>
-</Project>
+<sys:Double x:Key="ButtonMinWidth">80</sys:Double>
+<sys:Double x:Key="ButtonMinHeight">32</sys:Double>
+<Thickness x:Key="ButtonPadding">12,6</Thickness>
+<CornerRadius x:Key="ButtonCornerRadius">4</CornerRadius>
+<CornerRadius x:Key="CardCornerRadius">8</CornerRadius>
 ```
 
-### 3.3 第三步：迁移控件
+### 样式资源
 
-按优先级迁移自定义控件：
+```xml
+<Style x:Key="BodyStyle" TargetType="TextBlock">
+    <Setter Property="FontSize" Value="14"/>
+    <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+    <Setter Property="TextWrapping" Value="Wrap"/>
+</Style>
 
-1. **基础控件**（必须优先）
-   - `MyButton` → 自定义按钮
-   - `MyTextBox` → 自定义文本框
-   - `MyComboBox` → 自定义下拉框
-
-2. **容器控件**
-   - `MyCard` → 卡片容器
-   - `BlurBorder` → 模糊边框（需要替代方案）
-
-3. **功能控件**
-   - `MyIconButton` → 图标按钮
-   - `MySearchBox` → 搜索框
-   - `MySlider` → 滑块
-
-### 3.4 第四步：迁移页面
-
-按模块迁移页面：
-
-1. **主页** - `PageLaunch/`
-2. **下载页** - `PageDownload/`
-3. **设置页** - `PageSetup/`
-4. **工具页** - `PageTools/`
-
----
-
-## 4. 控件迁移规范
-
-### 4.1 MyButton
-
-**原 WPF 实现**：
-```xaml
-<!-- Plain Craft Launcher 2/Controls/MyButton.xaml -->
-<Style x:Key="MyButtonStyle" TargetType="Button">
-    <Setter Property="Background" Value="{DynamicResource ColorBrush1}"/>
+<Style x:Key="BaseButtonStyle" TargetType="Button">
+    <Setter Property="Background" Value="{StaticResource PrimaryBrush}"/>
     <Setter Property="Foreground" Value="White"/>
-    <Setter Property="Padding" Value="12,6"/>
-    <Setter Property="MinWidth" Value="80"/>
-    <!-- 更多属性... -->
+    <Setter Property="Padding" Value="{StaticResource ButtonPadding}"/>
+    <Setter Property="MinWidth" Value="{StaticResource ButtonMinWidth}"/>
+    <Setter Property="MinHeight" Value="{StaticResource ButtonMinHeight}"/>
 </Style>
 ```
 
-**Uno Platform 实现**：
-```xaml
-<!-- PCL.UI/Controls/MyButton.xaml -->
-<Style x:Key="MyButtonStyle" TargetType="Button">
-    <Setter Property="Background" Value="{StaticResource ColorBrush1}"/>
-    <Setter Property="Foreground" Value="White"/>
-    <Setter Property="Padding" Value="12,6"/>
-    <Setter Property="MinWidth" Value="80"/>
-    <!-- 保持完全一致 -->
-</Style>
-```
-
-### 4.2 BlurBorder（特效控件）
-
-**问题**：WPF 使用 Pixel Shader 实现模糊效果，Uno 不直接支持。
-
-**替代方案**：
-1. 使用 Uno 的 `AcrylicBackgroundSource`（如果可用）
-2. 使用纯色半透明背景
-3. 使用平台特定的模糊 API
-
-```xaml
-<!-- 替代方案：使用半透明背景 -->
-<Border Background="#80000000" CornerRadius="6">
-    <ContentPresenter/>
-</Border>
-```
-
-### 4.3 动画迁移
-
-**原 WPF**：
-```xml
-<Storyboard>
-    <DoubleAnimation
-        Storyboard.TargetName="MyElement"
-        Storyboard.TargetProperty="Opacity"
-        From="0" To="1" Duration="0:0:0.3"/>
-</Storyboard>
-```
-
-**Uno Platform**：
-```xml
-<!-- 使用 Visual States 和 Transitions -->
-<VisualState x:Name="FadeIn">
-    <VisualState.Storyboard>
-        <Storyboard>
-            <DoubleAnimation
-                Storyboard.TargetName="MyElement"
-                Storyboard.TargetProperty="Opacity"
-                To="1" Duration="0:0:0.3"/>
-        </Storyboard>
-    </VisualState.Storyboard>
-</VisualState>
-```
-
 ---
 
-## 5. 资源提取
+## 主题系统
 
-### 5.1 颜色资源
+### ThemeManager 使用
 
-从现有代码中提取所有颜色：
-
-**原 WPF**：
 ```csharp
-// 在 CatColorResource.cs 或各处硬编码
-public static class Colors
+using PCL_CE.Neo.UI.Themes;
+
+// 初始化
+ThemeManager.Instance.Initialize();
+
+// 切换到亮色主题
+ThemeManager.Instance.SetTheme(AppTheme.Light);
+
+// 切换到暗色主题
+ThemeManager.Instance.SetTheme(AppTheme.Dark);
+
+// 获取当前主题
+var currentTheme = ThemeManager.Instance.CurrentTheme;
+```
+
+### 主题切换实现
+
+ThemeManager 通过动态替换资源字典来实现主题切换：
+
+```csharp
+private void ApplyTheme(AppTheme theme)
 {
-    public static Color Primary = Color.FromRgb(52, 152, 219);
-    public static Color Secondary = Color.FromRgb(46, 204, 113);
-    // ...
+    var resources = Application.Current.Resources;
+    var mergedDictionaries = resources.MergedDictionaries;
+
+    // 移除旧的颜色资源
+    foreach (var dict in mergedDictionaries.ToList())
+    {
+        if (dict.Source?.OriginalString?.Contains("Colors.xaml") == true ||
+            dict.Source?.OriginalString?.Contains("DarkColors.xaml") == true)
+        {
+            mergedDictionaries.Remove(dict);
+        }
+    }
+
+    // 添加新的颜色资源
+    var colorResource = theme == AppTheme.Dark
+        ? new ResourceDictionary { Source = new Uri("ms-appx:///Resources/DarkColors.xaml") }
+        : new ResourceDictionary { Source = new Uri("ms-appx:///Resources/Colors.xaml") };
+
+    mergedDictionaries.Insert(0, colorResource);
 }
 ```
 
-**提取为资源**：
+---
+
+## 自定义控件
+
+### 1. 创建 UserControl
+
+**XAML：**
 ```xml
-<!-- Resources/Colors.xaml -->
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:system="clr-namespace:System;assembly=mscorlib">
-
-    <!-- Primary Colors -->
-    <Color x:Key="PrimaryColor">#FF3498DB</Color>
-    <Color x:Key="SecondaryColor">#FF2ECC71</Color>
-
-    <!-- Semantic Colors -->
-    <Color x:Key="SuccessColor">#FF2ECC71</Color>
-    <Color x:Key="WarningColor">#FFF39C12</Color>
-    <Color x:Key="ErrorColor">#FFE74C3C</Color>
-
-    <!-- Text Colors -->
-    <Color x:Key="TextPrimaryColor">#FF2C3E50</Color>
-    <Color x:Key="TextSecondaryColor">#FF7F8C8D</Color>
-
-</ResourceDictionary>
+<UserControl x:Class="PCL_CE.Neo.UI.Controls.Card"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Border Background="{StaticResource BackgroundSecondaryBrush}"
+            CornerRadius="{StaticResource CardCornerRadius}"
+            Padding="{StaticResource DefaultMargin}"
+            BorderBrush="{StaticResource BorderBrush}"
+            BorderThickness="1">
+        <ContentPresenter/>
+    </Border>
+</UserControl>
 ```
 
-### 5.2 尺寸资源
+**C#：**
+```csharp
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 
-```xml
-<!-- Resources/Dimensions.xaml -->
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+namespace PCL_CE.Neo.UI.Controls;
 
-    <!-- Button Dimensions -->
-    <sys:Double x:Key="ButtonMinWidth" xmlns:sys="clr-namespace:System;assembly=mscorlib">80</sys:Double>
-    <Thickness x:Key="ButtonPadding">12,6</Thickness>
-    <CornerRadius x:Key="ButtonCornerRadius">4</CornerRadius>
+public sealed partial class Card : UserControl
+{
+    public static readonly DependencyProperty HeaderProperty = DependencyProperty.Register(
+        nameof(Header),
+        typeof(string),
+        typeof(Card),
+        new PropertyMetadata(string.Empty));
 
-    <!-- Control Dimensions -->
-    <sys:Double x:Key="IconSize" xmlns:sys="clr-namespace:System;assembly=mscorlib">24</sys:Double>
-    <sys:Double x:Key="SmallIconSize" xmlns:sys="clr-namespace:System;assembly=mscorlib">16</sys:Double>
+    public string Header
+    {
+        get => (string)GetValue(HeaderProperty);
+        set => SetValue(HeaderProperty, value);
+    }
 
-    <!-- Spacing -->
-    <Thickness x:Key="DefaultMargin">8</Thickness>
-    <Thickness x:Key="LargeMargin">16</Thickness>
-
-</ResourceDictionary>
+    public Card()
+    {
+        InitializeComponent();
+    }
+}
 ```
 
-### 5.3 文本样式
+### 2. 使用自定义控件
 
 ```xml
-<!-- Resources/TextStyles.xaml -->
-<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-
-    <!-- Headings -->
-    <Style x:Key="HeadingStyle" TargetType="TextBlock">
-        <Setter Property="FontSize" Value="24"/>
-        <Setter Property="FontWeight" Value="Bold"/>
-        <Setter Property="Foreground" Value="{StaticResource TextPrimaryColor}"/>
-    </Style>
-
-    <Style x:Key="SubheadingStyle" TargetType="TextBlock">
-        <Setter Property="FontSize" Value="18"/>
-        <Setter Property="FontWeight" Value="SemiBold"/>
-        <Setter Property="Foreground" Value="{StaticResource TextPrimaryColor}"/>
-    </Style>
-
-    <!-- Body -->
-    <Style x:Key="BodyStyle" TargetType="TextBlock">
-        <Setter Property="FontSize" Value="14"/>
-        <Setter Property="Foreground" Value="{StaticResource TextPrimaryColor}"/>
-        <Setter Property="TextWrapping" Value="Wrap"/>
-    </Style>
-
-    <!-- Caption -->
-    <Style x:Key="CaptionStyle" TargetType="TextBlock">
-        <Setter Property="FontSize" Value="12"/>
-        <Setter Property="Foreground" Value="{StaticResource TextSecondaryColor}"/>
-    </Style>
-
-</ResourceDictionary>
+<Page xmlns:controls="using:PCL_CE.Neo.UI.Controls">
+    <controls:Card Header="示例卡片">
+        <StackPanel>
+            <TextBlock Text="卡片内容"/>
+        </StackPanel>
+    </controls:Card>
+</Page>
 ```
 
 ---
 
-## 6. 验证清单
+## 页面迁移
 
-### 6.1 视觉验证
+### 1. 创建 Page 而非 Window
 
-- [ ] 所有颜色完全一致
-- [ ] 所有尺寸完全一致
-- [ ] 所有间距完全一致
-- [ ] 所有字体完全一致
-- [ ] 所有图标完全一致
-- [ ] 所有特效效果一致
+**WPF 原代码（Window）：**
+```xml
+<Window x:Class="PCL.MyPage"
+        Title="我的页面">
+    <Grid>
+        <!-- 内容 -->
+    </Grid>
+</Window>
+```
 
-### 6.2 功能验证
+**Uno Platform 新代码（Page）：**
+```xml
+<Page x:Class="PCL_CE.Neo.UI.Pages.MyPage">
+    <Grid>
+        <!-- 内容 -->
+    </Grid>
+</Page>
+```
 
-- [ ] 所有交互正常
-- [ ] 所有动画正常
-- [ ] 所有键盘导航正常
-- [ ] 所有主题切换正常
-- [ ] 所有窗口操作正常
+### 2. 使用 NavigationService 导航
 
-### 6.3 跨平台验证
+```csharp
+using PCL_CE.Neo.UI.Navigation;
 
-- [ ] Windows 平台正常
-- [ ] macOS 平台正常
-- [ ] Linux 平台正常
-- [ ] 平台特定功能正常
+// 导航到新页面
+NavigationService.Instance.Navigate(typeof(MyPage));
 
-### 6.4 性能验证
+// 导航到新页面并传递参数
+NavigationService.Instance.Navigate(typeof(MyPage), parameter);
 
-- [ ] 启动时间 ≤ 原版本
-- [ ] 响应时间 ≤ 原版本
-- [ ] 内存占用 ≤ 原版本 120%
-- [ ] 无明显卡顿
+// 回退
+if (NavigationService.Instance.CanGoBack)
+{
+    NavigationService.Instance.GoBack();
+}
+```
+
+### 3. 页面生命周期
+
+```csharp
+public sealed partial class MyPage : Page
+{
+    public MyPage()
+    {
+        InitializeComponent();
+        // 初始化
+    }
+
+    protected override void OnNavigatedTo(NavigationEventArgs e)
+    {
+        base.OnNavigatedTo(e);
+        // 页面导航到时
+    }
+
+    protected override void OnNavigatedFrom(NavigationEventArgs e)
+    {
+        base.OnNavigatedFrom(e);
+        // 页面导航离开时
+    }
+}
+```
 
 ---
 
-## 7. 常见问题
+## 最佳实践
 
-### 7.1 Uno 不支持的特性
+### 1. 资源重用
 
-| WPF 特性 | Uno 替代方案 |
-|----------|--------------|
-| Pixel Shader Effects | 使用半透明背景或平台 API |
-| WPF 特定控件 | 使用 Uno 等效控件 |
-| WPF 触发器 | 使用 Visual States |
-| RelativeSource | 使用 x:Name 绑定 |
+- **始终使用资源字典中的样式和颜色**
+- **避免硬编码的颜色和尺寸**
+- **优先使用样式而非内联属性**
 
-### 7.2 性能优化
+```xml
+<!-- ✅ 推荐 -->
+<TextBlock Style="{StaticResource BodyStyle}" Text="示例"/>
 
-1. 使用 `VirtualizingStackPanel` 优化长列表
-2. 使用图片缓存减少加载时间
-3. 延迟加载非关键资源
+<!-- ❌ 避免 -->
+<TextBlock FontSize="14" Foreground="#FF2C3E50" Text="示例"/>
+```
+
+### 2. MVVM 模式
+
+使用 CommunityToolkit.Mvvm 实现 MVVM：
+
+```csharp
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+
+public partial class MyViewModel : ObservableObject
+{
+    [ObservableProperty]
+    private string _title = "标题";
+
+    [RelayCommand]
+    private void DoSomething()
+    {
+        // 命令逻辑
+    }
+}
+```
+
+### 3. 异步优先
+
+所有 I/O 操作都应该是异步的：
+
+```csharp
+// ✅ 推荐
+private async void Button_Click(object sender, RoutedEventArgs e)
+{
+    var result = await LoadDataAsync();
+    DisplayResult(result);
+}
+
+// ❌ 避免（会阻塞 UI 线程）
+private void Button_Click(object sender, RoutedEventArgs e)
+{
+    var result = LoadData();
+    DisplayResult(result);
+}
+```
+
+### 4. 平台特定代码
+
+使用条件编译处理平台差异：
+
+```csharp
+#if WINDOWS
+    // Windows 特定代码
+    using Windows.Storage;
+#elif __MACOS__
+    // macOS 特定代码
+    using Foundation;
+#elif __LINUX__
+    // Linux 特定代码
+#endif
+```
+
+### 5. 性能优化
+
+- 使用 `x:Load` 延迟加载非关键元素
+- 使用虚拟化列表处理大量数据
+- 避免在 UI 线程执行耗时操作
+
+```xml
+<ListView x:Load="False">
+    <!-- 内容 -->
+</ListView>
+```
 
 ---
 
-## 8. 附录
+## 迁移检查清单
 
-### 8.1 控件清单
+- [ ] 所有 Window 转换为 Page
+- [ ] 更新所有 XAML 命名空间
+- [ ] 移植所有资源（颜色、样式、模板）
+- [ ] 实现主题切换支持
+- [ ] 迁移自定义控件
+- [ ] 使用 NavigationService 替代窗口导航
+- [ ] 测试三个平台（Windows/macOS/Linux）
+- [ ] 验证所有交互行为一致
+- [ ] 性能测试和优化
+- [ ] 无障碍支持
 
-| 原控件名 | 类型 | 优先级 | 状态 |
-|----------|------|--------|------|
-| MyButton | Button | P0 | 待迁移 |
-| MyTextBox | TextBox | P0 | 待迁移 |
-| MyComboBox | ComboBox | P0 | 待迁移 |
-| MyIconButton | Button | P1 | 待迁移 |
-| MySearchBox | TextBox | P1 | 待迁移 |
-| BlurBorder | Border | P2 | 待迁移 |
-| ... | ... | ... | ... |
+---
 
-### 8.2 参考资源
-
-- [Uno Platform 文档](https://platform.uno/docs/)
-- [WinUI 3 文档](https://learn.microsoft.com/windows/apps/winui/)
-- [WPF 到 WinUI 迁移指南](https://learn.microsoft.com/windows/apps/desktop/migrate/)
+**文档版本：** 1.0
+**最后更新：** 2026-05-24

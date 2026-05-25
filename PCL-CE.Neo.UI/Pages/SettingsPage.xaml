@@ -1,0 +1,181 @@
+<Page
+    x:Class="PCL_CE.Neo.UI.Pages.SettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:PCL_CE.Neo.UI.Controls"
+    mc:Ignorable="d">
+
+    <Grid Background="{StaticResource BackgroundBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0"
+                Background="{StaticResource BackgroundSecondaryBrush}"
+                Padding="16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Button Grid.Column="0"
+                        Style="{StaticResource IconButtonStyle}"
+                        Click="OnBackClick">
+                    <TextBlock Text="←"/>
+                </Button>
+
+                <TextBlock Grid.Column="1"
+                           Text="设置"
+                           Style="{StaticResource TitleStyle}"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
+
+        <ScrollViewer Grid.Row="1" Margin="16">
+            <StackPanel Spacing="24">
+                <controls:Card>
+                    <StackPanel Spacing="16">
+                        <TextBlock Text="常规设置"
+                                   Style="{StaticResource TitleStyle}"/>
+
+                        <controls:MyCheckBox Label="自动下载"
+                                           Description="自动下载游戏更新"
+                                           IsChecked="{Binding AutoDownload}"
+                                           CheckedChanged="OnAutoDownloadChanged"/>
+
+                        <controls:MyCheckBox Label="自动安装"
+                                           Description="下载完成后自动安装"
+                                           IsChecked="{Binding AutoInstall}"
+                                           CheckedChanged="OnAutoInstallChanged"/>
+
+                        <controls:MyCheckBox Label="检查更新"
+                                           Description="启动时检查更新"
+                                           IsChecked="{Binding CheckUpdates}"
+                                           CheckedChanged="OnCheckUpdatesChanged"/>
+                    </StackPanel>
+                </controls:Card>
+
+                <controls:Card>
+                    <StackPanel Spacing="16">
+                        <TextBlock Text="下载设置"
+                                   Style="{StaticResource TitleStyle}"/>
+
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="最大并发下载"
+                                       Style="{StaticResource BodyStyle}"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <Slider Grid.Column="0"
+                                        Minimum="1"
+                                        Maximum="10"
+                                        Value="{Binding MaxConcurrentDownloads}"
+                                        Foreground="{StaticResource PrimaryBrush}"/>
+                                <TextBlock Grid.Column="1"
+                                           Text="{Binding MaxConcurrentDownloads}"
+                                           Style="{StaticResource BodyStyle}"
+                                           VerticalAlignment="Center"
+                                           Margin="16,0,0,0"/>
+                            </Grid>
+                        </StackPanel>
+
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="下载目录"
+                                       Style="{StaticResource BodyStyle}"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <controls:MyTextBox Grid.Column="0"
+                                                   Placeholder="选择下载目录..."
+                                                   Text="{Binding DownloadPath}"/>
+                                <Button Grid.Column="1"
+                                        Style="{StaticResource IconButtonStyle}"
+                                        Margin="8,0,0,0">
+                                    <TextBlock Text="📁"/>
+                                </Button>
+                            </Grid>
+                        </StackPanel>
+                    </StackPanel>
+                </controls:Card>
+
+                <controls:Card>
+                    <StackPanel Spacing="16">
+                        <TextBlock Text="外观"
+                                   Style="{StaticResource TitleStyle}"/>
+
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="主题"
+                                       Style="{StaticResource BodyStyle}"/>
+                            <controls:MyComboBox SelectedIndex="{Binding SelectedThemeIndex}"/>
+                        </StackPanel>
+                    </StackPanel>
+                </controls:Card>
+
+                <controls:Card>
+                    <StackPanel Spacing="16">
+                        <TextBlock Text="游戏设置"
+                                   Style="{StaticResource TitleStyle}"/>
+
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="Java 路径"
+                                       Style="{StaticResource BodyStyle}"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <controls:MyTextBox Grid.Column="0"
+                                                   Placeholder="自动检测"/>
+                                <Button Grid.Column="1"
+                                        Style="{StaticResource IconButtonStyle}"
+                                        Margin="8,0,0,0">
+                                    <TextBlock Text="🔍"/>
+                                </Button>
+                            </Grid>
+                        </StackPanel>
+
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="内存分配"
+                                       Style="{StaticResource BodyStyle}"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <Slider Grid.Column="0"
+                                        Minimum="512"
+                                        Maximum="16384"
+                                        Value="2048"
+                                        StepFrequency="256"
+                                        Foreground="{StaticResource PrimaryBrush}"/>
+                                <TextBlock Grid.Column="1"
+                                           Text="2048 MB"
+                                           Style="{StaticResource BodyStyle}"
+                                           VerticalAlignment="Center"
+                                           Margin="16,0,0,0"/>
+                            </Grid>
+                        </StackPanel>
+                    </StackPanel>
+                </controls:Card>
+
+                <StackPanel Orientation="Horizontal"
+                            HorizontalAlignment="Right"
+                            Spacing="8">
+                    <controls:MyButton Text="重置"
+                                      Click="OnResetClick"/>
+                    <controls:MyButton Text="保存"
+                                      Click="OnSaveClick"/>
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Page>

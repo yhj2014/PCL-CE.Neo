@@ -1,0 +1,198 @@
+<Page
+    x:Class="PCL_CE.Neo.UI.Pages.LaunchPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:PCL_CE.Neo.UI.Controls"
+    mc:Ignorable="d">
+
+    <Grid Background="{StaticResource BackgroundBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0"
+                Background="{StaticResource BackgroundSecondaryBrush}"
+                Padding="16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <Button Grid.Column="0"
+                        Style="{StaticResource IconButtonStyle}"
+                        Click="OnBackClick">
+                    <TextBlock Text="←"/>
+                </Button>
+
+                <TextBlock Grid.Column="1"
+                           Text="启动游戏"
+                           Style="{StaticResource TitleStyle}"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"/>
+
+                <Button Grid.Column="2"
+                        Style="{StaticResource IconButtonStyle}"
+                        Click="OnSettingsClick">
+                    <TextBlock Text="⚙️"/>
+                </Button>
+            </Grid>
+        </Border>
+
+        <ScrollViewer Grid.Row="1">
+            <StackPanel Margin="24" Spacing="24">
+                <!-- Selected Instance Display -->
+                <controls:Card>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- Instance Icon -->
+                        <Border Grid.Column="0" Grid.RowSpan="3"
+                                Width="80" Height="80"
+                                Background="{StaticResource PrimaryBrush}"
+                                CornerRadius="12"
+                                Margin="0,0,16,0">
+                            <TextBlock Text="{Binding SelectedInstance.Icon, FallbackValue='🎮'}"
+                                       FontSize="40"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"/>
+                        </Border>
+
+                        <!-- Instance Name -->
+                        <TextBlock Grid.Column="1" Grid.Row="0"
+                                   Text="{Binding SelectedInstance.Name, FallbackValue='请选择实例'}"
+                                   Style="{StaticResource HeadingStyle}"/>
+
+                        <!-- Instance Info -->
+                        <StackPanel Grid.Column="1" Grid.Row="1"
+                                    Orientation="Horizontal"
+                                    Spacing="12"
+                                    Margin="0,4,0,0">
+                            <TextBlock Style="{StaticResource CaptionStyle}">
+                                <Run Text="版本: "/>
+                                <Run Text="{Binding SelectedInstance.Version, FallbackValue='-'}"/>
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource CaptionStyle}">
+                                <Run Text="Mod: "/>
+                                <Run Text="{Binding SelectedInstance.ModCount, FallbackValue='0'}"/>
+                            </TextBlock>
+                            <TextBlock Style="{StaticResource CaptionStyle}">
+                                <Run Text="总时长: "/>
+                                <Run Text="{Binding SelectedInstance.PlayTimeText, FallbackValue='0h'}"/>
+                            </TextBlock>
+                        </StackPanel>
+
+                        <!-- Last Played -->
+                        <TextBlock Grid.Column="1" Grid.Row="2"
+                                   Style="{StaticResource CaptionStyle}"
+                                   Text="{Binding SelectedInstance.LastPlayedText, FallbackValue='-'}"
+                                   Margin="0,4,0,0"/>
+                    </Grid>
+                </controls:Card>
+
+                <!-- Launch Options -->
+                <controls:Card>
+                    <StackPanel Spacing="16">
+                        <TextBlock Text="启动选项" Style="{StaticResource TitleStyle}"/>
+
+                        <!-- Memory Allocation -->
+                        <StackPanel Spacing="8">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0"
+                                           Text="内存分配 (MB)"
+                                           Style="{StaticResource BodyStyle}"/>
+                                <TextBlock Grid.Column="1"
+                                           Text="{Binding MemoryAllocation}"
+                                           Style="{StaticResource BodySecondaryStyle}"/>
+                            </Grid>
+                            <Slider Minimum="512" Maximum="16384"
+                                    StepFrequency="256"
+                                    Value="{Binding MemoryAllocation}"
+                                    Foreground="{StaticResource PrimaryBrush}"/>
+                        </StackPanel>
+
+                        <!-- Additional Arguments -->
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="额外启动参数" Style="{StaticResource BodyStyle}"/>
+                            <controls:MyTextBox Placeholder="请输入额外的启动参数..."
+                                               Text="{Binding AdditionalArguments, Mode=TwoWay}"/>
+                        </StackPanel>
+                    </StackPanel>
+                </controls:Card>
+
+                <!-- Recent Instances -->
+                <controls:Card>
+                    <StackPanel Spacing="12">
+                        <TextBlock Text="最近使用" Style="{StaticResource TitleStyle}"/>
+
+                        <ItemsControl ItemsSource="{Binding RecentInstances}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="{StaticResource BackgroundTertiaryBrush}"
+                                            CornerRadius="8"
+                                            Padding="12"
+                                            Margin="0,0,0,8"
+                                            Tapped="OnInstanceTapped"
+                                            Tag="{Binding}">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock Grid.Column="0"
+                                                       Text="{Binding Icon}"
+                                                       FontSize="24"
+                                                       VerticalAlignment="Center"
+                                                       Margin="0,0,12,0"/>
+
+                                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Name}" Style="{StaticResource BodyStyle}"/>
+                                                <TextBlock Text="{Binding Version}" Style="{StaticResource CaptionStyle}"/>
+                                            </StackPanel>
+
+                                            <Button Grid.Column="2"
+                                                    Style="{StaticResource IconButtonStyle}"
+                                                    Click="OnQuickLaunchClick"
+                                                    Tag="{Binding}">
+                                                <TextBlock Text="▶️"/>
+                                            </Button>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </controls:Card>
+
+                <!-- Status Message -->
+                <TextBlock Text="{Binding StatusMessage}"
+                           Style="{StaticResource CaptionStyle}"
+                           TextAlignment="Center"
+                           HorizontalAlignment="Center"/>
+
+                <!-- Launch Button -->
+                <controls:MyButton Text="启动游戏"
+                                 Command="{Binding LaunchGameCommand}"
+                                 IsEnabled="{Binding SelectedInstance, Converter={StaticResource NotNullToBool}}"/>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Page>
