@@ -195,12 +195,7 @@ public class MinecraftAdapter : IMinecraftAdapter
     {
         try
         {
-            var javaExe = javaPath.Contains("java") ? javaPath : Path.Combine(javaPath, "bin", "java" + (OperatingSystem.IsWindows() ? ".exe" : ""));
-            if (!File.Exists(javaExe))
-            {
-                var javawExe = Path.Combine(javaPath, "bin", "javaw.exe");
-                if (File.Exists(javawExe)) javaExe = javawExe;
-            }
+            var javaExe = GetJavaExecutable(javaPath);
 
             var psi = new ProcessStartInfo
             {
@@ -227,6 +222,37 @@ public class MinecraftAdapter : IMinecraftAdapter
         }
     }
 
+    private string GetJavaExecutable(string javaPath)
+    {
+        var exeExtensions = new[] { ".exe", "" };
+        
+        if (Path.GetFileName(javaPath).StartsWith("java"))
+        {
+            if (File.Exists(javaPath))
+                return javaPath;
+            
+            foreach (var ext in exeExtensions)
+            {
+                var testPath = javaPath + ext;
+                if (File.Exists(testPath))
+                    return testPath;
+            }
+        }
+        
+        var javaBinDir = Path.Combine(javaPath, "bin");
+        foreach (var name in new[] { "java", "javaw" })
+        {
+            foreach (var ext in exeExtensions)
+            {
+                var testPath = Path.Combine(javaBinDir, name + ext);
+                if (File.Exists(testPath))
+                    return testPath;
+            }
+        }
+        
+        return javaPath;
+    }
+    
     private bool Is64BitJava(string javaPath)
     {
         return javaPath.Contains("64") || _pathsAdapter.SharedData.Contains("64");
@@ -326,8 +352,7 @@ public class MinecraftAdapter : IMinecraftAdapter
 
     private string BuildClassPath(List<string> libraries, string gameDir, string version)
     {
-        var pathSeparator = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
-            System.Runtime.InteropServices.OSPlatform.Windows) ? ";" : ":";
+        var pathSeparator = Path.PathSeparator;
         
         var classPathParts = new List<string>();
         
