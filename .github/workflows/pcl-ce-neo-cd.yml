@@ -1,0 +1,328 @@
+name: PCL-CE.Neo CD (Production Release)
+
+permissions:
+  contents: write
+  packages: write
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag_version:
+        description: 'Tag version (e.g., v1.0.0)'
+        required: true
+        type: string
+
+env:
+  VERSION: ${{ github.ref_name }}
+  DOTNET_VERSION: '10.0.x'
+
+jobs:
+  pre-check:
+    name: Pre-release Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate Tag Format
+        run: |
+          if [[ ! "${{ github.ref_name }}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.-]+)?$ ]]; then
+            echo "❌ 错误：Tag 格式不正确！应使用语义化版本，例如：v1.0.0"
+            exit 1
+          fi
+          echo "✅ Tag 格式验证通过：${{ github.ref_name }}"
+
+      - name: Check Code Rules
+        run: |
+          echo "执行代码规则检查..."
+          
+          # Windows 平台检查
+          if grep -rn "RuntimeInformation.IsOSPlatform\|OperatingSystem.IsWindows" \
+            PCL-CE.Neo.Platform/Windows/ --include="*.cs" > /dev/null 2>&1; then
+            echo "❌ Windows 平台服务包含运行时检查！"
+            exit 1
+          fi
+          
+          # macOS 平台检查
+          if grep -rn "RuntimeInformation.IsOSPlatform\|OperatingSystem.IsMacOS" \
+            PCL-CE.Neo.Platform/macOS/ --include="*.cs" > /dev/null 2>&1; then
+            echo "❌ macOS 平台服务包含运行时检查！"
+            exit 1
+          fi
+          
+          # Linux 平台检查
+          if grep -rn "RuntimeInformation.IsOSPlatform\|OperatingSystem.IsLinux" \
+            PCL-CE.Neo.Platform/Linux/ --include="*.cs" > /dev/null 2>&1; then
+            echo "❌ Linux 平台服务包含运行时检查！"
+            exit 1
+          fi
+          
+          echo "✅ 代码规则检查通过"
+
+  build-windows:
+    name: Build Windows
+    runs-on: windows-latest
+    needs: pre-check
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore Dependencies
+        run: |
+          dotnet restore PCL-CE.Neo.Platform/Windows/PCL-CE.Neo.Platform.Windows.csproj
+
+      - name: Build Windows
+        run: |
+          dotnet build PCL-CE.Neo.Platform/Windows/PCL-CE.Neo.Platform.Windows.csproj `
+          -c Release --no-restore -p:DefineConstants="WINDOWS;$(DefineConstants)"
+
+      - name: Publish Windows
+        run: |
+          dotnet publish PCL-CE.Neo.Platform/Windows/PCL-CE.Neo.Platform.Windows.csproj `
+          -c Release --no-build -o ./publish/PCL-CE.Neo-${{ env.VERSION }}-win-x64
+
+      - name: Upload Windows Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: PCL-CE.Neo-${{ env.VERSION }}-win-x64
+          path: ./publish/PCL-CE.Neo-${{ env.VERSION }}-win-x64
+          retention-days: 30
+
+  build-macos:
+    name: Build macOS
+    runs-on: macos-latest
+    needs: pre-check
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore Dependencies
+        run: |
+          dotnet restore PCL-CE.Neo.Platform/macOS/PCL-CE.Neo.Platform.macOS.csproj
+
+      - name: Build macOS
+        run: |
+          dotnet build PCL-CE.Neo.Platform/macOS/PCL-CE.Neo.Platform.macOS.csproj \
+          -c Release --no-restore -p:DefineConstants="MACOS;$(DefineConstants)"
+
+      - name: Publish macOS
+        run: |
+          dotnet publish PCL-CE.Neo.Platform/macOS/PCL-CE.Neo.Platform.macOS.csproj \
+          -c Release --no-build -o ./publish/PCL-CE.Neo-${{ env.VERSION }}-osx-x64
+
+      - name: Upload macOS Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: PCL-CE.Neo-${{ env.VERSION }}-osx-x64
+          path: ./publish/PCL-CE.Neo-${{ env.VERSION }}-osx-x64
+          retention-days: 30
+
+  build-linux:
+    name: Build Linux
+    runs-on: ubuntu-latest
+    needs: pre-check
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Install Linux Dependencies
+        run: |
+          sudo apt-get update && sudo apt-get install -y libgtk-3-dev libnotify-dev
+
+      - name: Restore Dependencies
+        run: |
+          dotnet restore PCL-CE.Neo.Platform/Linux/PCL-CE.Neo.Platform.Linux.csproj
+
+      - name: Build Linux
+        run: |
+          dotnet build PCL-CE.Neo.Platform/Linux/PCL-CE.Neo.Platform.Linux.csproj \
+          -c Release --no-restore -p:DefineConstants="LINUX;$(DefineConstants)"
+
+      - name: Publish Linux
+        run: |
+          dotnet publish PCL-CE.Neo.Platform/Linux/PCL-CE.Neo.Platform.Linux.csproj \
+          -c Release --no-build -o ./publish/PCL-CE.Neo-${{ env.VERSION }}-linux-x64
+
+      - name: Upload Linux Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: PCL-CE.Neo-${{ env.VERSION }}-linux-x64
+          path: ./publish/PCL-CE.Neo-${{ env.VERSION }}-linux-x64
+          retention-days: 30
+
+  build-core:
+    name: Build Core Library
+    runs-on: ubuntu-latest
+    needs: pre-check
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore Dependencies
+        run: |
+          dotnet restore PCL-CE.Neo.Core/PCL-CE.Neo.Core.csproj
+
+      - name: Build Core
+        run: |
+          dotnet build PCL-CE.Neo.Core/PCL-CE.Neo.Core.csproj \
+          -c Release --no-restore
+
+      - name: Publish Core
+        run: |
+          dotnet publish PCL-CE.Neo.Core/PCL-CE.Neo.Core.csproj \
+          -c Release --no-build -o ./publish/PCL-CE.Neo-${{ env.VERSION }}-core
+
+      - name: Upload Core Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: PCL-CE.Neo-${{ env.VERSION }}-core
+          path: ./publish/PCL-CE.Neo-${{ env.VERSION }}-core
+          retention-days: 30
+
+  build-ui:
+    name: Build UI
+    runs-on: ubuntu-latest
+    needs: pre-check
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore Dependencies
+        run: |
+          dotnet restore PCL-CE.Neo.UI/PCL-CE.Neo.UI.csproj
+
+      - name: Build UI
+        run: |
+          dotnet build PCL-CE.Neo.UI/PCL-CE.Neo.UI.csproj \
+          -c Release --no-restore
+
+      - name: Publish UI
+        run: |
+          dotnet publish PCL-CE.Neo.UI/PCL-CE.Neo.UI.csproj \
+          -c Release --no-build -o ./publish/PCL-CE.Neo-${{ env.VERSION }}-ui
+
+      - name: Upload UI Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: PCL-CE.Neo-${{ env.VERSION }}-ui
+          path: ./publish/PCL-CE.Neo-${{ env.VERSION }}-ui
+          retention-days: 30
+
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    needs: [build-windows, build-macos, build-linux, build-core, build-ui]
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+
+      - name: Prepare Release Notes
+        run: |
+          cat << 'EOF' > ./release-notes.md
+          # PCL-CE.Neo ${{ env.VERSION }} Release
+          
+          ## Downloads
+          
+          | Platform | Architecture | Download |
+          |----------|--------------|----------|
+          | Windows | x64 | [PCL-CE.Neo-${{ env.VERSION }}-win-x64.zip](./artifacts/PCL-CE.Neo-${{ env.VERSION }}-win-x64.zip) |
+          | macOS | x64 | [PCL-CE.Neo-${{ env.VERSION }}-osx-x64.zip](./artifacts/PCL-CE.Neo-${{ env.VERSION }}-osx-x64.zip) |
+          | Linux | x64 | [PCL-CE.Neo-${{ env.VERSION }}-linux-x64.tar.gz](./artifacts/PCL-CE.Neo-${{ env.VERSION }}-linux-x64.tar.gz) |
+          
+          ## Installation
+          
+          ### Windows
+          1. Download and extract the Windows package
+          2. Run the executable
+          
+          ### macOS
+          1. Download and extract the macOS package
+          2. Grant executable permissions: \`chmod +x PCL-CE.Neo\`
+          3. Run the application
+          
+          ### Linux
+          1. Download and extract the Linux package
+          2. Grant executable permissions: \`chmod +x PCL-CE.Neo\`
+          3. Run the application
+          
+          ## System Requirements
+          
+          - .NET 10.0 Runtime
+          - Windows 10/11, macOS 10.15+, or Linux (Ubuntu 20.04+)
+          
+          ## Changelog
+          
+          See full changelog at [CHANGELOG.md](./CHANGELOG.md)
+          EOF
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          generate_release_notes: true
+          name: "PCL-CE.Neo ${{ env.VERSION }}"
+          body_path: ./release-notes.md
+          files: |
+            ./artifacts/**/*.zip
+            ./artifacts/**/*.tar.gz
+            ./artifacts/**/*.dll
+            ./artifacts/**/*.exe
+            ./artifacts/**/*.so
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Core Artifacts to Release
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./artifacts/PCL-CE.Neo-${{ env.VERSION }}-core
+          asset_name: PCL-CE.Neo-${{ env.VERSION }}-core.zip
+          asset_content_type: application/zip
+        if: false
+
+      - name: Display Release Info
+        run: |
+          echo "🎉 Release ${{ env.VERSION }} created successfully!"
+          echo "📦 All artifacts have been uploaded"
+          echo "🔗 Release URL: ${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ env.VERSION }}"

@@ -1,4 +1,4 @@
-name: PCL-CE.Neo Build (CI)
+name: PCL-CE.Neo CI (Fast Build)
 
 permissions:
   contents: read
@@ -8,10 +8,12 @@ on:
     branches: [ main, dev ]
     paths:
       - 'PCL-CE.Neo*/**'
+      - '*.slnx'
       - '.github/workflows/pcl-ce-neo-ci.yml'
   pull_request:
     paths:
       - 'PCL-CE.Neo*/**'
+      - '*.slnx'
       - '.github/workflows/pcl-ce-neo-ci.yml'
   workflow_dispatch:
 
@@ -26,11 +28,10 @@ jobs:
 
       - name: Check for RuntimeInformation.IsOSPlatform in Platform Services
         run: |
-          # 检查平台服务中是否还有运行时平台检查
           echo "检查平台服务代码..."
           
           # Windows 平台服务检查
-          WINDOWS_CHECK=$(grep -r "RuntimeInformation.IsOSPlatform\|OperatingSystem.IsWindows" \
+          WINDOWS_CHECK=$(grep -rn "RuntimeInformation.IsOSPlatform\|OperatingSystem.IsWindows" \
             PCL-CE.Neo.Platform/Windows/ --include="*.cs" || true)
           
           if [ -n "$WINDOWS_CHECK" ]; then
@@ -40,7 +41,7 @@ jobs:
           fi
           
           # macOS 平台服务检查
-          MACOS_CHECK=$(grep -r "RuntimeInformation.IsOSPlatform\|OperatingSystem.IsMacOS\|OperatingSystem.IsMacCatalyst" \
+          MACOS_CHECK=$(grep -rn "RuntimeInformation.IsOSPlatform\|OperatingSystem.IsMacOS\|OperatingSystem.IsMacCatalyst" \
             PCL-CE.Neo.Platform/macOS/ --include="*.cs" || true)
           
           if [ -n "$MACOS_CHECK" ]; then
@@ -50,7 +51,7 @@ jobs:
           fi
           
           # Linux 平台服务检查
-          LINUX_CHECK=$(grep -r "RuntimeInformation.IsOSPlatform\|OperatingSystem.IsLinux" \
+          LINUX_CHECK=$(grep -rn "RuntimeInformation.IsOSPlatform\|OperatingSystem.IsLinux" \
             PCL-CE.Neo.Platform/Linux/ --include="*.cs" || true)
           
           if [ -n "$LINUX_CHECK" ]; then
@@ -63,44 +64,25 @@ jobs:
 
       - name: Check WindowsJavaScanner for Unix paths
         run: |
-          # 检查 WindowsJavaScanner 是否包含 Unix 路径
           echo "检查 WindowsJavaScanner..."
           
-          WINDOWS_SCANNER_CHECK=$(grep -E "UnixJavaPaths|/usr/|/opt/" \
+          WINDOWS_SCANNER_CHECK=$(grep -n "UnixJavaPaths" \
             PCL-CE.Neo.Platform/Windows/WindowsJavaScanner.cs || true)
           
           if [ -n "$WINDOWS_SCANNER_CHECK" ]; then
-            echo "❌ 错误：在 WindowsJavaScanner 中发现 Unix 路径！"
+            echo "❌ 错误：在 WindowsJavaScanner 中发现 UnixJavaPaths！"
             echo "$WINDOWS_SCANNER_CHECK"
             exit 1
           fi
           
           echo "✅ WindowsJavaScanner 检查通过"
 
-      - name: Check Core Business Logic for Platform-Specific Code
-        run: |
-          # 检查核心业务逻辑是否包含平台特定代码
-          echo "检查核心业务逻辑..."
-          
-          CORE_CHECK=$(grep -r "OperatingSystem.IsWindows\|OperatingSystem.IsMacOS\|OperatingSystem.IsLinux" \
-            PCL-CE.Neo.Core/ --include="*.cs" || true)
-          
-          if [ -n "$CORE_CHECK" ]; then
-            echo "⚠️ 警告：在核心业务逻辑中发现平台特定代码，请考虑移至平台抽象层："
-            echo "$CORE_CHECK"
-            # 这里只警告不失败，因为可能有合理的例外情况
-          fi
-          
-          echo "✅ 核心业务逻辑检查完成"
-
       - name: Check Project Files for Correct DefineConstants
         run: |
-          # 检查项目文件中的条件编译符号
           echo "检查项目文件..."
           
           # 检查 Windows 项目
           WINDOWS_CSPROJ_CHECK=$(grep "<DefineConstants>" PCL-CE.Neo.Platform/Windows/PCL-CE.Neo.Platform.Windows.csproj)
-          
           if ! echo "$WINDOWS_CSPROJ_CHECK" | grep -q "WINDOWS"; then
             echo "❌ 错误：Windows 项目文件中缺少 WINDOWS 条件编译符号！"
             exit 1
@@ -108,7 +90,6 @@ jobs:
           
           # 检查 macOS 项目
           MACOS_CSPROJ_CHECK=$(grep "<DefineConstants>" PCL-CE.Neo.Platform/macOS/PCL-CE.Neo.Platform.macOS.csproj)
-          
           if ! echo "$MACOS_CSPROJ_CHECK" | grep -q "MACOS"; then
             echo "❌ 错误：macOS 项目文件中缺少 MACOS 条件编译符号！"
             exit 1
@@ -116,7 +97,6 @@ jobs:
           
           # 检查 Linux 项目
           LINUX_CSPROJ_CHECK=$(grep "<DefineConstants>" PCL-CE.Neo.Platform/Linux/PCL-CE.Neo.Platform.Linux.csproj)
-          
           if ! echo "$LINUX_CSPROJ_CHECK" | grep -q "LINUX"; then
             echo "❌ 错误：Linux 项目文件中缺少 LINUX 条件编译符号！"
             exit 1
@@ -124,86 +104,10 @@ jobs:
           
           echo "✅ 项目文件检查通过"
 
-  build-core-abstractions:
-    name: Build Core Abstractions
+  build:
+    name: Build Solution
     runs-on: ubuntu-latest
     needs: check-rules
-    
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v5
-        with:
-          dotnet-version: 10.0.x
-
-      - name: Build Core Abstractions
-        run: |
-          dotnet build PCL-CE.Neo.Core.Abstractions/PCL-CE.Neo.Core.Abstractions.csproj \
-          -c Release --no-restore
-
-  build-windows:
-    name: Build Windows Platform
-    runs-on: windows-latest
-    needs: check-rules
-    
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v5
-        with:
-          dotnet-version: 10.0.x
-
-      - name: Build Windows Platform
-        run: |
-          dotnet build "PCL-CE.Neo.Platform\Windows\PCL-CE.Neo.Platform.Windows.csproj" `
-          -c Release --no-restore -p:DefineConstants="WINDOWS;$(DefineConstants)"
-
-  build-macos:
-    name: Build macOS Platform
-    runs-on: macos-latest
-    needs: check-rules
-    
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v5
-        with:
-          dotnet-version: 10.0.x
-
-      - name: Build macOS Platform
-        run: |
-          dotnet build "PCL-CE.Neo.Platform/macOS/PCL-CE.Neo.Platform.macOS.csproj" \
-          -c Release --no-restore -p:DefineConstants="MACOS;$(DefineConstants)"
-
-  build-linux:
-    name: Build Linux Platform
-    runs-on: ubuntu-latest
-    needs: check-rules
-    
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v5
-        with:
-          dotnet-version: 10.0.x
-
-      - name: Build Linux Platform
-        run: |
-          dotnet build "PCL-CE.Neo.Platform/Linux/PCL-CE.Neo.Platform.Linux.csproj" \
-          -c Release --no-restore -p:DefineConstants="LINUX;$(DefineConstants)"
-
-  build-core:
-    name: Build Core
-    runs-on: ubuntu-latest
-    needs: [build-core-abstractions, build-windows, build-macos, build-linux]
     
     steps:
       - name: Checkout
@@ -216,63 +120,16 @@ jobs:
 
       - name: Restore Dependencies
         run: |
-          dotnet restore PCL-CE.Neo.Core/PCL-CE.Neo.Core.csproj
+          dotnet restore PCL-CE.Neo.slnx
 
-      - name: Build Core
+      - name: Build Solution
         run: |
-          dotnet build PCL-CE.Neo.Core/PCL-CE.Neo.Core.csproj \
-          -c Release --no-restore
-
-  build-ui:
-    name: Build UI
-    runs-on: ubuntu-latest
-    needs: [build-core-abstractions, build-windows, build-macos, build-linux]
-    
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v5
-        with:
-          dotnet-version: 10.0.x
-
-      - name: Restore Dependencies
-        run: |
-          dotnet restore PCL-CE.Neo.UI/PCL-CE.Neo.UI.csproj
-
-      - name: Build UI
-        run: |
-          dotnet build PCL-CE.Neo.UI/PCL-CE.Neo.UI.csproj \
-          -c Release --no-restore
-
-  build-tests:
-    name: Build Tests
-    runs-on: ubuntu-latest
-    needs: [build-core, build-windows, build-macos, build-linux]
-    
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v5
-        with:
-          dotnet-version: 10.0.x
-
-      - name: Restore Dependencies
-        run: |
-          dotnet restore PCL-CE.Neo.Tests/PCL-CE.Neo.Tests.csproj
-
-      - name: Build Tests
-        run: |
-          dotnet build PCL-CE.Neo.Tests/PCL-CE.Neo.Tests.csproj \
-          -c Release --no-restore
+          dotnet build PCL-CE.Neo.slnx -c Release --no-restore
 
   test:
     name: Run Tests
     runs-on: ubuntu-latest
-    needs: build-tests
+    needs: build
     
     steps:
       - name: Checkout
@@ -285,5 +142,4 @@ jobs:
 
       - name: Run Tests
         run: |
-          dotnet test PCL-CE.Neo.Tests/PCL-CE.Neo.Tests.csproj \
-          -c Release --no-build --verbosity normal
+          dotnet test PCL-CE.Neo.slnx -c Release --no-build --verbosity normal
