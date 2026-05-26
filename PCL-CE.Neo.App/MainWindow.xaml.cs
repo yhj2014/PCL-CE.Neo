@@ -1,65 +1,36 @@
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using PCL_CE.Neo.UI;
 
 namespace PCL_CE.Neo.App;
 
-public partial class MainWindow : Window
+public sealed partial class MainWindow : Window
 {
     public MainWindow()
     {
-        InitializeComponent();
+        this.InitializeComponent();
+        DataContext = new MainViewModel();
     }
 
-    private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    private void MinimizeButton_Click(object sender, RoutedEventArgs e)
     {
-        if (e.ChangedButton == MouseButton.Left)
-        {
-            DragMove();
-        }
-    }
-}
-
-public partial class MainViewModel : ObservableObject
-{
-    [ObservableProperty]
-    private string _title = "PCL-CE.Neo";
-
-    [ObservableProperty]
-    private string _currentPage = "Launch";
-
-    [RelayCommand]
-    private void NavigateTo(string page)
-    {
-        CurrentPage = page;
+        this.Minimize();
     }
 
-    [RelayCommand]
-    private void Minimize()
+    private void MaximizeButton_Click(object sender, RoutedEventArgs e)
     {
-        if (System.Windows.Application.Current.MainWindow != null)
-        {
-            System.Windows.Application.Current.MainWindow.WindowState = WindowState.Minimized;
-        }
+        if (this.WindowState == WindowState.Maximized)
+            this.WindowState = WindowState.Normal;
+        else
+            this.WindowState = WindowState.Maximized;
     }
 
-    [RelayCommand]
-    private void Maximize()
+    private void CloseButton_Click(object sender, RoutedEventArgs e)
     {
-        if (System.Windows.Application.Current.MainWindow != null)
-        {
-            var window = System.Windows.Application.Current.MainWindow;
-            window.WindowState = window.WindowState == WindowState.Maximized
-                ? WindowState.Normal
-                : WindowState.Maximized;
-        }
+        this.Close();
     }
 
-    [RelayCommand]
-    private void Close()
+    private void ContentFrame_Navigated(object sender, Microsoft.UI.Xaml.Navigation.NavigationEventArgs e)
     {
-        System.Windows.Application.Current.Shutdown();
     }
 }

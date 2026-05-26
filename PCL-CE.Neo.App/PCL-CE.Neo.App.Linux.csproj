@@ -14,21 +14,27 @@
         <TargetFramework>net10.0-linux</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <DefineConstants>$(DefineConstants);LINUX</DefineConstants>
+        <Platforms>x64</Platforms>
         <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
         <SelfContained>true</SelfContained>
         <PublishSingleFile>false</PublishSingleFile>
-        <DefineConstants>$(DefineConstants);LINUX</DefineConstants>
     </PropertyGroup>
 
     <ItemGroup>
-        <ApplicationDefinition Include="App.xaml" />
-        <Page Include="**\*.xaml" />
-        <Compile Include="**\*.cs" Exclude="bin\**;obj\**" />
+        <ApplicationDefinition Include="App.xaml">
+            <SubType>Designer</SubType>
+        </ApplicationDefinition>
+        <Page Include="MainWindow.xaml">
+            <SubType>Designer</SubType>
+        </Page>
     </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="Uno.WinUI" Version="5.0.0" />
         <PackageReference Include="Uno.Toolkit.WinUI" Version="5.0.0" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.3" />
+        <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     </ItemGroup>
 
     <ItemGroup>

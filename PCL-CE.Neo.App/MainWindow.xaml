@@ -1,101 +1,96 @@
 <Window x:Class="PCL_CE.Neo.App.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="{Binding Title}"
+        xmlns:local="using:PCL_CE.Neo.App"
+        Title="PCL-CE.Neo"
         Height="720" Width="1280"
         MinHeight="600" MinWidth="900"
         WindowStartupLocation="CenterScreen"
-        Background="{DynamicResource BackgroundBrush}"
-        MouseLeftButtonDown="Window_MouseLeftButtonDown"
-        WindowStyle="None"
-        AllowsTransparency="True">
+        ExtendsContentIntoTitleBar="True">
 
-    <Border CornerRadius="8" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
-        <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="48"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="48"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
 
-            <Border Grid.Row="0"
-                    Background="{DynamicResource PrimaryBrush}"
-                    CornerRadius="8,8,0,0"
-                    MouseLeftButtonDown="Window_MouseLeftButtonDown">
-                <Grid>
-                    <TextBlock Text="{Binding Title}"
-                               Foreground="White"
-                               FontSize="16"
-                               FontWeight="SemiBold"
-                               VerticalAlignment="Center"
-                               Margin="16,0,0,0"/>
+        <Grid Grid.Row="0"
+              Background="{ThemeResource SystemAccentColor}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
 
-                    <StackPanel Orientation="Horizontal"
-                                HorizontalAlignment="Right"
-                                VerticalAlignment="Center"
-                                Margin="0,0,8,0">
-                        <Button Content="─"
-                                Command="{Binding MinimizeCommand}"
-                                Style="{StaticResource WindowButtonStyle}"
-                                Width="36" Height="36"/>
-                        <Button Content="□"
-                                Command="{Binding MaximizeCommand}"
-                                Style="{StaticResource WindowButtonStyle}"
-                                Width="36" Height="36"/>
-                        <Button Content="✕"
-                                Command="{Binding CloseCommand}"
-                                Style="{StaticResource WindowButtonStyle}"
-                                Width="36" Height="36"/>
-                    </StackPanel>
-                </Grid>
-            </Border>
+            <TextBlock Grid.Column="0"
+                       Text="{Binding Title}"
+                       FontSize="16"
+                       FontWeight="SemiBold"
+                       VerticalAlignment="Center"
+                       Margin="16,0,0,0"/>
 
-            <Grid Grid.Row="1">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="200"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-
-                <Border Grid.Column="0"
-                        Background="{DynamicResource BackgroundSecondaryBrush}">
-                    <StackPanel Margin="8">
-                        <Button Content="启动游戏"
-                                Command="{Binding NavigateToCommand}"
-                                CommandParameter="Launch"
-                                Style="{StaticResource NavButtonStyle}"/>
-                        <Button Content="下载管理"
-                                Command="{Binding NavigateToCommand}"
-                                CommandParameter="Download"
-                                Style="{StaticResource NavButtonStyle}"/>
-                        <Button Content="版本设置"
-                                Command="{Binding NavigateToCommand}"
-                                CommandParameter="Setup"
-                                Style="{StaticResource NavButtonStyle}"/>
-                        <Button Content="Mod 管理"
-                                Command="{Binding NavigateToCommand}"
-                                CommandParameter="Mod"
-                                Style="{StaticResource NavButtonStyle}"/>
-                        <Button Content="游戏工具"
-                                Command="{Binding NavigateToCommand}"
-                                CommandParameter="Tools"
-                                Style="{StaticResource NavButtonStyle}"/>
-                        <Button Content="其他设置"
-                                Command="{Binding NavigateToCommand}"
-                                CommandParameter="Other"
-                                Style="{StaticResource NavButtonStyle}"/>
-                    </StackPanel>
-                </Border>
-
-                <Border Grid.Column="1"
-                        Background="{DynamicResource BackgroundBrush}">
-                    <Grid>
-                        <TextBlock Text="{Binding CurrentPage}"
-                                   FontSize="24"
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center"
-                                   Foreground="{DynamicResource TextSecondaryBrush}"/>
-                    </Grid>
-                </Border>
-            </Grid>
+            <StackPanel Grid.Column="2"
+                        Orientation="Horizontal"
+                        Margin="0,0,8,0">
+                <Button x:Name="MinimizeButton"
+                        Content="─"
+                        Width="46" Height="46"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Click="MinimizeButton_Click"/>
+                <Button x:Name="MaximizeButton"
+                        Content="□"
+                        Width="46" Height="46"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Click="MaximizeButton_Click"/>
+                <Button x:Name="CloseButton"
+                        Content="✕"
+                        Width="46" Height="46"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Click="CloseButton_Click"/>
+            </StackPanel>
         </Grid>
-    </Border>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="200"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0"
+                        Background="{ThemeResource SystemControlBackgroundBaseLowBrush}"
+                        Padding="8">
+                <Button Content="启动游戏"
+                        Command="{Binding NavigateToCommand}"
+                        CommandParameter="Launch"
+                        Margin="0,4"/>
+                <Button Content="下载管理"
+                        Command="{Binding NavigateToCommand}"
+                        CommandParameter="Download"
+                        Margin="0,4"/>
+                <Button Content="版本设置"
+                        Command="{Binding NavigateToCommand}"
+                        CommandParameter="Setup"
+                        Margin="0,4"/>
+                <Button Content="Mod 管理"
+                        Command="{Binding NavigateToCommand}"
+                        CommandParameter="Mod"
+                        Margin="0,4"/>
+                <Button Content="游戏工具"
+                        Command="{Binding NavigateToCommand}"
+                        CommandParameter="Tools"
+                        Margin="0,4"/>
+                <Button Content="其他设置"
+                        Command="{Binding NavigateToCommand}"
+                        CommandParameter="Other"
+                        Margin="0,4"/>
+            </StackPanel>
+
+            <Frame Grid.Column="1"
+                   x:Name="ContentFrame"
+                   Navigated="ContentFrame_Navigated"/>
+        </Grid>
+    </Grid>
 </Window>
