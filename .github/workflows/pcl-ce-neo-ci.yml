@@ -16,9 +16,26 @@ on:
   workflow_dispatch:
 
 jobs:
+  check-rules:
+    name: Check Rules
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore Dependencies
+        run: dotnet restore PCL-CE.Neo.Core.Abstractions/PCL-CE.Neo.Core.Abstractions.csproj
+
   build-core-abstractions:
     name: Build Core Abstractions
     runs-on: ubuntu-latest
+    needs: check-rules
     
     steps:
       - name: Checkout
@@ -34,18 +51,10 @@ jobs:
           dotnet build PCL-CE.Neo.Core.Abstractions/PCL-CE.Neo.Core.Abstractions.csproj \
           -c Release --no-restore
 
-  build-platforms:
-    name: Build Platforms
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        platform:
-          - path: PCL-CE.Neo.Platform/Windows
-            name: Windows
-          - path: PCL-CE.Neo.Platform/macOS
-            name: macOS
-          - path: PCL-CE.Neo.Platform/Linux
-            name: Linux
+  build-windows:
+    name: Build Windows Platform
+    runs-on: windows-latest
+    needs: check-rules
     
     steps:
       - name: Checkout
@@ -56,15 +65,53 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
-      - name: Build ${{ matrix.platform.name }}
+      - name: Build Windows Platform
         run: |
-          dotnet build "${{ matrix.platform.path }}"/*.${{ matrix.platform.name }}.csproj \
-          -c Release --no-restore
+          dotnet build "PCL-CE.Neo.Platform\Windows\PCL-CE.Neo.Platform.Windows.csproj" `
+          -c Release --no-restore -p:DefineConstants="WINDOWS;$(DefineConstants)"
+
+  build-macos:
+    name: Build macOS Platform
+    runs-on: macos-latest
+    needs: check-rules
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Build macOS Platform
+        run: |
+          dotnet build "PCL-CE.Neo.Platform/macOS/PCL-CE.Neo.Platform.macOS.csproj" \
+          -c Release --no-restore -p:DefineConstants="MACOS;$(DefineConstants)"
+
+  build-linux:
+    name: Build Linux Platform
+    runs-on: ubuntu-latest
+    needs: check-rules
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Build Linux Platform
+        run: |
+          dotnet build "PCL-CE.Neo.Platform/Linux/PCL-CE.Neo.Platform.Linux.csproj" \
+          -c Release --no-restore -p:DefineConstants="LINUX;$(DefineConstants)"
 
   build-core:
     name: Build Core
     runs-on: ubuntu-latest
-    needs: build-core-abstractions
+    needs: [build-core-abstractions, build-windows, build-macos, build-linux]
     
     steps:
       - name: Checkout
@@ -87,7 +134,7 @@ jobs:
   build-ui:
     name: Build UI
     runs-on: ubuntu-latest
-    needs: build-core-abstractions
+    needs: [build-core-abstractions, build-windows, build-macos, build-linux]
     
     steps:
       - name: Checkout
@@ -110,7 +157,7 @@ jobs:
   build-tests:
     name: Build Tests
     runs-on: ubuntu-latest
-    needs: [build-core, build-platforms]
+    needs: [build-core, build-windows, build-macos, build-linux]
     
     steps:
       - name: Checkout
