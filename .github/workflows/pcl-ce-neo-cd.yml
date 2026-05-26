@@ -63,8 +63,29 @@ jobs:
           
           echo "✅ 代码规则检查通过"
 
+      - name: Check App Projects Exist
+        run: |
+          echo "检查 App 项目文件..."
+          
+          if [ ! -f "PCL-CE.Neo.App/PCL-CE.Neo.App.Windows.csproj" ]; then
+            echo "❌ Windows App 项目不存在！"
+            exit 1
+          fi
+          
+          if [ ! -f "PCL-CE.Neo.App/PCL-CE.Neo.App.macOS.csproj" ]; then
+            echo "❌ macOS App 项目不存在！"
+            exit 1
+          fi
+          
+          if [ ! -f "PCL-CE.Neo.App/PCL-CE.Neo.App.Linux.csproj" ]; then
+            echo "❌ Linux App 项目不存在！"
+            exit 1
+          fi
+          
+          echo "✅ App 项目检查通过"
+
   build-windows:
-    name: Build Windows
+    name: Build Windows App
     runs-on: windows-latest
     needs: pre-check
     
@@ -77,29 +98,26 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Restore Dependencies
+      - name: Publish Windows App
         run: |
-          dotnet restore PCL-CE.Neo.Platform/Windows/PCL-CE.Neo.Platform.Windows.csproj
+          dotnet publish "PCL-CE.Neo.App/PCL-CE.Neo.App.Windows.csproj" `
+          -c Release `
+          -r win-x64 `
+          --self-contained true `
+          -o "./publish/PCL-CE.Neo-${{ env.VERSION }}-win-x64"
 
-      - name: Build Windows
-        run: |
-          dotnet build PCL-CE.Neo.Platform/Windows/PCL-CE.Neo.Platform.Windows.csproj `
-          -c Release --no-restore -p:DefineConstants="WINDOWS;$(DefineConstants)"
-
-      - name: Publish Windows
-        run: |
-          dotnet publish PCL-CE.Neo.Platform/Windows/PCL-CE.Neo.Platform.Windows.csproj `
-          -c Release --no-build -o ./publish/PCL-CE.Neo-${{ env.VERSION }}-win-x64
-
-      - name: Upload Windows Artifacts
-        uses: actions/upload-artifact@v4
+      - name: Upload Windows Release
+        uses: softprops/action-gh-release@v2
         with:
-          name: PCL-CE.Neo-${{ env.VERSION }}-win-x64
-          path: ./publish/PCL-CE.Neo-${{ env.VERSION }}-win-x64
-          retention-days: 30
+          tag_name: ${{ env.VERSION }}
+          name: "PCL-CE.Neo ${{ env.VERSION }}"
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          assets: './publish/**/*.zip'
+        continue-on-error: true
 
   build-macos:
-    name: Build macOS
+    name: Build macOS App
     runs-on: macos-latest
     needs: pre-check
     
@@ -112,29 +130,26 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Restore Dependencies
+      - name: Publish macOS App
         run: |
-          dotnet restore PCL-CE.Neo.Platform/macOS/PCL-CE.Neo.Platform.macOS.csproj
+          dotnet publish "PCL-CE.Neo.App/PCL-CE.Neo.App.macOS.csproj" \
+          -c Release \
+          -r osx-x64 \
+          --self-contained true \
+          -o "./publish/PCL-CE.Neo-${{ env.VERSION }}-osx-x64"
 
-      - name: Build macOS
-        run: |
-          dotnet build PCL-CE.Neo.Platform/macOS/PCL-CE.Neo.Platform.macOS.csproj \
-          -c Release --no-restore -p:DefineConstants="MACOS;$(DefineConstants)"
-
-      - name: Publish macOS
-        run: |
-          dotnet publish PCL-CE.Neo.Platform/macOS/PCL-CE.Neo.Platform.macOS.csproj \
-          -c Release --no-build -o ./publish/PCL-CE.Neo-${{ env.VERSION }}-osx-x64
-
-      - name: Upload macOS Artifacts
-        uses: actions/upload-artifact@v4
+      - name: Upload macOS Release
+        uses: softprops/action-gh-release@v2
         with:
-          name: PCL-CE.Neo-${{ env.VERSION }}-osx-x64
-          path: ./publish/PCL-CE.Neo-${{ env.VERSION }}-osx-x64
-          retention-days: 30
+          tag_name: ${{ env.VERSION }}
+          name: "PCL-CE.Neo ${{ env.VERSION }}"
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          assets: './publish/**/*'
+        continue-on-error: true
 
   build-linux:
-    name: Build Linux
+    name: Build Linux App
     runs-on: ubuntu-latest
     needs: pre-check
     
@@ -149,180 +164,49 @@ jobs:
 
       - name: Install Linux Dependencies
         run: |
-          sudo apt-get update && sudo apt-get install -y libgtk-3-dev libnotify-dev
+          sudo apt-get update && sudo apt-get install -y \
+            libgtk-3-0 libnotify-dev libnss3 libxkbcommon0 libssl3 \
+            libsecret-1-0 libasound2 libpangocairo-1.0-0 libatk1.0-0 \
+            libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon-x11-0 libgbm1
 
-      - name: Restore Dependencies
+      - name: Publish Linux App
         run: |
-          dotnet restore PCL-CE.Neo.Platform/Linux/PCL-CE.Neo.Platform.Linux.csproj
+          dotnet publish "PCL-CE.Neo.App/PCL-CE.Neo.App.Linux.csproj" \
+          -c Release \
+          -r linux-x64 \
+          --self-contained true \
+          -o "./publish/PCL-CE.Neo-${{ env.VERSION }}-linux-x64"
 
-      - name: Build Linux
-        run: |
-          dotnet build PCL-CE.Neo.Platform/Linux/PCL-CE.Neo.Platform.Linux.csproj \
-          -c Release --no-restore -p:DefineConstants="LINUX;$(DefineConstants)"
-
-      - name: Publish Linux
-        run: |
-          dotnet publish PCL-CE.Neo.Platform/Linux/PCL-CE.Neo.Platform.Linux.csproj \
-          -c Release --no-build -o ./publish/PCL-CE.Neo-${{ env.VERSION }}-linux-x64
-
-      - name: Upload Linux Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: PCL-CE.Neo-${{ env.VERSION }}-linux-x64
-          path: ./publish/PCL-CE.Neo-${{ env.VERSION }}-linux-x64
-          retention-days: 30
-
-  build-core:
-    name: Build Core Library
-    runs-on: ubuntu-latest
-    needs: pre-check
-    
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v5
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-
-      - name: Restore Dependencies
-        run: |
-          dotnet restore PCL-CE.Neo.Core/PCL-CE.Neo.Core.csproj
-
-      - name: Build Core
-        run: |
-          dotnet build PCL-CE.Neo.Core/PCL-CE.Neo.Core.csproj \
-          -c Release --no-restore
-
-      - name: Publish Core
-        run: |
-          dotnet publish PCL-CE.Neo.Core/PCL-CE.Neo.Core.csproj \
-          -c Release --no-build -o ./publish/PCL-CE.Neo-${{ env.VERSION }}-core
-
-      - name: Upload Core Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: PCL-CE.Neo-${{ env.VERSION }}-core
-          path: ./publish/PCL-CE.Neo-${{ env.VERSION }}-core
-          retention-days: 30
-
-  build-ui:
-    name: Build UI
-    runs-on: ubuntu-latest
-    needs: pre-check
-    
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v5
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-
-      - name: Restore Dependencies
-        run: |
-          dotnet restore PCL-CE.Neo.UI/PCL-CE.Neo.UI.csproj
-
-      - name: Build UI
-        run: |
-          dotnet build PCL-CE.Neo.UI/PCL-CE.Neo.UI.csproj \
-          -c Release --no-restore
-
-      - name: Publish UI
-        run: |
-          dotnet publish PCL-CE.Neo.UI/PCL-CE.Neo.UI.csproj \
-          -c Release --no-build -o ./publish/PCL-CE.Neo-${{ env.VERSION }}-ui
-
-      - name: Upload UI Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: PCL-CE.Neo-${{ env.VERSION }}-ui
-          path: ./publish/PCL-CE.Neo-${{ env.VERSION }}-ui
-          retention-days: 30
-
-  create-release:
-    name: Create Release
-    runs-on: ubuntu-latest
-    needs: [build-windows, build-macos, build-linux, build-core, build-ui]
-    
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Download All Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: ./artifacts
-
-      - name: Prepare Release Notes
-        run: |
-          cat << 'EOF' > ./release-notes.md
-          # PCL-CE.Neo ${{ env.VERSION }} Release
-          
-          ## Downloads
-          
-          | Platform | Architecture | Download |
-          |----------|--------------|----------|
-          | Windows | x64 | [PCL-CE.Neo-${{ env.VERSION }}-win-x64.zip](./artifacts/PCL-CE.Neo-${{ env.VERSION }}-win-x64.zip) |
-          | macOS | x64 | [PCL-CE.Neo-${{ env.VERSION }}-osx-x64.zip](./artifacts/PCL-CE.Neo-${{ env.VERSION }}-osx-x64.zip) |
-          | Linux | x64 | [PCL-CE.Neo-${{ env.VERSION }}-linux-x64.tar.gz](./artifacts/PCL-CE.Neo-${{ env.VERSION }}-linux-x64.tar.gz) |
-          
-          ## Installation
-          
-          ### Windows
-          1. Download and extract the Windows package
-          2. Run the executable
-          
-          ### macOS
-          1. Download and extract the macOS package
-          2. Grant executable permissions: \`chmod +x PCL-CE.Neo\`
-          3. Run the application
-          
-          ### Linux
-          1. Download and extract the Linux package
-          2. Grant executable permissions: \`chmod +x PCL-CE.Neo\`
-          3. Run the application
-          
-          ## System Requirements
-          
-          - .NET 10.0 Runtime
-          - Windows 10/11, macOS 10.15+, or Linux (Ubuntu 20.04+)
-          
-          ## Changelog
-          
-          See full changelog at [CHANGELOG.md](./CHANGELOG.md)
-          EOF
-
-      - name: Create GitHub Release
+      - name: Upload Linux Release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ env.VERSION }}
+          name: "PCL-CE.Neo ${{ env.VERSION }}"
           draft: false
           prerelease: ${{ contains(github.ref_name, '-') }}
-          generate_release_notes: true
-          name: "PCL-CE.Neo ${{ env.VERSION }}"
-          body_path: ./release-notes.md
-          files: |
-            ./artifacts/**/*.zip
-            ./artifacts/**/*.tar.gz
-            ./artifacts/**/*.dll
-            ./artifacts/**/*.exe
-            ./artifacts/**/*.so
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          assets: './publish/**/*'
+        continue-on-error: true
 
-      - name: Upload Core Artifacts to Release
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./artifacts/PCL-CE.Neo-${{ env.VERSION }}-core
-          asset_name: PCL-CE.Neo-${{ env.VERSION }}-core.zip
-          asset_content_type: application/zip
-        if: false
-
-      - name: Display Release Info
+  create-release-summary:
+    name: Create Release Summary
+    runs-on: ubuntu-latest
+    needs: [build-windows, build-macos, build-linux]
+    if: always()
+    
+    steps:
+      - name: Display Release Status
         run: |
-          echo "🎉 Release ${{ env.VERSION }} created successfully!"
-          echo "📦 All artifacts have been uploaded"
-          echo "🔗 Release URL: ${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ env.VERSION }}"
+          echo "🎉 PCL-CE.Neo ${{ env.VERSION }} 发布完成！"
+          echo ""
+          echo "## 📦 下载链接"
+          echo ""
+          echo "| 平台 | 下载地址 |"
+          echo "|-----|----------|"
+          echo "| Windows | [PCL-CE.Neo-${{ env.VERSION }}-win-x64.zip](https://github.com/${{ github.repository }}/releases/download/${{ env.VERSION }}/PCL-CE.Neo-${{ env.VERSION }}-win-x64.zip) |"
+          echo "| macOS | [PCL-CE.Neo-${{ env.VERSION }}-osx-x64.zip](https://github.com/${{ github.repository }}/releases/download/${{ env.VERSION }}/PCL-CE.Neo-${{ env.VERSION }}-osx-x64.zip) |"
+          echo "| Linux | [PCL-CE.Neo-${{ env.VERSION }}-linux-x64.tar.gz](https://github.com/${{ github.repository }}/releases/download/${{ env.VERSION }}/PCL-CE.Neo-${{ env.VERSION }}-linux-x64.tar.gz) |"
+          echo ""
+          echo "## 📋 构建状态"
+          echo "- Windows: ${{ needs.build-windows.result }}"
+          echo "- macOS: ${{ needs.build-macos.result }}"
+          echo "- Linux: ${{ needs.build-linux.result }}"
