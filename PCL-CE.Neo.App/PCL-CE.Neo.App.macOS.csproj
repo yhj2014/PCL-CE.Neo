@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <AssemblyTitle>PCL-CE.Neo.App.macOS</AssemblyTitle>
+        <AssemblyName>PCL-CE.Neo.App.macOS</AssemblyName>
+        <Description>PCL CE Neo macOS 应用入口</Description>
+        <Company>PCL Community</Company>
+        <Product>PCL-CE.Neo.App.macOS</Product>
+        <Copyright>Copyright © PCL Community</Copyright>
+        <AssemblyVersion>1.0.0.0</AssemblyVersion>
+        <FileVersion>1.0.0.0</FileVersion>
+        <OutputType>Exe</OutputType>
+        <RootNamespace>PCL_CE.Neo.App</RootNamespace>
+        <TargetFramework>net10.0-maccatalyst</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <DefineConstants>$(DefineConstants);MACOS</DefineConstants>
+        <Platforms>x64</Platforms>
+        <RuntimeIdentifier>osx-x64</RuntimeIdentifier>
+        <SelfContained>true</SelfContained>
+        <PublishSingleFile>false</PublishSingleFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ApplicationDefinition Include="App.xaml">
+            <SubType>Designer</SubType>
+        </ApplicationDefinition>
+        <Page Include="MainWindow.xaml">
+            <SubType>Designer</SubType>
+        </Page>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Uno.WinUI" Version="5.0.0" />
+        <PackageReference Include="Uno.Toolkit.WinUI" Version="5.0.0" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.3" />
+        <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\PCL-CE.Neo.UI\PCL-CE.Neo.UI.csproj" />
+        <ProjectReference Include="..\PCL-CE.Neo.Platform.macOS\PCL-CE.Neo.Platform.macOS.csproj" />
+    </ItemGroup>
+
+</Project>

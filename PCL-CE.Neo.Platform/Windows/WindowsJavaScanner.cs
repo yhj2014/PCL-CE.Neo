@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using Microsoft.Win32;
 
 namespace PCL_CE.Neo.Platform.Windows;
 
@@ -12,22 +13,11 @@ public class WindowsJavaScanner : Core.Abstractions.IJavaScanner
         @"C:\Program Files\Amazon Corretto",
     };
 
-    private static readonly string[] UnixJavaPaths = new[]
-    {
-        "/usr/lib/jvm",
-        "/usr/java",
-        "/Library/Java/JavaVirtualMachines",
-        "/opt/java",
-        "/opt/jdk",
-    };
-
     public IEnumerable<string> ScanJavaPaths()
     {
         var javaPaths = new List<string>();
-        var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
-        var paths = isWindows ? WindowsJavaPaths : UnixJavaPaths;
-        foreach (var basePath in paths)
+        foreach (var basePath in WindowsJavaPaths)
         {
             if (Directory.Exists(basePath))
             {
@@ -49,15 +39,57 @@ public class WindowsJavaScanner : Core.Abstractions.IJavaScanner
             {
                 javaPaths.AddRange(ScanDirectory(userJdks));
             }
-
-            var sdkMan = Path.Combine(userHome, ".sdkman", "candidates", "java");
-            if (Directory.Exists(sdkMan))
-            {
-                javaPaths.AddRange(ScanDirectory(sdkMan));
-            }
         }
 
+        ScanRegistryForJava(javaPaths);
+
         return javaPaths.Where(IsValidJavaPath).Distinct();
+    }
+
+    private void ScanRegistryForJava(List<string> javaPaths)
+    {
+        try
+        {
+            var registryPaths = new[]
+            {
+                @"SOFTWARE\JavaSoft\Java Runtime Environment",
+                @"SOFTWARE\JavaSoft\Java Development Kit",
+                @"SOFTWARE\Eclipse Adoptium\JRE",
+                @"SOFTWARE\Eclipse Adoptium\JDK"
+            };
+
+            foreach (var registryPath in registryPaths)
+            {
+                using var key = Registry.LocalMachine.OpenSubKey(registryPath);
+                if (key != null)
+                {
+                    foreach (var subKeyName in key.GetSubKeyNames())
+                    {
+                        using var subKey = key.OpenSubKey(subKeyName);
+                        var javaHome = subKey?.GetValue("JavaHome") as string;
+                        if (!string.IsNullOrEmpty(javaHome) && Directory.Exists(javaHome))
+                        {
+                            javaPaths.Add(javaHome);
+                        }
+                    }
+                }
+
+                using var key32 = Registry.LocalMachine.OpenSubKey(@"Wow6432Node\" + registryPath);
+                if (key32 != null)
+                {
+                    foreach (var subKeyName in key32.GetSubKeyNames())
+                    {
+                        using var subKey = key32.OpenSubKey(subKeyName);
+                        var javaHome = subKey?.GetValue("JavaHome") as string;
+                        if (!string.IsNullOrEmpty(javaHome) && Directory.Exists(javaHome))
+                        {
+                            javaPaths.Add(javaHome);
+                        }
+                    }
+                }
+            }
+        }
+        catch { }
     }
 
     public IEnumerable<string> ScanDirectory(string directory)
@@ -69,20 +101,16 @@ public class WindowsJavaScanner : Core.Abstractions.IJavaScanner
             if (!Directory.Exists(directory))
                 return paths;
 
-            var javaExeName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "java.exe" : "java";
-
             foreach (var dir in Directory.GetDirectories(directory))
             {
-                var javaExe = Path.Combine(dir, "bin", javaExeName);
+                var javaExe = Path.Combine(dir, "bin", "java.exe");
                 if (File.Exists(javaExe))
                 {
                     paths.Add(dir);
                 }
             }
         }
-        catch
-        {
-        }
+        catch { }
 
         return paths;
     }
@@ -94,27 +122,8 @@ public class WindowsJavaScanner : Core.Abstractions.IJavaScanner
 
         try
         {
-            var javaExeName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "java.exe" : "java";
-            var javaExe = Path.Combine(path, "bin", javaExeName);
-            if (!File.Exists(javaExe))
-                return false;
-
-            var process = new System.Diagnostics.Process
-            {
-                StartInfo = new System.Diagnostics.ProcessStartInfo
-                {
-                    FileName = javaExe,
-                    Arguments = "-version",
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    CreateNoWindow = true
-                }
-            };
-
-            process.Start();
-            process.WaitForExit(5000);
-            return process.ExitCode == 0;
+            var javaExe = Path.Combine(path, "bin", "java.exe");
+            return File.Exists(javaExe);
         }
         catch
         {

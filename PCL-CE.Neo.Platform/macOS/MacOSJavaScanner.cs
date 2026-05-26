@@ -1,22 +1,12 @@
-using System.Runtime.InteropServices;
-
 namespace PCL_CE.Neo.Platform.macOS;
 
 public class MacOSJavaScanner : Core.Abstractions.IJavaScanner
 {
-    private static readonly string[] WindowsJavaPaths = new[]
+    private static readonly string[] MacOSJavaPaths = new[]
     {
-        @"C:\Program Files\Java",
-        @"C:\Program Files (x86)\Java",
-        @"C:\Program Files\Eclipse Adoptium",
-        @"C:\Program Files\Amazon Corretto",
-    };
-
-    private static readonly string[] UnixJavaPaths = new[]
-    {
+        "/Library/Java/JavaVirtualMachines",
         "/usr/lib/jvm",
         "/usr/java",
-        "/Library/Java/JavaVirtualMachines",
         "/opt/java",
         "/opt/jdk",
     };
@@ -24,10 +14,8 @@ public class MacOSJavaScanner : Core.Abstractions.IJavaScanner
     public IEnumerable<string> ScanJavaPaths()
     {
         var javaPaths = new List<string>();
-        var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
-        var paths = isWindows ? WindowsJavaPaths : UnixJavaPaths;
-        foreach (var basePath in paths)
+        foreach (var basePath in MacOSJavaPaths)
         {
             if (Directory.Exists(basePath))
             {
@@ -69,20 +57,16 @@ public class MacOSJavaScanner : Core.Abstractions.IJavaScanner
             if (!Directory.Exists(directory))
                 return paths;
 
-            var javaExeName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "java.exe" : "java";
-
             foreach (var dir in Directory.GetDirectories(directory))
             {
-                var javaExe = Path.Combine(dir, "bin", javaExeName);
+                var javaExe = Path.Combine(dir, "bin", "java");
                 if (File.Exists(javaExe))
                 {
                     paths.Add(dir);
                 }
             }
         }
-        catch
-        {
-        }
+        catch { }
 
         return paths;
     }
@@ -94,27 +78,8 @@ public class MacOSJavaScanner : Core.Abstractions.IJavaScanner
 
         try
         {
-            var javaExeName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "java.exe" : "java";
-            var javaExe = Path.Combine(path, "bin", javaExeName);
-            if (!File.Exists(javaExe))
-                return false;
-
-            var process = new System.Diagnostics.Process
-            {
-                StartInfo = new System.Diagnostics.ProcessStartInfo
-                {
-                    FileName = javaExe,
-                    Arguments = "-version",
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    CreateNoWindow = true
-                }
-            };
-
-            process.Start();
-            process.WaitForExit(5000);
-            return process.ExitCode == 0;
+            var javaExe = Path.Combine(path, "bin", "java");
+            return File.Exists(javaExe);
         }
         catch
         {

@@ -15,40 +15,62 @@ public class MacOSPlatformServiceIntegrationTests
     }
 
     [Fact]
-    public void GetCurrentPlatform_ReturnsMacOS()
-    {
-        var platform = _service.CurrentPlatform;
-        Assert.Equal(PlatformType.MacOS, platform);
-    }
-
-    [Fact]
     public void GetPlatformName_ReturnsMacOS()
     {
         var name = _service.PlatformName;
-        Assert.Contains("macOS", name, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal("macOS", name);
     }
 
     [Fact]
-    public void Is64BitProcess_ReturnsTrue()
+    public void OSVersion_IsNotEmpty()
     {
-        var is64Bit = _service.Is64BitProcess;
-        Assert.True(is64Bit);
+        var version = _service.OSVersion;
+        Assert.False(string.IsNullOrEmpty(version));
     }
 
     [Fact]
-    public void GetResourcePath_ReturnsValidPath()
+    public void Architecture_IsNotEmpty()
     {
-        var path = _service.GetResourcePath("test.txt");
+        var architecture = _service.Architecture;
+        Assert.False(string.IsNullOrEmpty(architecture));
+    }
+
+    [Fact]
+    public void GetLocalApplicationDataPath_ReturnsValidPath()
+    {
+        var path = _service.GetLocalApplicationDataPath();
         Assert.False(string.IsNullOrEmpty(path));
-        Assert.Contains("test.txt", path);
+        Assert.Contains("PCL-CE.Neo", path);
     }
 
     [Fact]
-    public void PlatformVersion_IsNotEmpty()
+    public void GetTempPath_ReturnsValidPath()
     {
-        var version = _service.PlatformVersion;
-        Assert.NotNull(version);
-        Assert.False(string.IsNullOrEmpty(version.ToString()));
+        var path = _service.GetTempPath();
+        Assert.False(string.IsNullOrEmpty(path));
+    }
+
+    [Fact]
+    public void GetGameDataPath_ReturnsValidPath()
+    {
+        var path = _service.GetGameDataPath();
+        Assert.False(string.IsNullOrEmpty(path));
+        Assert.Contains("PCL-CE.Neo", path);
+        Assert.Contains("GameData", path);
+    }
+
+    [Fact]
+    public void OpenUrl_DoesNotThrow()
+    {
+        var exception = Record.Exception(() => _service.OpenUrl("https://example.com"));
+        Assert.Null(exception);
+    }
+
+    [Fact]
+    public void OpenFolder_DoesNotThrow()
+    {
+        var exception = Record.Exception(() => _service.OpenFolder("/tmp"));
+        Assert.Null(exception);
     }
 }
 
@@ -98,6 +120,77 @@ public class MacOSWindowServiceIntegrationTests
         var service = new MacOSWindowService();
         Assert.NotNull(service);
     }
+
+    [Fact]
+    public void MainWindow_IsNull()
+    {
+        var service = new MacOSWindowService();
+        Assert.Null(service.MainWindow);
+    }
+
+    [Fact]
+    public void GetSystemDpi_ReturnsValidDpi()
+    {
+        var service = new MacOSWindowService();
+        var dpi = service.GetSystemDpi();
+        Assert.True(dpi > 0);
+    }
+
+    [Fact]
+    public void Initialize_DoesNotThrow()
+    {
+        var service = new MacOSWindowService();
+        var exception = Record.Exception(() => service.Initialize());
+        Assert.Null(exception);
+    }
+
+    [Fact]
+    public void ShowMainWindow_DoesNotThrow()
+    {
+        var service = new MacOSWindowService();
+        var exception = Record.Exception(() => service.ShowMainWindow());
+        Assert.Null(exception);
+    }
+
+    [Fact]
+    public void CloseMainWindow_DoesNotThrow()
+    {
+        var service = new MacOSWindowService();
+        var exception = Record.Exception(() => service.CloseMainWindow());
+        Assert.Null(exception);
+    }
+
+    [Fact]
+    public void SetTitle_DoesNotThrow()
+    {
+        var service = new MacOSWindowService();
+        var exception = Record.Exception(() => service.SetTitle("Test Title"));
+        Assert.Null(exception);
+    }
+
+    [Fact]
+    public void Minimize_DoesNotThrow()
+    {
+        var service = new MacOSWindowService();
+        var exception = Record.Exception(() => service.Minimize());
+        Assert.Null(exception);
+    }
+
+    [Fact]
+    public void Maximize_DoesNotThrow()
+    {
+        var service = new MacOSWindowService();
+        var exception = Record.Exception(() => service.Maximize());
+        Assert.Null(exception);
+    }
+
+    [Fact]
+    public void Restore_DoesNotThrow()
+    {
+        var service = new MacOSWindowService();
+        var exception = Record.Exception(() => service.Restore());
+        Assert.Null(exception);
+    }
 }
 
 public class MacOSThemeServiceIntegrationTests
@@ -110,24 +203,39 @@ public class MacOSThemeServiceIntegrationTests
     }
 
     [Fact]
-    public async Task GetSystemTheme_ReturnsValidTheme()
+    public void GetCurrentTheme_ReturnsValidTheme()
     {
-        var theme = await _service.GetSystemThemeAsync();
-        Assert.True(Enum.IsDefined(typeof(AppTheme), theme));
+        var theme = _service.GetCurrentTheme();
+        Assert.NotNull(theme);
+        Assert.False(string.IsNullOrEmpty(theme.Name));
     }
 
     [Fact]
-    public void CurrentTheme_HasDefaultValue()
+    public void SetTheme_DoesNotThrow()
     {
-        var theme = _service.CurrentTheme;
-        Assert.True(Enum.IsDefined(typeof(AppTheme), theme));
+        var theme = new ThemeInfo
+        {
+            Name = "Test",
+            Type = ThemeType.Light,
+            ResourcePath = ""
+        };
+        var exception = Record.Exception(() => _service.SetTheme(theme));
+        Assert.Null(exception);
     }
 
     [Fact]
-    public async Task SetTheme_DoesNotThrow()
+    public void GetAvailableThemes_ReturnsAtLeastOneTheme()
     {
-        await _service.SetThemeAsync(AppTheme.Light);
-        await _service.SetThemeAsync(AppTheme.Dark);
+        var themes = _service.GetAvailableThemes();
+        Assert.NotNull(themes);
+        Assert.True(themes.Any());
+    }
+
+    [Fact]
+    public void DetectSystemTheme_ReturnsValidTheme()
+    {
+        var theme = _service.DetectSystemTheme();
+        Assert.True(Enum.IsDefined(typeof(ThemeType), theme));
     }
 }
 
@@ -141,32 +249,51 @@ public class MacOSAudioServiceIntegrationTests
     }
 
     [Fact]
-    public void PlayNotificationAsync_DoesNotThrow()
+    public void Play_DoesNotThrow()
     {
-        var task = _service.PlayNotificationAsync();
-        Assert.NotNull(task);
+        var exception = Record.Exception(() => _service.Play("/tmp/test.mp3"));
+        Assert.Null(exception);
+    }
+
+    [Fact]
+    public void Stop_DoesNotThrow()
+    {
+        var exception = Record.Exception(() => _service.Stop());
+        Assert.Null(exception);
+    }
+
+    [Fact]
+    public void Pause_DoesNotThrow()
+    {
+        var exception = Record.Exception(() => _service.Pause());
+        Assert.Null(exception);
+    }
+
+    [Fact]
+    public void Resume_DoesNotThrow()
+    {
+        var exception = Record.Exception(() => _service.Resume());
+        Assert.Null(exception);
     }
 
     [Fact]
     public void SetVolume_DoesNotThrow()
     {
-        _service.SetVolume(50);
+        var exception = Record.Exception(() => _service.SetVolume(50));
+        Assert.Null(exception);
     }
 
     [Fact]
-    public void IsMuted_HasDefaultValue()
+    public void GetVolume_ReturnsValidVolume()
     {
-        var isMuted = _service.IsMuted;
-        Assert.False(isMuted);
+        var volume = _service.GetVolume();
+        Assert.True(volume >= 0 && volume <= 100);
     }
 
     [Fact]
-    public void SetMute_DoesNotThrow()
+    public void IsPlaying_IsFalseInitially()
     {
-        _service.SetMute(true);
-        Assert.True(_service.IsMuted);
-        _service.SetMute(false);
-        Assert.False(_service.IsMuted);
+        Assert.False(_service.IsPlaying);
     }
 }
 
@@ -180,27 +307,35 @@ public class MacOSClipboardServiceIntegrationTests
     }
 
     [Fact]
-    public async Task SetTextAsync_DoesNotThrow()
+    public void SetText_DoesNotThrow()
     {
-        await _service.SetTextAsync("Test text");
+        var exception = Record.Exception(() => _service.SetText("Test text"));
+        Assert.Null(exception);
     }
 
     [Fact]
-    public async Task GetTextAsync_AfterSetText_ReturnsText()
+    public void GetText_AfterSetText_ReturnsText()
     {
         var testText = $"MacOS Clipboard Test {Guid.NewGuid()}";
-        await _service.SetTextAsync(testText);
-        var retrieved = await _service.GetTextAsync();
+        _service.SetText(testText);
+        var retrieved = _service.GetText();
         Assert.Equal(testText, retrieved);
     }
 
     [Fact]
-    public async Task Clear_DoesNotThrow()
+    public void Clear_DoesNotThrow()
     {
-        await _service.SetTextAsync("Test");
-        await _service.ClearAsync();
-        var text = await _service.GetTextAsync();
-        Assert.Null(text);
+        _service.SetText("Test");
+        var exception = Record.Exception(() => _service.Clear());
+        Assert.Null(exception);
+    }
+
+    [Fact]
+    public void GetText_AfterClear_ReturnsNull()
+    {
+        _service.SetText("Test");
+        _service.Clear();
+        Assert.Null(_service.GetText());
     }
 }
 
@@ -214,15 +349,38 @@ public class MacOSDialogServiceIntegrationTests
     }
 
     [Fact]
-    public async Task ShowInfoAsync_DoesNotThrow()
+    public void ShowOpenFileDialog_ReturnsNull()
     {
-        await _service.ShowInfoAsync("Test Title", "Test Message");
+        var result = _service.ShowOpenFileDialog("All Files|*.*");
+        Assert.Null(result);
     }
 
     [Fact]
-    public async Task ShowErrorAsync_DoesNotThrow()
+    public void ShowSaveFileDialog_ReturnsNull()
     {
-        await _service.ShowErrorAsync("Error Title", "Error Message");
+        var result = _service.ShowSaveFileDialog("All Files|*.*", "test.txt");
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public void ShowOpenFolderDialog_ReturnsNull()
+    {
+        var result = _service.ShowOpenFolderDialog();
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public void ShowMessageBox_ReturnsOk()
+    {
+        var result = _service.ShowMessageBox("Test", "Title", DialogButtons.OK);
+        Assert.Equal(DialogResult.OK, result);
+    }
+
+    [Fact]
+    public void ShowConfirmation_ReturnsFalse()
+    {
+        var result = _service.ShowConfirmation("Test?", "Title");
+        Assert.False(result);
     }
 }
 
@@ -236,34 +394,39 @@ public class MacOSNotificationServiceIntegrationTests
     }
 
     [Fact]
-    public void IsSupported_ReturnsTrue()
+    public void ShowNotification_DoesNotThrow()
     {
-        Assert.True(_service.IsSupported);
+        var notification = new NotificationInfo
+        {
+            Title = "Test",
+            Message = "Test message",
+            Type = NotificationType.Info
+        };
+        var exception = Record.Exception(() => _service.ShowNotification(notification));
+        Assert.Null(exception);
     }
 
     [Fact]
-    public async Task ShowNotificationAsync_DoesNotThrow()
+    public void ShowUpdateNotification_DoesNotThrow()
     {
-        await _service.ShowNotificationAsync("Test Title", "Test Message");
+        var exception = Record.Exception(() => 
+            _service.ShowUpdateNotification("1.0.0", "Release notes"));
+        Assert.Null(exception);
     }
 
     [Fact]
-    public async Task ShowNotificationWithSeverity_DoesNotThrow()
+    public void ShowDownloadCompleteNotification_DoesNotThrow()
     {
-        await _service.ShowNotificationAsync(
-            "Info Notification",
-            "This is an info notification",
-            NotificationSeverity.Info);
-        
-        await _service.ShowNotificationAsync(
-            "Warning Notification",
-            "This is a warning notification",
-            NotificationSeverity.Warning);
-        
-        await _service.ShowNotificationAsync(
-            "Error Notification",
-            "This is an error notification",
-            NotificationSeverity.Error);
+        var exception = Record.Exception(() => 
+            _service.ShowDownloadCompleteNotification("test.jar"));
+        Assert.Null(exception);
+    }
+
+    [Fact]
+    public void ClearAllNotifications_DoesNotThrow()
+    {
+        var exception = Record.Exception(() => _service.ClearAllNotifications());
+        Assert.Null(exception);
     }
 }
 

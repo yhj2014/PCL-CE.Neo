@@ -1,22 +1,11 @@
 using System.Runtime.InteropServices;
+using System.Diagnostics;
 
 namespace PCL_CE.Neo.Platform.Windows;
 
 public class WindowsPlatformService : Core.Abstractions.IPlatformService
 {
-    public string PlatformName
-    {
-        get
-        {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                return "Windows";
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                return "macOS";
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                return "Linux";
-            return "Unknown";
-        }
-    }
+    public string PlatformName => "Windows";
 
     public string OSVersion => RuntimeInformation.OSDescription;
 
@@ -24,43 +13,29 @@ public class WindowsPlatformService : Core.Abstractions.IPlatformService
 
     public void OpenUrl(string url)
     {
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        try
         {
-            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            Process.Start(new ProcessStartInfo
             {
                 FileName = url,
                 UseShellExecute = true
             });
         }
-        else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-        {
-            System.Diagnostics.Process.Start("open", url);
-        }
-        else
-        {
-            System.Diagnostics.Process.Start("xdg-open", url);
-        }
+        catch { }
     }
 
     public void OpenFolder(string path)
     {
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        try
         {
-            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            Process.Start(new ProcessStartInfo
             {
                 FileName = "explorer.exe",
                 Arguments = path,
                 UseShellExecute = true
             });
         }
-        else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-        {
-            System.Diagnostics.Process.Start("open", path);
-        }
-        else
-        {
-            System.Diagnostics.Process.Start("xdg-open", path);
-        }
+        catch { }
     }
 
     public string GetLocalApplicationDataPath()

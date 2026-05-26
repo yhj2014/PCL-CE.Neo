@@ -8,7 +8,15 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddLinuxPlatformServices(this IServiceCollection services)
     {
         services.AddSingleton<IPlatformService, LinuxPlatformService>();
+        services.AddSingleton<IWindowService, LinuxWindowService>();
         services.AddSingleton<IJavaScanner, LinuxJavaScanner>();
+        services.AddSingleton<IThemeService, LinuxThemeService>();
+        services.AddSingleton<IAudioService, LinuxAudioService>();
+        services.AddSingleton<IClipboardService, LinuxClipboardService>();
+        services.AddSingleton<IDialogService, LinuxDialogService>();
+        services.AddSingleton<INotificationService, LinuxNotificationService>();
+        services.AddSingleton<IUIAccessProvider, LinuxUIAccessProvider>();
+        services.AddSingleton<IAnimationService, LinuxAnimationService>();
         return services;
     }
 }

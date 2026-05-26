@@ -1,2 +1,22 @@
 <Solution>
+  <Folder Name="PCL-CE.Neo.Core">
+    <Project Path="PCL-CE.Neo.Core.Abstractions\PCL-CE.Neo.Core.Abstractions.csproj" Type="ClassicCsproj" />
+    <Project Path="PCL-CE.Neo.Core\PCL-CE.Neo.Core.csproj" Type="ClassicCsproj" />
+  </Folder>
+  <Folder Name="PCL-CE.Neo.Platform">
+    <Project Path="PCL-CE.Neo.Platform.Windows\PCL-CE.Neo.Platform.Windows.csproj" Type="ClassicCsproj" />
+    <Project Path="PCL-CE.Neo.Platform.macOS\PCL-CE.Neo.Platform.macOS.csproj" Type="ClassicCsproj" />
+    <Project Path="PCL-CE.Neo.Platform.Linux\PCL-CE.Neo.Platform.Linux.csproj" Type="ClassicCsproj" />
+  </Folder>
+  <Folder Name="PCL-CE.Neo.UI">
+    <Project Path="PCL-CE.Neo.UI\PCL-CE.Neo.UI.csproj" Type="ClassicCsproj" />
+  </Folder>
+  <Folder Name="PCL-CE.Neo.App">
+    <Project Path="PCL-CE.Neo.App\PCL-CE.Neo.App.Windows.csproj" Type="ClassicCsproj" />
+    <Project Path="PCL-CE.Neo.App\PCL-CE.Neo.App.macOS.csproj" Type="ClassicCsproj" />
+    <Project Path="PCL-CE.Neo.App\PCL-CE.Neo.App.Linux.csproj" Type="ClassicCsproj" />
+  </Folder>
+  <Folder Name="PCL-CE.Neo.Tests">
+    <Project Path="PCL-CE.Neo.Tests\PCL-CE.Neo.Tests.csproj" Type="ClassicCsproj" />
+  </Folder>
 </Solution>

@@ -1,14 +1,14 @@
 <Application x:Class="PCL_CE.Neo.App.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             StartupUri="MainWindow.xaml">
+             xmlns:local="using:PCL_CE.Neo.App">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/PCL-CE.Neo.UI;component/Resources/Colors.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/PCL-CE.Neo.UI;component/Resources/Dimensions.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/PCL-CE.Neo.UI;component/Resources/TextStyles.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/PCL-CE.Neo.UI;component/Resources/ControlStyles.xaml" />
+                <ResourceDictionary Source="ms-appx:///PCL-CE.Neo.UI/Resources/Colors.xaml" />
+                <ResourceDictionary Source="ms-appx:///PCL-CE.Neo.UI/Resources/Dimensions.xaml" />
+                <ResourceDictionary Source="ms-appx:///PCL-CE.Neo.UI/Resources/TextStyles.xaml" />
+                <ResourceDictionary Source="ms-appx:///PCL-CE.Neo.UI/Resources/ControlStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

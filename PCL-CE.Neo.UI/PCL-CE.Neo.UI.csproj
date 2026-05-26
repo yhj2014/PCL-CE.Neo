@@ -11,10 +11,11 @@
     <TargetFrameworks>net10.0-windows10.0.19041.0;net10.0-maccatalyst;net10.0-linux</TargetFrameworks>
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <UseWinUI>true</UseWinUI>
-    <UnoFeatures>Extensions;Toolkit;Material</UnoFeatures>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>PCL_CE.Neo.UI</RootNamespace>
+    <UnoFeatures>Extensions;Toolkit;Material</UnoFeatures>
+    <DefineConstants>$(DefineConstants);WINUI</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

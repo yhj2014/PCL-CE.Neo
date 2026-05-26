@@ -1,0 +1,299 @@
+name: PCL-CE.Neo CD (Production Release)
+
+permissions:
+  contents: write
+  packages: write
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag_version:
+        description: 'Tag version (e.g., v1.0.0 or v1.0.0-beta)'
+        required: true
+        type: string
+
+env:
+  VERSION: ${{ github.ref_name }}
+  DOTNET_VERSION: '10.0.x'
+
+jobs:
+  pre-check:
+    name: Pre-release Check
+    runs-on: ubuntu-latest
+    outputs:
+      is-prerelease: ${{ steps.check-prerelease.outputs.is-prerelease }}
+      clean-version: ${{ steps.clean-version.outputs.clean-version }}
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate Tag Format
+        run: |
+          if [[ ! "${{ github.ref_name }}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.-]+)?$ ]]; then
+            echo "❌ 错误：Tag 格式不正确！应使用语义化版本，例如：v1.0.0 或 v1.0.0-beta"
+            exit 1
+          fi
+          echo "✅ Tag 格式验证通过：${{ github.ref_name }}"
+
+      - name: Check if Pre-release
+        id: check-prerelease
+        run: |
+          if [[ "${{ github.ref_name }}" == *"-"* ]]; then
+            echo "is-prerelease=true" >> $GITHUB_OUTPUT
+            echo "✅ 检测到预发布版本"
+          else
+            echo "is-prerelease=false" >> $GITHUB_OUTPUT
+            echo "✅ 检测到正式版本"
+          fi
+
+      - name: Extract Clean Version
+        id: clean-version
+        run: |
+          CLEAN_VERSION=$(echo "${{ github.ref_name }}" | sed 's/v//')
+          echo "clean-version=${CLEAN_VERSION}" >> $GITHUB_OUTPUT
+          echo "✅ 版本号：${CLEAN_VERSION}"
+
+      - name: Check Code Rules
+        run: |
+          echo "执行代码规则检查..."
+          
+          # Windows 平台检查
+          if grep -rn "RuntimeInformation.IsOSPlatform\|OperatingSystem.IsWindows" \
+            PCL-CE.Neo.Platform/Windows/ --include="*.cs" > /dev/null 2>&1; then
+            echo "❌ Windows 平台服务包含运行时检查！"
+            exit 1
+          fi
+          
+          # macOS 平台检查
+          if grep -rn "RuntimeInformation.IsOSPlatform\|OperatingSystem.IsMacOS" \
+            PCL-CE.Neo.Platform/macOS/ --include="*.cs" > /dev/null 2>&1; then
+            echo "❌ macOS 平台服务包含运行时检查！"
+            exit 1
+          fi
+          
+          # Linux 平台检查
+          if grep -rn "RuntimeInformation.IsOSPlatform\|OperatingSystem.IsLinux" \
+            PCL-CE.Neo.Platform/Linux/ --include="*.cs" > /dev/null 2>&1; then
+            echo "❌ Linux 平台服务包含运行时检查！"
+            exit 1
+          fi
+          
+          echo "✅ 代码规则检查通过"
+
+      - name: Check App Projects Exist
+        run: |
+          echo "检查 App 项目文件..."
+          
+          if [ ! -f "PCL-CE.Neo.App/PCL-CE.Neo.App.Windows.csproj" ]; then
+            echo "❌ Windows App 项目不存在！"
+            exit 1
+          fi
+          
+          if [ ! -f "PCL-CE.Neo.App/PCL-CE.Neo.App.macOS.csproj" ]; then
+            echo "❌ macOS App 项目不存在！"
+            exit 1
+          fi
+          
+          if [ ! -f "PCL-CE.Neo.App/PCL-CE.Neo.App.Linux.csproj" ]; then
+            echo "❌ Linux App 项目不存在！"
+            exit 1
+          fi
+          
+          echo "✅ App 项目检查通过"
+
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: pre-check
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate Release Notes
+        run: |
+          cat << 'EOF' > release-notes.md
+          # PCL-CE.Neo ${{ needs.pre-check.outputs.clean-version }}
+          
+          ${{ needs.pre-check.outputs.is-prerelease == 'true' && '⚠️ **注意：这是预发布版本，可能包含不稳定功能！**' || '🎉 **这是正式发布版本！**' }}
+          
+          ## 系统要求
+          
+          - .NET 10.0 Runtime (自包含)
+          - Windows 10/11，macOS 10.15+，或 Linux (Ubuntu 20.04+)
+          
+          ## 安装说明
+          
+          ### Windows
+          1. 下载并解压 Windows 包
+          2. 运行可执行文件
+          
+          ### macOS
+          1. 下载并解压 macOS 包
+          2. 授权执行：`chmod +x PCL-CE.Neo.App.macOS`
+          3. 运行应用程序
+          
+          ### Linux
+          1. 下载并解压 Linux 包
+          2. 授权执行：`chmod +x PCL-CE.Neo.App.Linux`
+          3. 运行应用程序
+          
+          ## 发布状态
+          
+          - 预发布：${{ needs.pre-check.outputs.is-prerelease == 'true' && '是' || '否' }}
+          EOF
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        id: release
+        with:
+          tag_name: ${{ env.VERSION }}
+          name: "PCL-CE.Neo ${{ needs.pre-check.outputs.clean-version }}"
+          draft: false
+          prerelease: ${{ needs.pre-check.outputs.is-prerelease }}
+          body_path: release-notes.md
+          generate_release_notes: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-windows:
+    name: Build Windows App
+    runs-on: windows-latest
+    needs: create-release
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Publish Windows App
+        run: |
+          dotnet publish "PCL-CE.Neo.App/PCL-CE.Neo.App.Windows.csproj" `
+            -c Release `
+            -r win-x64 `
+            --self-contained true `
+            -o "./publish/win-x64"
+
+      - name: Create Windows Package
+        run: |
+          cd publish/win-x64
+          Compress-Archive -Path * -DestinationPath "../../PCL-CE.Neo-${{ env.VERSION }}-win-x64.zip"
+
+      - name: Upload Windows Package to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.VERSION }}
+          files: "PCL-CE.Neo-${{ env.VERSION }}-win-x64.zip"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+
+  build-macos:
+    name: Build macOS App
+    runs-on: macos-latest
+    needs: create-release
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Publish macOS App
+        run: |
+          dotnet publish "PCL-CE.Neo.App/PCL-CE.Neo.App.macOS.csproj" \
+            -c Release \
+            -r osx-x64 \
+            --self-contained true \
+            -o "./publish/osx-x64"
+
+      - name: Create macOS Package
+        run: |
+          cd publish/osx-x64
+          zip -r "../../PCL-CE.Neo-${{ env.VERSION }}-osx-x64.zip" .
+
+      - name: Upload macOS Package to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.VERSION }}
+          files: "PCL-CE.Neo-${{ env.VERSION }}-osx-x64.zip"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+
+  build-linux:
+    name: Build Linux App
+    runs-on: ubuntu-latest
+    needs: create-release
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Install Linux Dependencies
+        run: |
+          sudo apt-get update && sudo apt-get install -y \
+            libgtk-3-0 libnotify-dev libnss3 libxkbcommon0 libssl3 \
+            libsecret-1-0 libasound2 libpangocairo-1.0-0 libatk1.0-0 \
+            libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon-x11-0 libgbm1
+
+      - name: Publish Linux App
+        run: |
+          dotnet publish "PCL-CE.Neo.App/PCL-CE.Neo.App.Linux.csproj" \
+            -c Release \
+            -r linux-x64 \
+            --self-contained true \
+            -o "./publish/linux-x64"
+
+      - name: Create Linux Package
+        run: |
+          cd publish/linux-x64
+          tar -czf "../../PCL-CE.Neo-${{ env.VERSION }}-linux-x64.tar.gz" .
+
+      - name: Upload Linux Package to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.VERSION }}
+          files: "PCL-CE.Neo-${{ env.VERSION }}-linux-x64.tar.gz"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+
+  finalize-release:
+    name: Finalize Release
+    runs-on: ubuntu-latest
+    needs: [build-windows, build-macos, build-linux]
+    if: always()
+    
+    steps:
+      - name: Display Release Summary
+        run: |
+          echo "🎉 PCL-CE.Neo ${{ env.VERSION }} 发布完成！"
+          echo ""
+          echo "## 📦 发布信息"
+          echo "- 版本：${{ needs.pre-check.outputs.clean-version }}"
+          echo "- 类型：${{ needs.pre-check.outputs.is-prerelease == 'true' && '预发布' || '正式' }}"
+          echo ""
+          echo "## 📋 构建状态"
+          echo "- Windows: ${{ needs.build-windows.result }}"
+          echo "- macOS: ${{ needs.build-macos.result }}"
+          echo "- Linux: ${{ needs.build-linux.result }}"
+          echo ""
+          echo "## 🎯 下载地址"
+          echo "https://github.com/${{ github.repository }}/releases/tag/${{ env.VERSION }}"
