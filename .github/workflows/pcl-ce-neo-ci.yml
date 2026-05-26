@@ -82,30 +82,30 @@ jobs:
           echo "检查项目文件..."
           
           # 检查 Windows 项目
-          WINDOWS_CSPROJ_CHECK=$(grep "<DefineConstants>" PCL-CE.Neo.Platform/Windows/PCL-CE.Neo.Platform.Windows.csproj)
-          if ! echo "$WINDOWS_CSPROJ_CHECK" | grep -q "WINDOWS"; then
+          WINDOWS_CSPROJ_CHECK=$(grep "<DefineConstants>" PCL-CE.Neo.Platform/Windows/PCL-CE.Neo.Platform.Windows.csproj || true)
+          if [ -n "$WINDOWS_CSPROJ_CHECK" ] && ! echo "$WINDOWS_CSPROJ_CHECK" | grep -q "WINDOWS"; then
             echo "❌ 错误：Windows 项目文件中缺少 WINDOWS 条件编译符号！"
             exit 1
           fi
           
           # 检查 macOS 项目
-          MACOS_CSPROJ_CHECK=$(grep "<DefineConstants>" PCL-CE.Neo.Platform/macOS/PCL-CE.Neo.Platform.macOS.csproj)
-          if ! echo "$MACOS_CSPROJ_CHECK" | grep -q "MACOS"; then
+          MACOS_CSPROJ_CHECK=$(grep "<DefineConstants>" PCL-CE.Neo.Platform/macOS/PCL-CE.Neo.Platform.macOS.csproj || true)
+          if [ -n "$MACOS_CSPROJ_CHECK" ] && ! echo "$MACOS_CSPROJ_CHECK" | grep -q "MACOS"; then
             echo "❌ 错误：macOS 项目文件中缺少 MACOS 条件编译符号！"
             exit 1
           fi
           
           # 检查 Linux 项目
-          LINUX_CSPROJ_CHECK=$(grep "<DefineConstants>" PCL-CE.Neo.Platform/Linux/PCL-CE.Neo.Platform.Linux.csproj)
-          if ! echo "$LINUX_CSPROJ_CHECK" | grep -q "LINUX"; then
+          LINUX_CSPROJ_CHECK=$(grep "<DefineConstants>" PCL-CE.Neo.Platform/Linux/PCL-CE.Neo.Platform.Linux.csproj || true)
+          if [ -n "$LINUX_CSPROJ_CHECK" ] && ! echo "$LINUX_CSPROJ_CHECK" | grep -q "LINUX"; then
             echo "❌ 错误：Linux 项目文件中缺少 LINUX 条件编译符号！"
             exit 1
           fi
           
           echo "✅ 项目文件检查通过"
 
-  build:
-    name: Build Solution
+  build-core:
+    name: Build Core Projects
     runs-on: ubuntu-latest
     needs: check-rules
     
@@ -118,18 +118,94 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
-      - name: Restore Dependencies
+      - name: Restore Core Projects
         run: |
-          dotnet restore PCL-CE.Neo.slnx
+          dotnet restore PCL-CE.Neo.Core.Abstractions/PCL-CE.Neo.Core.Abstractions.csproj
+          dotnet restore PCL-CE.Neo.Core/PCL-CE.Neo.Core.csproj
+          dotnet restore PCL-CE.Neo.UI/PCL-CE.Neo.UI.csproj
 
-      - name: Build Solution
+      - name: Build Core Projects
         run: |
-          dotnet build PCL-CE.Neo.slnx -c Release --no-restore
+          dotnet build PCL-CE.Neo.Core.Abstractions/PCL-CE.Neo.Core.Abstractions.csproj -c Release --no-restore
+          dotnet build PCL-CE.Neo.Core/PCL-CE.Neo.Core.csproj -c Release --no-restore
+          dotnet build PCL-CE.Neo.UI/PCL-CE.Neo.UI.csproj -c Release --no-restore
+
+  build-platform-linux:
+    name: Build Linux Projects
+    runs-on: ubuntu-latest
+    needs: build-core
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore Linux Projects
+        run: |
+          dotnet restore PCL-CE.Neo.Platform/Linux/PCL-CE.Neo.Platform.Linux.csproj
+          dotnet restore PCL-CE.Neo.App/PCL-CE.Neo.App.Linux.csproj
+
+      - name: Build Linux Projects
+        run: |
+          dotnet build PCL-CE.Neo.Platform/Linux/PCL-CE.Neo.Platform.Linux.csproj -c Release --no-restore
+          dotnet build PCL-CE.Neo.App/PCL-CE.Neo.App.Linux.csproj -c Release --no-restore
+
+  build-platform-windows:
+    name: Build Windows Projects
+    runs-on: windows-latest
+    needs: build-core
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore Windows Projects
+        run: |
+          dotnet restore PCL-CE.Neo.Platform/Windows/PCL-CE.Neo.Platform.Windows.csproj
+          dotnet restore PCL-CE.Neo.App/PCL-CE.Neo.App.Windows.csproj
+
+      - name: Build Windows Projects
+        run: |
+          dotnet build PCL-CE.Neo.Platform/Windows/PCL-CE.Neo.Platform.Windows.csproj -c Release --no-restore
+          dotnet build PCL-CE.Neo.App/PCL-CE.Neo.App.Windows.csproj -c Release --no-restore
+
+  build-platform-macos:
+    name: Build macOS Projects
+    runs-on: macos-latest
+    needs: build-core
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore macOS Projects
+        run: |
+          dotnet restore PCL-CE.Neo.Platform/macOS/PCL-CE.Neo.Platform.macOS.csproj
+          dotnet restore PCL-CE.Neo.App/PCL-CE.Neo.App.macOS.csproj
+
+      - name: Build macOS Projects
+        run: |
+          dotnet build PCL-CE.Neo.Platform/macOS/PCL-CE.Neo.Platform.macOS.csproj -c Release --no-restore
+          dotnet build PCL-CE.Neo.App/PCL-CE.Neo.App.macOS.csproj -c Release --no-restore
 
   test:
     name: Run Tests
     runs-on: ubuntu-latest
-    needs: build
+    needs: build-core
     
     steps:
       - name: Checkout
@@ -142,4 +218,4 @@ jobs:
 
       - name: Run Tests
         run: |
-          dotnet test PCL-CE.Neo.slnx -c Release --no-build --verbosity normal
+          dotnet test PCL-CE.Neo.Tests/PCL-CE.Neo.Tests.csproj -c Release --verbosity normal

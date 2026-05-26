@@ -39,7 +39,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\PCL-CE.Neo.UI\PCL-CE.Neo.UI.csproj" />
-        <ProjectReference Include="..\PCL-CE.Neo.Platform.macOS\PCL-CE.Neo.Platform.macOS.csproj" />
+        <ProjectReference Include="..\PCL-CE.Neo.Platform\macOS\PCL-CE.Neo.Platform.macOS.csproj" />
     </ItemGroup>
 
 </Project>

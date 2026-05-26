@@ -39,7 +39,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\PCL-CE.Neo.UI\PCL-CE.Neo.UI.csproj" />
-        <ProjectReference Include="..\PCL-CE.Neo.Platform.Linux\PCL-CE.Neo.Platform.Linux.csproj" />
+        <ProjectReference Include="..\PCL-CE.Neo.Platform\Linux\PCL-CE.Neo.Platform.Linux.csproj" />
     </ItemGroup>
 
 </Project>
