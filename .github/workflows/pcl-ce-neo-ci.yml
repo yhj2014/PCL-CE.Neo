@@ -17,20 +17,112 @@ on:
 
 jobs:
   check-rules:
-    name: Check Rules
+    name: Check Code Rules
     runs-on: ubuntu-latest
     
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v5
-        with:
-          dotnet-version: 10.0.x
+      - name: Check for RuntimeInformation.IsOSPlatform in Platform Services
+        run: |
+          # 检查平台服务中是否还有运行时平台检查
+          echo "检查平台服务代码..."
+          
+          # Windows 平台服务检查
+          WINDOWS_CHECK=$(grep -r "RuntimeInformation.IsOSPlatform\|OperatingSystem.IsWindows" \
+            PCL-CE.Neo.Platform/Windows/ --include="*.cs" || true)
+          
+          if [ -n "$WINDOWS_CHECK" ]; then
+            echo "❌ 错误：在 Windows 平台服务中发现运行时平台检查！"
+            echo "$WINDOWS_CHECK"
+            exit 1
+          fi
+          
+          # macOS 平台服务检查
+          MACOS_CHECK=$(grep -r "RuntimeInformation.IsOSPlatform\|OperatingSystem.IsMacOS\|OperatingSystem.IsMacCatalyst" \
+            PCL-CE.Neo.Platform/macOS/ --include="*.cs" || true)
+          
+          if [ -n "$MACOS_CHECK" ]; then
+            echo "❌ 错误：在 macOS 平台服务中发现运行时平台检查！"
+            echo "$MACOS_CHECK"
+            exit 1
+          fi
+          
+          # Linux 平台服务检查
+          LINUX_CHECK=$(grep -r "RuntimeInformation.IsOSPlatform\|OperatingSystem.IsLinux" \
+            PCL-CE.Neo.Platform/Linux/ --include="*.cs" || true)
+          
+          if [ -n "$LINUX_CHECK" ]; then
+            echo "❌ 错误：在 Linux 平台服务中发现运行时平台检查！"
+            echo "$LINUX_CHECK"
+            exit 1
+          fi
+          
+          echo "✅ 平台服务检查通过"
 
-      - name: Restore Dependencies
-        run: dotnet restore PCL-CE.Neo.Core.Abstractions/PCL-CE.Neo.Core.Abstractions.csproj
+      - name: Check WindowsJavaScanner for Unix paths
+        run: |
+          # 检查 WindowsJavaScanner 是否包含 Unix 路径
+          echo "检查 WindowsJavaScanner..."
+          
+          WINDOWS_SCANNER_CHECK=$(grep -E "UnixJavaPaths|/usr/|/opt/" \
+            PCL-CE.Neo.Platform/Windows/WindowsJavaScanner.cs || true)
+          
+          if [ -n "$WINDOWS_SCANNER_CHECK" ]; then
+            echo "❌ 错误：在 WindowsJavaScanner 中发现 Unix 路径！"
+            echo "$WINDOWS_SCANNER_CHECK"
+            exit 1
+          fi
+          
+          echo "✅ WindowsJavaScanner 检查通过"
+
+      - name: Check Core Business Logic for Platform-Specific Code
+        run: |
+          # 检查核心业务逻辑是否包含平台特定代码
+          echo "检查核心业务逻辑..."
+          
+          CORE_CHECK=$(grep -r "OperatingSystem.IsWindows\|OperatingSystem.IsMacOS\|OperatingSystem.IsLinux" \
+            PCL-CE.Neo.Core/ --include="*.cs" || true)
+          
+          if [ -n "$CORE_CHECK" ]; then
+            echo "⚠️ 警告：在核心业务逻辑中发现平台特定代码，请考虑移至平台抽象层："
+            echo "$CORE_CHECK"
+            # 这里只警告不失败，因为可能有合理的例外情况
+          fi
+          
+          echo "✅ 核心业务逻辑检查完成"
+
+      - name: Check Project Files for Correct DefineConstants
+        run: |
+          # 检查项目文件中的条件编译符号
+          echo "检查项目文件..."
+          
+          # 检查 Windows 项目
+          WINDOWS_CSPROJ_CHECK=$(grep "<DefineConstants>" PCL-CE.Neo.Platform/Windows/PCL-CE.Neo.Platform.Windows.csproj)
+          
+          if ! echo "$WINDOWS_CSPROJ_CHECK" | grep -q "WINDOWS"; then
+            echo "❌ 错误：Windows 项目文件中缺少 WINDOWS 条件编译符号！"
+            exit 1
+          fi
+          
+          # 检查 macOS 项目
+          MACOS_CSPROJ_CHECK=$(grep "<DefineConstants>" PCL-CE.Neo.Platform/macOS/PCL-CE.Neo.Platform.macOS.csproj)
+          
+          if ! echo "$MACOS_CSPROJ_CHECK" | grep -q "MACOS"; then
+            echo "❌ 错误：macOS 项目文件中缺少 MACOS 条件编译符号！"
+            exit 1
+          fi
+          
+          # 检查 Linux 项目
+          LINUX_CSPROJ_CHECK=$(grep "<DefineConstants>" PCL-CE.Neo.Platform/Linux/PCL-CE.Neo.Platform.Linux.csproj)
+          
+          if ! echo "$LINUX_CSPROJ_CHECK" | grep -q "LINUX"; then
+            echo "❌ 错误：Linux 项目文件中缺少 LINUX 条件编译符号！"
+            exit 1
+          fi
+          
+          echo "✅ 项目文件检查通过"
 
   build-core-abstractions:
     name: Build Core Abstractions
