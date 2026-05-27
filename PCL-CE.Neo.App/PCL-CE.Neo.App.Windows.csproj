@@ -23,6 +23,9 @@
         <PublishSingleFile>false</PublishSingleFile>
         <EnableMsixTooling>true</EnableMsixTooling>
         <WindowsPackageType>None</WindowsPackageType>
+        
+        <!-- 禁用默认Page项包含 -->
+        <EnableDefaultPageItems>false</EnableDefaultPageItems>
     </PropertyGroup>
 
     <ItemGroup>
@@ -35,8 +38,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Uno.WinUI" Version="5.2.0" />
-        <PackageReference Include="Uno.Toolkit.WinUI" Version="5.2.0" />
+        <PackageReference Include="Uno.WinUI" Version="6.0.18" />
+        <PackageReference Include="Uno.Toolkit.WinUI" Version="6.0.18" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.3" />
         <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     </ItemGroup>

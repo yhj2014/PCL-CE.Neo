@@ -12,8 +12,8 @@
     <!-- 根据 CI_BUILD_TARGET 环境变量选择目标框架 -->
     <TargetFramework Condition="'$(CI_BUILD_TARGET)' == ''">net10.0-windows10.0.19041.0</TargetFramework>
     <TargetFramework Condition="'$(CI_BUILD_TARGET)' == 'windows'">net10.0-windows10.0.19041.0</TargetFramework>
-    <TargetFramework Condition="'$(CI_BUILD_TARGET)' == 'macos'">net10.0-maccatalyst</TargetFramework>
-    <TargetFramework Condition="'$(CI_BUILD_TARGET)' == 'linux'">net10.0-desktop</TargetFramework>
+    <TargetFramework Condition="'$(CI_BUILD_TARGET)' == 'macos'">net10.0</TargetFramework>
+    <TargetFramework Condition="'$(CI_BUILD_TARGET)' == 'linux'">net10.0</TargetFramework>
     
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <UseWinUI>true</UseWinUI>
@@ -22,12 +22,15 @@
     <RootNamespace>PCL_CE.Neo.UI</RootNamespace>
     <UnoFeatures>Extensions;Toolkit;Material</UnoFeatures>
     <DefineConstants>$(DefineConstants);WINUI</DefineConstants>
+    
+    <!-- 禁用自动RuntimeIdentifier避免产生不支持的RID -->
+    <EnableDefaultRuntimeIdentifier>false</EnableDefaultRuntimeIdentifier>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Uno.WinUI" Version="5.2.0" />
-    <PackageReference Include="Uno.WinUI.Lottie" Version="5.2.0" />
-    <PackageReference Include="Uno.Toolkit.WinUI" Version="5.2.0" />
+    <PackageReference Include="Uno.WinUI" Version="6.0.18" />
+    <PackageReference Include="Uno.WinUI.Lottie" Version="6.0.18" />
+    <PackageReference Include="Uno.Toolkit.WinUI" Version="6.0.18" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0" />
   </ItemGroup>

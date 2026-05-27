@@ -11,7 +11,7 @@
         <FileVersion>1.0.0.0</FileVersion>
         <OutputType>Exe</OutputType>
         <RootNamespace>PCL_CE.Neo.App</RootNamespace>
-        <TargetFramework>net10.0-desktop</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <DefineConstants>$(DefineConstants);LINUX</DefineConstants>
@@ -19,6 +19,9 @@
         <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
         <SelfContained>true</SelfContained>
         <PublishSingleFile>false</PublishSingleFile>
+        
+        <!-- 禁用默认Page项包含 -->
+        <EnableDefaultPageItems>false</EnableDefaultPageItems>
     </PropertyGroup>
 
     <ItemGroup>
@@ -31,8 +34,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Uno.WinUI" Version="5.2.0" />
-        <PackageReference Include="Uno.Toolkit.WinUI" Version="5.2.0" />
+        <PackageReference Include="Uno.WinUI" Version="6.0.18" />
+        <PackageReference Include="Uno.Toolkit.WinUI" Version="6.0.18" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.3" />
         <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     </ItemGroup>
