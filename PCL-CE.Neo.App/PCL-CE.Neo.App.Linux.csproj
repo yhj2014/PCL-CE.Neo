@@ -11,7 +11,7 @@
         <FileVersion>1.0.0.0</FileVersion>
         <OutputType>Exe</OutputType>
         <RootNamespace>PCL_CE.Neo.App</RootNamespace>
-        <TargetFramework>net10.0-linux</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <DefineConstants>$(DefineConstants);LINUX</DefineConstants>

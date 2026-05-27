@@ -8,7 +8,13 @@
     <Copyright>Copyright © PCL Community</Copyright>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
-    <TargetFrameworks>net10.0-windows10.0.19041.0;net10.0-maccatalyst;net10.0-linux</TargetFrameworks>
+    
+    <!-- 根据 CI 环境变量或条件编译选择目标框架 -->
+    <TargetFrameworks Condition="'$(CI_BUILD_TARGET)' == ''">net10.0-windows10.0.19041.0;net10.0-maccatalyst</TargetFrameworks>
+    <TargetFramework Condition="'$(CI_BUILD_TARGET)' == 'windows'">net10.0-windows10.0.19041.0</TargetFramework>
+    <TargetFramework Condition="'$(CI_BUILD_TARGET)' == 'macos'">net10.0-maccatalyst</TargetFramework>
+    <TargetFramework Condition="'$(CI_BUILD_TARGET)' == 'linux'">net10.0</TargetFramework>
+    
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <UseWinUI>true</UseWinUI>
     <Nullable>enable</Nullable>
