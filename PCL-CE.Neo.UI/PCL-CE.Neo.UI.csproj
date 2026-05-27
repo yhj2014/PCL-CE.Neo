@@ -9,11 +9,11 @@
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
     
-    <!-- 根据 CI 环境变量或条件编译选择目标框架 -->
-    <TargetFrameworks Condition="'$(CI_BUILD_TARGET)' == ''">net10.0-windows10.0.19041.0;net10.0-maccatalyst</TargetFrameworks>
+    <!-- 根据 CI_BUILD_TARGET 环境变量选择目标框架 -->
+    <TargetFramework Condition="'$(CI_BUILD_TARGET)' == ''">net10.0-windows10.0.19041.0</TargetFramework>
     <TargetFramework Condition="'$(CI_BUILD_TARGET)' == 'windows'">net10.0-windows10.0.19041.0</TargetFramework>
     <TargetFramework Condition="'$(CI_BUILD_TARGET)' == 'macos'">net10.0-maccatalyst</TargetFramework>
-    <TargetFramework Condition="'$(CI_BUILD_TARGET)' == 'linux'">net10.0</TargetFramework>
+    <TargetFramework Condition="'$(CI_BUILD_TARGET)' == 'linux'">net10.0-desktop</TargetFramework>
     
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
     <UseWinUI>true</UseWinUI>
@@ -25,24 +25,24 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Uno.WinUI" Version="5.0.0" />
-    <PackageReference Include="Uno.WinUI.Lottie" Version="5.0.0" />
-    <PackageReference Include="Uno.Toolkit.WinUI" Version="5.0.0" />
+    <PackageReference Include="Uno.WinUI" Version="5.2.0" />
+    <PackageReference Include="Uno.WinUI.Lottie" Version="5.2.0" />
+    <PackageReference Include="Uno.Toolkit.WinUI" Version="5.2.0" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\PCL-CE.Neo.Core.Abstractions\PCL-CE.Neo.Core.Abstractions.csproj" />
-    <ProjectReference Include="..\PCL-CE.Neo.Core\PCL-CE.Neo.Core.csproj" />
+    <ProjectReference Include="../PCL-CE.Neo.Core.Abstractions/PCL-CE.Neo.Core.Abstractions.csproj" />
+    <ProjectReference Include="../PCL-CE.Neo.Core/PCL-CE.Neo.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="Resources\**" />
-    <Content Include="Resources\**" />
+    <None Remove="Resources/**" />
+    <Content Include="Resources/**" />
   </ItemGroup>
 
   <ItemGroup>
-    <Page Include="**\*.xaml" Exclude="bin\**\*.xaml;obj\**\*.xaml" />
+    <Page Include="**/*.xaml" Exclude="bin/**/*.xaml;obj/**/*.xaml" />
   </ItemGroup>
 </Project>
