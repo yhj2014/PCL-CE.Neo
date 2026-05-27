@@ -203,6 +203,19 @@ services.AddSingleton<IAudioService, Services.AudioService>();
 
 ---
 
+## 临时配置说明
+
+### macOS 平台临时方案
+- **当前状态**：临时降级到 `net10.0` 框架，只保证编译通过
+- **问题**：需要 maccatalyst workload 才能完整构建 macOS UI
+- **解决计划**：待后续完善 CI 配置或在本地 macOS 环境测试
+
+### Linux 平台配置
+- **当前状态**：使用 `net10.0` + SkiaRenderer
+- **说明**：Uno Platform 在 Linux 使用 Skia 渲染器
+
+---
+
 ## 下一步计划
 
 ### Phase 3：UI集成
