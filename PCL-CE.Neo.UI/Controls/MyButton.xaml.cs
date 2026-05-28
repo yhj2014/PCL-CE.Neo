@@ -7,6 +7,8 @@ namespace PCL_CE.Neo.UI.Controls;
 
 public sealed partial class MyButton : UserControl
 {
+    public event RoutedEventHandler? Click;
+
     public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
         nameof(Text),
         typeof(string),
@@ -96,7 +98,7 @@ public sealed partial class MyButton : UserControl
         PanBack.IsHitTestVisible = IsEnabled;
     }
 
-    private void OnPointerEntered(object sender, PointerEventArgs e)
+    private void OnPointerEntered(object sender, PointerRoutedEventArgs e)
     {
         if (IsEnabled)
         {
@@ -107,7 +109,7 @@ public sealed partial class MyButton : UserControl
         }
     }
 
-    private void OnPointerExited(object sender, PointerEventArgs e)
+    private void OnPointerExited(object sender, PointerRoutedEventArgs e)
     {
         ScaleTransform.ScaleX = 1.0;
         ScaleTransform.ScaleY = 1.0;
@@ -115,7 +117,7 @@ public sealed partial class MyButton : UserControl
         TextScaleTransform.ScaleY = 1.0;
     }
 
-    private void OnPointerPressed(object sender, PointerEventArgs e)
+    private void OnPointerPressed(object sender, PointerRoutedEventArgs e)
     {
         if (IsEnabled)
         {
@@ -126,7 +128,7 @@ public sealed partial class MyButton : UserControl
         }
     }
 
-    private void OnPointerReleased(object sender, PointerEventArgs e)
+    private void OnPointerReleased(object sender, PointerRoutedEventArgs e)
     {
         if (IsEnabled)
         {
@@ -139,9 +141,13 @@ public sealed partial class MyButton : UserControl
 
     private void OnTapped(object sender, TappedRoutedEventArgs e)
     {
-        if (IsEnabled && Command?.CanExecute(CommandParameter) == true)
+        if (IsEnabled)
         {
-            Command.Execute(CommandParameter);
+            Click?.Invoke(this, new RoutedEventArgs());
+            if (Command?.CanExecute(CommandParameter) == true)
+            {
+                Command.Execute(CommandParameter);
+            }
         }
     }
 
@@ -149,9 +155,13 @@ public sealed partial class MyButton : UserControl
     {
         if (e.Key == Windows.System.VirtualKey.Enter || e.Key == Windows.System.VirtualKey.Space)
         {
-            if (IsEnabled && Command?.CanExecute(CommandParameter) == true)
+            if (IsEnabled)
             {
-                Command.Execute(CommandParameter);
+                Click?.Invoke(this, new RoutedEventArgs());
+                if (Command?.CanExecute(CommandParameter) == true)
+                {
+                    Command.Execute(CommandParameter);
+                }
             }
         }
     }

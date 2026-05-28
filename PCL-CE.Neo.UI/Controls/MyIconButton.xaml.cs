@@ -7,6 +7,8 @@ namespace PCL_CE.Neo.UI.Controls;
 
 public sealed partial class MyIconButton : UserControl
 {
+    public event RoutedEventHandler? Click;
+
     public static readonly DependencyProperty IconProperty = DependencyProperty.Register(
         nameof(Icon),
         typeof(string),
@@ -110,6 +112,7 @@ public sealed partial class MyIconButton : UserControl
 
     private void OnTapped(object sender, TappedRoutedEventArgs e)
     {
+        Click?.Invoke(this, new RoutedEventArgs());
         if (Command?.CanExecute(CommandParameter) == true)
         {
             Command.Execute(CommandParameter);

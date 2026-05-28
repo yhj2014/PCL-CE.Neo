@@ -8,7 +8,6 @@
 
     <Border x:Name="PanBack"
             FocusVisualStyle="{x:Null}"
-            Focusable="True"
             Background="{StaticResource BackgroundSecondaryBrush}"
             CornerRadius="3">
         <Border x:Name="PanFore"

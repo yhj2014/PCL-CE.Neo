@@ -6,6 +6,8 @@ namespace PCL_CE.Neo.UI.Controls;
 
 public sealed partial class MyTextBox : UserControl
 {
+    public event TextChangedEventHandler? TextChanged;
+
     public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
         nameof(Text),
         typeof(string),
@@ -91,6 +93,7 @@ public sealed partial class MyTextBox : UserControl
     private void OnTextChanged(object sender, TextChangedEventArgs e)
     {
         Text = InputTextBox.Text;
+        TextChanged?.Invoke(this, e);
         UpdatePlaceholderVisibility();
     }
 
