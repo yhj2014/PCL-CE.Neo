@@ -1,34 +1,25 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Uno.Sdk">
   <PropertyGroup>
     <AssemblyTitle>PCL-CE.Neo.UI</AssemblyTitle>
     <AssemblyName>PCL-CE.Neo.UI</AssemblyName>
-    <Description>PCL CE Neo Uno Platform UI (SkiaRenderer)</Description>
+    <Description>PCL CE Neo Uno Platform UI</Description>
     <Company>PCL Community</Company>
     <Product>PCL-CE.Neo.UI</Product>
     <Copyright>Copyright © PCL Community</Copyright>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
     
-    <!-- 所有平台统一使用 net10.0 + SkiaRenderer -->
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework>net10.0-desktop</TargetFramework>
     
-    <!-- SkiaRenderer 配置 -->
+    <UnoFeatures>SkiaRenderer;Extensions;Toolkit;Material</UnoFeatures>
+    
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>PCL_CE.Neo.UI</RootNamespace>
-    <UnoFeatures>Extensions;Toolkit;Material;Skia</UnoFeatures>
     
     <!-- 禁用默认RuntimeIdentifier避免产生不支持的RID -->
     <EnableDefaultRuntimeIdentifier>false</EnableDefaultRuntimeIdentifier>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Uno.WinUI.Skia.Gtk" Version="6.0.18" />
-    <PackageReference Include="Uno.WinUI.Lottie" Version="6.0.18" />
-    <PackageReference Include="Uno.Toolkit.WinUI" Version="6.0.18" />
-    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="../PCL-CE.Neo.Core.Abstractions/PCL-CE.Neo.Core.Abstractions.csproj" />

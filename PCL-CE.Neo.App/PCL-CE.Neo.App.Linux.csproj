@@ -1,9 +1,9 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Uno.Sdk">
 
     <PropertyGroup>
         <AssemblyTitle>PCL-CE.Neo.App.Linux</AssemblyTitle>
         <AssemblyName>PCL-CE.Neo.App.Linux</AssemblyName>
-        <Description>PCL CE Neo Linux 应用入口 (SkiaRenderer)</Description>
+        <Description>PCL CE Neo Linux 应用入口</Description>
         <Company>PCL Community</Company>
         <Product>PCL-CE.Neo.App.Linux</Product>
         <Copyright>Copyright © PCL Community</Copyright>
@@ -11,7 +11,7 @@
         <FileVersion>1.0.0.0</FileVersion>
         <OutputType>Exe</OutputType>
         <RootNamespace>PCL_CE.Neo.App</RootNamespace>
-        <TargetFramework>net10.0</TargetFramework>
+        <TargetFramework>net10.0-desktop</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <DefineConstants>$(DefineConstants);LINUX</DefineConstants>
@@ -19,6 +19,8 @@
         <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
         <SelfContained>true</SelfContained>
         <PublishSingleFile>false</PublishSingleFile>
+        
+        <UnoFeatures>SkiaRenderer;Extensions;Toolkit;Material</UnoFeatures>
         
         <!-- 禁用默认Page项包含 -->
         <EnableDefaultPageItems>false</EnableDefaultPageItems>
@@ -31,13 +33,6 @@
         <Page Include="MainWindow.xaml">
             <SubType>Designer</SubType>
         </Page>
-    </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Include="Uno.WinUI.Skia.Gtk" Version="6.0.18" />
-        <PackageReference Include="Uno.Toolkit.WinUI" Version="6.0.18" />
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.3" />
-        <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     </ItemGroup>
 
     <ItemGroup>

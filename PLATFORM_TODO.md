@@ -205,26 +205,25 @@ services.AddSingleton<IAudioService, Services.AudioService>();
 
 ## SkiaRenderer 统一配置
 
+### 官方配置（Uno Platform文档）
+- **SDK**：`<Project Sdk="Uno.Sdk">`
+- **目标框架**：所有平台统一使用 `net10.0-desktop`
+- **特性**：
+  ```xml
+  <UnoFeatures>SkiaRenderer;Extensions;Toolkit;Material</UnoFeatures>
+  ```
+
 ### 当前配置
-- **渲染引擎**：SkiaRenderer（跨平台统一）
-- **目标框架**：所有平台统一使用 `net10.0`
-- **优点**：
-  - 无需原生平台 SDK（WinUI、Cocoa等）
-  - 三平台使用统一代码
-  - CI 构建更简单
-  - 更轻量的应用包
+| 平台 | 目标框架 | 渲染器 | SDK |
+|------|----------|--------|-----|
+| Windows | `net10.0-desktop` | SkiaRenderer | Uno.Sdk |
+| macOS | `net10.0-desktop` | SkiaRenderer | Uno.Sdk |
+| Linux | `net10.0-desktop` | SkiaRenderer | Uno.Sdk |
 
-### 平台配置
-| 平台 | 目标框架 | 渲染器 | 说明 |
-|------|----------|--------|------|
-| Windows | `net10.0` | SkiaRenderer | Uno.WinUI.Skia.Gtk |
-| macOS | `net10.0` | SkiaRenderer | Uno.WinUI.Skia.Gtk |
-| Linux | `net10.0` | SkiaRenderer | Uno.WinUI.Skia.Gtk |
-
-### Uno Features
-```xml
-<UnoFeatures>Extensions;Toolkit;Material;Skia</UnoFeatures>
-```
+### 官方文档参考
+- [Using the Uno.Sdk](https://platform.uno/docs/articles/features/using-the-uno-sdk.html)
+- [Using the Skia Desktop](https://platform.uno/docs/articles/features/using-skia-desktop.html)
+- [Publishing Desktop Apps](https://platform.uno/docs/articles/uno-publishing-desktop.html)
 
 ---
 
