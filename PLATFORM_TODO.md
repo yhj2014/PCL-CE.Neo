@@ -203,16 +203,28 @@ services.AddSingleton<IAudioService, Services.AudioService>();
 
 ---
 
-## 临时配置说明
+## SkiaRenderer 统一配置
 
-### macOS 平台临时方案
-- **当前状态**：临时降级到 `net10.0` 框架，只保证编译通过
-- **问题**：需要 maccatalyst workload 才能完整构建 macOS UI
-- **解决计划**：待后续完善 CI 配置或在本地 macOS 环境测试
+### 当前配置
+- **渲染引擎**：SkiaRenderer（跨平台统一）
+- **目标框架**：所有平台统一使用 `net10.0`
+- **优点**：
+  - 无需原生平台 SDK（WinUI、Cocoa等）
+  - 三平台使用统一代码
+  - CI 构建更简单
+  - 更轻量的应用包
 
-### Linux 平台配置
-- **当前状态**：使用 `net10.0` + SkiaRenderer
-- **说明**：Uno Platform 在 Linux 使用 Skia 渲染器
+### 平台配置
+| 平台 | 目标框架 | 渲染器 | 说明 |
+|------|----------|--------|------|
+| Windows | `net10.0` | SkiaRenderer | Uno.WinUI.Skia.Gtk |
+| macOS | `net10.0` | SkiaRenderer | Uno.WinUI.Skia.Gtk |
+| Linux | `net10.0` | SkiaRenderer | Uno.WinUI.Skia.Gtk |
+
+### Uno Features
+```xml
+<UnoFeatures>Extensions;Toolkit;Material;Skia</UnoFeatures>
+```
 
 ---
 
