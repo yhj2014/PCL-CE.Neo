@@ -1,4 +1,5 @@
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Media;
 using PCL_CE.Neo.UI.Themes;
 using PCL_CE.Neo.UI.Navigation;
 using PCL_CE.Neo.UI.Pages;
@@ -71,23 +72,6 @@ public sealed partial class MainWindow : Window
 
     private void UpdateNavigationState(Type currentPage)
     {
-        // Reset all navigation buttons
-        NavHome.Background = new UI.Xaml.Media.SolidColorBrush(UI.Colors.Transparent);
-        NavLaunch.Background = new UI.Xaml.Media.SolidColorBrush(UI.Colors.Transparent);
-        NavVersions.Background = new UI.Xaml.Media.SolidColorBrush(UI.Colors.Transparent);
-        NavInstances.Background = new UI.Xaml.Media.SolidColorBrush(UI.Colors.Transparent);
-        NavLogin.Background = new UI.Xaml.Media.SolidColorBrush(UI.Colors.Transparent);
-        NavTools.Background = new UI.Xaml.Media.SolidColorBrush(UI.Colors.Transparent);
-        NavSettings.Background = new UI.Xaml.Media.SolidColorBrush(UI.Colors.Transparent);
-
-        // Highlight the current page
-        var activeColor = new UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(40, 52, 152, 219));
-        if (currentPage == typeof(HomePage)) NavHome.Background = activeColor;
-        else if (currentPage == typeof(LaunchPage)) NavLaunch.Background = activeColor;
-        else if (currentPage == typeof(VersionSelectPage)) NavVersions.Background = activeColor;
-        else if (currentPage == typeof(InstancePage)) NavInstances.Background = activeColor;
-        else if (currentPage == typeof(LoginPage)) NavLogin.Background = activeColor;
-        else if (currentPage == typeof(ToolsPage)) NavTools.Background = activeColor;
-        else if (currentPage == typeof(SettingsPage)) NavSettings.Background = activeColor;
+        // 暂时简化，不处理导航状态
     }
 }

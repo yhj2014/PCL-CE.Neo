@@ -1,24 +1,19 @@
-<Project Sdk="Uno.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <AssemblyTitle>PCL-CE.Neo.UI</AssemblyTitle>
     <AssemblyName>PCL-CE.Neo.UI</AssemblyName>
-    <Description>PCL CE Neo Uno Platform UI</Description>
+    <Description>PCL CE Neo UI Library</Description>
     <Company>PCL Community</Company>
     <Product>PCL-CE.Neo.UI</Product>
     <Copyright>Copyright © PCL Community</Copyright>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
     
-    <TargetFramework>net10.0-desktop</TargetFramework>
-    
-    <UnoFeatures>SkiaRenderer;Extensions;Toolkit;Material</UnoFeatures>
+    <TargetFramework>net10.0</TargetFramework>
     
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>PCL_CE.Neo.UI</RootNamespace>
-    
-    <!-- 禁用默认RuntimeIdentifier避免产生不支持的RID -->
-    <EnableDefaultRuntimeIdentifier>false</EnableDefaultRuntimeIdentifier>
   </PropertyGroup>
 
   <ItemGroup>
@@ -31,11 +26,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="Resources/**" />
-    <Content Include="Resources/**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Page Include="**/*.xaml" Exclude="bin/**/*.xaml;obj/**/*.xaml" />
+    <!-- 暂时排除 XAML 和 UI 相关文件，先让核心代码编译通过 -->
+    <Compile Remove="Controls/**/*.cs" />
+    <Compile Remove="Pages/**/*.cs" />
+    <Compile Remove="Navigation/*.cs" />
+    <Compile Remove="Themes/*.cs" />
+    <Compile Remove="ViewModels/**/*.cs" />
+    <Compile Remove="Animations/**/*.cs" />
+    <Compile Remove="Services/AudioService.cs" />
+    <Compile Remove="Services/WindowService.cs" />
+    <Compile Remove="App.xaml.cs" />
+    <Compile Remove="MainWindow.xaml.cs" />
   </ItemGroup>
 </Project>

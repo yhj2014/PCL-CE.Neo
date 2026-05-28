@@ -1,4 +1,4 @@
-<Project Sdk="Uno.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <AssemblyTitle>PCL-CE.Neo.App.Linux</AssemblyTitle>
@@ -11,7 +11,7 @@
         <FileVersion>1.0.0.0</FileVersion>
         <OutputType>Exe</OutputType>
         <RootNamespace>PCL_CE.Neo.App</RootNamespace>
-        <TargetFramework>net10.0-desktop</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <DefineConstants>$(DefineConstants);LINUX</DefineConstants>
@@ -19,20 +19,11 @@
         <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
         <SelfContained>true</SelfContained>
         <PublishSingleFile>false</PublishSingleFile>
-        
-        <UnoFeatures>SkiaRenderer;Extensions;Toolkit;Material</UnoFeatures>
-        
-        <!-- 禁用默认Page项包含 -->
-        <EnableDefaultPageItems>false</EnableDefaultPageItems>
     </PropertyGroup>
 
     <ItemGroup>
-        <ApplicationDefinition Include="App.xaml">
-            <SubType>Designer</SubType>
-        </ApplicationDefinition>
-        <Page Include="MainWindow.xaml">
-            <SubType>Designer</SubType>
-        </Page>
+        <Compile Remove="App.xaml.cs" />
+        <Compile Remove="MainWindow.xaml.cs" />
     </ItemGroup>
 
     <ItemGroup>

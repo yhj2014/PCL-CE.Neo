@@ -26,7 +26,7 @@ public sealed partial class LaunchPage : Page
         _viewModel.OpenSettingsCommand.Execute(null);
     }
 
-    private void OnInstanceTapped(object sender, TappedRoutedEventArgs e)
+    private void OnInstanceTapped(object sender, RoutedEventArgs e)
     {
         if (sender is Border border && border.Tag is GameInstance instance)
         {

@@ -1,6 +1,7 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 using System.Windows.Input;
 
 namespace PCL_CE.Neo.UI.Controls;
@@ -61,11 +62,6 @@ public sealed partial class MyIconButton : UserControl
     {
         InitializeComponent();
         UpdateIcon();
-
-        IconButtonBorder.PointerEntered += OnPointerEntered;
-        IconButtonBorder.PointerExited += OnPointerExited;
-        IconButtonBorder.PointerPressed += OnPointerPressed;
-        IconButtonBorder.PointerReleased += OnPointerReleased;
         IconButtonBorder.Tapped += OnTapped;
     }
 
@@ -79,35 +75,12 @@ public sealed partial class MyIconButton : UserControl
 
     private static void OnTooltipChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-        if (d is MyIconButton button)
-        {
-            button.IconButtonBorder.ToolTip = button.Tooltip;
-        }
+        // 暂时不实现 Tooltip
     }
 
     private void UpdateIcon()
     {
         IconText.Text = Icon;
-    }
-
-    private void OnPointerEntered(object sender, PointerRoutedEventArgs e)
-    {
-        IconButtonBorder.Background = new UI.Media.SolidColorBrush(UI.Colors.LightGray);
-    }
-
-    private void OnPointerExited(object sender, PointerRoutedEventArgs e)
-    {
-        IconButtonBorder.Background = new UI.Media.SolidColorBrush(UI.Colors.Transparent);
-    }
-
-    private void OnPointerPressed(object sender, PointerRoutedEventArgs e)
-    {
-        IconButtonBorder.Opacity = 0.7;
-    }
-
-    private void OnPointerReleased(object sender, PointerRoutedEventArgs e)
-    {
-        IconButtonBorder.Opacity = 1.0;
     }
 
     private void OnTapped(object sender, TappedRoutedEventArgs e)

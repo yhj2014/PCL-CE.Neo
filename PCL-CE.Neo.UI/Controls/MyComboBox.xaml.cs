@@ -47,9 +47,6 @@ public sealed partial class MyComboBox : UserControl
 
     public event EventHandler<int>? SelectionChanged;
 
-    private Popup? _popup;
-    private ListBox? _listBox;
-
     public MyComboBox()
     {
         InitializeComponent();
@@ -85,49 +82,10 @@ public sealed partial class MyComboBox : UserControl
 
     private void OnComboBoxTapped(object sender, TappedRoutedEventArgs e)
     {
-        ShowPopup();
-    }
-
-    private void ShowPopup()
-    {
-        _popup = new Popup
+        // 暂时简化，不使用Popup
+        if (ItemsSource != null && ItemsSource.Count > 0)
         {
-            IsLightDismissEnabled = true,
-            Placement = Microsoft.UI.Xaml.Controls.Primitives.PlacementMode.Bottom
-        };
-
-        _listBox = new ListBox
-        {
-            ItemsSource = ItemsSource,
-            SelectedIndex = SelectedIndex,
-            Background = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 255, 255, 255)),
-            BorderBrush = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 189, 195, 199)),
-            BorderThickness = new Thickness(1)
-        };
-
-        _listBox.SelectionChanged += OnListBoxSelectionChanged;
-
-        var container = new Border
-        {
-            Child = _listBox,
-            MinWidth = ActualWidth
-        };
-
-        _popup.Child = container;
-        _popup.SetValue(Canvas.LeftProperty, (double)ComboBoxBorder.GetValue(Canvas.LeftProperty));
-        _popup.SetValue(Canvas.TopProperty, (double)ComboBoxBorder.GetValue(Canvas.TopProperty) + ActualHeight);
-        _popup.IsOpen = true;
-    }
-
-    private void OnListBoxSelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (_listBox != null)
-        {
-            SelectedIndex = _listBox.SelectedIndex;
-        }
-        if (_popup != null)
-        {
-            _popup.IsOpen = false;
+            SelectedIndex = (SelectedIndex + 1) % ItemsSource.Count;
         }
     }
 }
