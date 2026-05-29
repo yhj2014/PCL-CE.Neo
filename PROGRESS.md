@@ -5,6 +5,30 @@
 
 ---
 
+## 修复 NuGet 包兼容性问题 (2025-01-28)
+
+### 问题
+GitHub Actions CI/CD 构建失败，报错：
+```
+Package Stun.Net 9.0.1 is not compatible with netstandard2.1 (.NETStandard,Version=v2.1)
+Package FluentValidation 12.1.1 is not compatible with netstandard2.1 (.NETStandard,Version=v2.1)
+```
+
+### 原因
+`PCL.Core.csproj` 使用多目标框架 `net10.0;netstandard2.1`，但这两个包只支持 `net8.0` 及以上
+
+### 解决方案
+修改 `PCL.Core/PCL.Core.csproj`：
+- 从通用 ItemGroup 中移除 `Stun.Net` 和 `FluentValidation`
+- 将它们添加到仅 `net10.0` 的条件 ItemGroup
+- 添加条件：`Condition="'$(TargetFramework)' == 'net10.0'"`
+
+### 修改位置
+- 第 79-88 行：添加了仅 `net10.0` 的包引用
+- 移除了原通用 ItemGroup 中的这两个包
+
+---
+
 ## 编译验证 (2025-01-28)
 
 ### 背景
@@ -144,6 +168,12 @@
 - UI: `AddUIServices()`
 - Platform: `Add[Platform]PlatformServices()`
 
+### 多目标框架包管理
+当项目使用多目标框架（如 `net10.0;netstandard2.1`）时，需要注意：
+- 某些 NuGet 包可能不支持所有目标框架
+- 使用条件 ItemGroup（如 `Condition="'$(TargetFramework)' == 'net10.0'"`）来隔离特定框架的包
+- 确保不兼容的包只应用于支持它们的框架
+
 ---
 
 ## 验证方法
@@ -178,3 +208,8 @@ dotnet build PCL-CE.Neo.App/PCL-CE.Neo.App.macOS.csproj -c Release
    - 需要重新引入 Uno Platform 相关依赖
    - 需要解决跨平台 API 兼容性问题
    - 需要确保 XAML 文件正确引用
+
+4. **NuGet 包兼容性**:
+   - 定期检查包的 TFM 支持情况
+   - 使用多目标框架时，将不兼容的包隔离到特定框架
+   - CI/CD 构建前在本地验证多目标框架编译

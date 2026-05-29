@@ -49,7 +49,7 @@
         <DefineConstants Condition="'$(Configuration)' == 'Beta'">BETA;PUBLISH</DefineConstants>
     </PropertyGroup>
 
-    <!-- NuGet 引用 - 跨平台兼容的包 -->
+    <!-- NuGet 引用 - 跨平台兼容的包（支持 netstandard2.1） -->
     <ItemGroup>
         <!-- MVVM -->
         <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
@@ -65,7 +65,6 @@
         <PackageReference Include="protobuf-net" Version="3.2.56" />
         <!-- 网络 -->
         <PackageReference Include="Ae.Dns.Client" Version="3.1.0" />
-        <PackageReference Include="Stun.Net" Version="9.0.1" />
         <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.3" />
         <PackageReference Include="Polly" Version="8.6.5" />
         <!-- 本地化 -->
@@ -75,15 +74,17 @@
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.3" />
         <!-- 身份认证 -->
         <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.16.0" />
-        <!-- 验证 -->
-        <PackageReference Include="FluentValidation" Version="12.1.1" />
     </ItemGroup>
 
-    <!-- 平台特定包 - 仅在 Windows 上包含 -->
+    <!-- 平台特定包 - 仅在 net10.0 上包含（不支持 netstandard2.1） -->
     <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
         <PackageReference Include="System.Management" Version="10.0.3" />
         <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.3" />
         <PackageReference Include="Wacton.Unicolour" Version="6.4.0" />
+        <!-- 网络库 - 不支持 netstandard2.1 -->
+        <PackageReference Include="Stun.Net" Version="9.0.1" />
+        <!-- 验证库 - 不支持 netstandard2.1 -->
+        <PackageReference Include="FluentValidation" Version="12.1.1" />
     </ItemGroup>
 
     <!-- 平台抽象层引用 -->
