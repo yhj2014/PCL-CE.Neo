@@ -1,7 +1,6 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Composition;
 
 namespace PCL_CE.Neo.UI.Controls;
 
@@ -38,40 +37,11 @@ public sealed partial class BlurBorder : Border
 
     private static void OnBlurAmountChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-        if (d is BlurBorder border && border.BlurEnabled)
-        {
-            border.UpdateBlur();
-        }
+        // 暂时不实现
     }
 
     private static void OnBlurEnabledChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-        if (d is BlurBorder border)
-        {
-            border.UpdateBlur();
-        }
-    }
-
-    private void UpdateBlur()
-    {
-        if (BlurEnabled && BlurAmount > 0)
-        {
-#if WINDOWS
-            var compositor = Window.Current.Compositor;
-            if (compositor != null)
-            {
-                var backdropBrush = compositor.CreateColorBrush(Colors.Transparent);
-                var blurEffect = compositor.CreateGaussianBlurEffect();
-                blurEffect.StdDeviation = BlurAmount;
-                blurEffect.Source = backdropBrush;
-
-                Background = new CompositionBrush?();
-            }
-#endif
-        }
-        else
-        {
-            Background = new SolidColorBrush(Colors.Transparent);
-        }
+        // 暂时不实现
     }
 }

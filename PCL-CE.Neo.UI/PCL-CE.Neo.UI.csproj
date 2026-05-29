@@ -2,41 +2,40 @@
   <PropertyGroup>
     <AssemblyTitle>PCL-CE.Neo.UI</AssemblyTitle>
     <AssemblyName>PCL-CE.Neo.UI</AssemblyName>
-    <Description>PCL CE Neo Uno Platform UI</Description>
+    <Description>PCL CE Neo UI Library</Description>
     <Company>PCL Community</Company>
     <Product>PCL-CE.Neo.UI</Product>
     <Copyright>Copyright © PCL Community</Copyright>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
-    <TargetFrameworks>net10.0-windows10.0.19041.0;net10.0-maccatalyst;net10.0-linux</TargetFrameworks>
-    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
-    <UseWinUI>true</UseWinUI>
+    
+    <TargetFramework>net10.0</TargetFramework>
+    
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>PCL_CE.Neo.UI</RootNamespace>
-    <UnoFeatures>Extensions;Toolkit;Material</UnoFeatures>
-    <DefineConstants>$(DefineConstants);WINUI</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Uno.WinUI" Version="5.0.0" />
-    <PackageReference Include="Uno.WinUI.Lottie" Version="5.0.0" />
-    <PackageReference Include="Uno.Toolkit.WinUI" Version="5.0.0" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\PCL-CE.Neo.Core.Abstractions\PCL-CE.Neo.Core.Abstractions.csproj" />
-    <ProjectReference Include="..\PCL-CE.Neo.Core\PCL-CE.Neo.Core.csproj" />
+    <ProjectReference Include="../PCL-CE.Neo.Core.Abstractions/PCL-CE.Neo.Core.Abstractions.csproj" />
+    <ProjectReference Include="../PCL-CE.Neo.Core/PCL-CE.Neo.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="Resources\**" />
-    <Content Include="Resources\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Page Include="**\*.xaml" Exclude="bin\**\*.xaml;obj\**\*.xaml" />
+    <!-- 暂时排除 XAML 和 UI 相关文件，先让核心代码编译通过 -->
+    <Compile Remove="Controls/**/*.cs" />
+    <Compile Remove="Pages/**/*.cs" />
+    <Compile Remove="Navigation/*.cs" />
+    <Compile Remove="Themes/*.cs" />
+    <Compile Remove="ViewModels/**/*.cs" />
+    <Compile Remove="Animations/**/*.cs" />
+    <Compile Remove="Services/AudioService.cs" />
+    <Compile Remove="Services/WindowService.cs" />
+    <Compile Remove="App.xaml.cs" />
+    <Compile Remove="MainWindow.xaml.cs" />
   </ItemGroup>
 </Project>

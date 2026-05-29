@@ -16,7 +16,7 @@ public sealed partial class VersionSelectPage : Page
         LoadVersions();
     }
 
-    private async void LoadVersions()
+    private void LoadVersions()
     {
         Versions.Clear();
 
@@ -89,7 +89,7 @@ public sealed partial class VersionSelectPage : Page
         }
     }
 
-    private void OnVersionTapped(object sender, TappedRoutedEventArgs e)
+    private void OnVersionTapped(object sender, RoutedEventArgs e)
     {
         if (sender is Border border && border.DataContext is VersionItem version)
         {
