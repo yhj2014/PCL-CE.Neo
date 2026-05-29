@@ -30,6 +30,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Get Current Tag
         id: get-tag
@@ -126,6 +128,19 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create Tag if Not Exists
+        run: |
+          if [ -n "${{ inputs.tag_version }}" ]; then
+            echo "📝 检查标签是否存在..."
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git tag -a "${{ needs.pre-check.outputs.current-tag }}" -m "Release ${{ needs.pre-check.outputs.current-tag }}" || true
+            git push origin "${{ needs.pre-check.outputs.current-tag }}" || true
+            echo "✅ 标签已创建/确保存在：${{ needs.pre-check.outputs.current-tag }}"
+          fi
 
       - name: Generate Release Notes
         run: |
@@ -184,6 +199,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v5
@@ -223,6 +240,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v5
@@ -262,6 +281,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v5
