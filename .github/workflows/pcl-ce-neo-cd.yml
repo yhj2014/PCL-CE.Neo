@@ -16,7 +16,6 @@ on:
         type: string
 
 env:
-  VERSION: ${{ github.ref_name }}
   DOTNET_VERSION: '10.0.x'
 
 jobs:
@@ -26,23 +25,35 @@ jobs:
     outputs:
       is-prerelease: ${{ steps.check-prerelease.outputs.is-prerelease }}
       clean-version: ${{ steps.clean-version.outputs.clean-version }}
+      current-tag: ${{ steps.get-tag.outputs.current-tag }}
     
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Get Current Tag
+        id: get-tag
+        run: |
+          if [ -z "${{ inputs.tag_version }}" ]; then
+            TAG="${{ github.ref_name }}"
+          else
+            TAG="${{ inputs.tag_version }}"
+          fi
+          echo "current-tag=$TAG" >> $GITHUB_OUTPUT
+          echo "✅ 使用版本标签：$TAG"
+
       - name: Validate Tag Format
         run: |
-          if [[ ! "${{ github.ref_name }}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.-]+)?$ ]]; then
+          if [[ ! "${{ steps.get-tag.outputs.current-tag }}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.-]+)?$ ]]; then
             echo "❌ 错误：Tag 格式不正确！应使用语义化版本，例如：v1.0.0 或 v1.0.0-beta"
             exit 1
           fi
-          echo "✅ Tag 格式验证通过：${{ github.ref_name }}"
+          echo "✅ Tag 格式验证通过：${{ steps.get-tag.outputs.current-tag }}"
 
       - name: Check if Pre-release
         id: check-prerelease
         run: |
-          if [[ "${{ github.ref_name }}" == *"-"* ]]; then
+          if [[ "${{ steps.get-tag.outputs.current-tag }}" == *"-"* ]]; then
             echo "is-prerelease=true" >> $GITHUB_OUTPUT
             echo "✅ 检测到预发布版本"
           else
@@ -53,7 +64,7 @@ jobs:
       - name: Extract Clean Version
         id: clean-version
         run: |
-          CLEAN_VERSION=$(echo "${{ github.ref_name }}" | sed 's/v//')
+          CLEAN_VERSION=$(echo "${{ steps.get-tag.outputs.current-tag }}" | sed 's/v//')
           echo "clean-version=${CLEAN_VERSION}" >> $GITHUB_OUTPUT
           echo "✅ 版本号：${CLEAN_VERSION}"
 
@@ -109,6 +120,8 @@ jobs:
     name: Create GitHub Release
     runs-on: ubuntu-latest
     needs: pre-check
+    env:
+      VERSION: ${{ needs.pre-check.outputs.current-tag }}
     
     steps:
       - name: Checkout
@@ -151,7 +164,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         id: release
         with:
-          tag_name: ${{ env.VERSION }}
+          tag_name: ${{ needs.pre-check.outputs.current-tag }}
           name: "PCL-CE.Neo ${{ needs.pre-check.outputs.clean-version }}"
           draft: false
           prerelease: ${{ needs.pre-check.outputs.is-prerelease }}
@@ -166,6 +179,7 @@ jobs:
     needs: create-release
     env:
       CI_BUILD_TARGET: windows
+      VERSION: ${{ needs.pre-check.outputs.current-tag }}
     
     steps:
       - name: Checkout
@@ -192,7 +206,7 @@ jobs:
       - name: Upload Windows Package to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ env.VERSION }}
+          tag_name: ${{ needs.pre-check.outputs.current-tag }}
           files: "PCL-CE.Neo-${{ env.VERSION }}-win-x64.zip"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -204,6 +218,7 @@ jobs:
     needs: create-release
     env:
       CI_BUILD_TARGET: macos
+      VERSION: ${{ needs.pre-check.outputs.current-tag }}
     
     steps:
       - name: Checkout
@@ -230,7 +245,7 @@ jobs:
       - name: Upload macOS Package to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ env.VERSION }}
+          tag_name: ${{ needs.pre-check.outputs.current-tag }}
           files: "PCL-CE.Neo-${{ env.VERSION }}-osx-x64.zip"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -242,6 +257,7 @@ jobs:
     needs: create-release
     env:
       CI_BUILD_TARGET: linux
+      VERSION: ${{ needs.pre-check.outputs.current-tag }}
     
     steps:
       - name: Checkout
@@ -275,7 +291,7 @@ jobs:
       - name: Upload Linux Package to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ env.VERSION }}
+          tag_name: ${{ needs.pre-check.outputs.current-tag }}
           files: "PCL-CE.Neo-${{ env.VERSION }}-linux-x64.tar.gz"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -286,6 +302,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build-windows, build-macos, build-linux]
     if: always()
+    env:
+      VERSION: ${{ needs.pre-check.outputs.current-tag }}
     
     steps:
       - name: Display Release Summary
