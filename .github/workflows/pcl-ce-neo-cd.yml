@@ -26,6 +26,7 @@ jobs:
       is-prerelease: ${{ steps.check-prerelease.outputs.is-prerelease }}
       clean-version: ${{ steps.clean-version.outputs.clean-version }}
       current-tag: ${{ steps.get-tag.outputs.current-tag }}
+      is-manual-trigger: ${{ steps.get-tag.outputs.is-manual-trigger }}
     
     steps:
       - name: Checkout
@@ -36,12 +37,15 @@ jobs:
       - name: Get Current Tag
         id: get-tag
         run: |
-          if [ -z "${{ inputs.tag_version }}" ]; then
-            TAG="${{ github.ref_name }}"
+          if [ -n "${{ github.event.inputs.tag_version }}" ]; then
+            TAG="${{ github.event.inputs.tag_version }}"
+            IS_MANUAL="true"
           else
-            TAG="${{ inputs.tag_version }}"
+            TAG="${{ github.ref_name }}"
+            IS_MANUAL="false"
           fi
           echo "current-tag=$TAG" >> $GITHUB_OUTPUT
+          echo "is-manual-trigger=$IS_MANUAL" >> $GITHUB_OUTPUT
           echo "✅ 使用版本标签：$TAG"
 
       - name: Validate Tag Format
@@ -124,6 +128,7 @@ jobs:
     needs: pre-check
     env:
       VERSION: ${{ needs.pre-check.outputs.current-tag }}
+      IS_MANUAL: ${{ needs.pre-check.outputs.is-manual-trigger }}
     
     steps:
       - name: Checkout
@@ -131,15 +136,21 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Create Tag if Not Exists
+      - name: Create Tag if Manual Trigger
+        if: needs.pre-check.outputs.is-manual-trigger == 'true'
         run: |
-          if [ -n "${{ inputs.tag_version }}" ]; then
-            echo "📝 检查标签是否存在..."
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-            git tag -a "${{ needs.pre-check.outputs.current-tag }}" -m "Release ${{ needs.pre-check.outputs.current-tag }}" || true
-            git push origin "${{ needs.pre-check.outputs.current-tag }}" || true
-            echo "✅ 标签已创建/确保存在：${{ needs.pre-check.outputs.current-tag }}"
+          echo "📝 检查标签是否存在..."
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # 检查 tag 是否已存在
+          if git rev-parse "${{ env.VERSION }}" >/dev/null 2>&1; then
+            echo "✅ 标签已存在：${{ env.VERSION }}"
+          else
+            echo "📝 创建新标签：${{ env.VERSION }}"
+            git tag -a "${{ env.VERSION }}" -m "Release ${{ env.VERSION }}"
+            git push origin "${{ env.VERSION }}"
+            echo "✅ 标签已创建并推送：${{ env.VERSION }}"
           fi
 
       - name: Generate Release Notes
