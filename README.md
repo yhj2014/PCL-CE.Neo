@@ -62,9 +62,9 @@ PCL CE 始终建议使用最新版本的操作系统以获得最佳体验。
 ## 🌟 统计数据
 ![Alt](https://repobeats.axiom.co/api/embed/3e46296e6e3a134991a783480fd2f62723bb0353.svg "Repobeats analytics image")
 
-[![Star History Chart](https://api.star-history.com/svg?repos=PCL-Community/PCL-CE&type=Date)](https://www.star-history.com/#PCL-Community/PCL-CE&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=yhj2014/PCL-CE.Neo&type=Date)](https://www.star-history.com/#yhj2014/PCL-CE.Neo&Date)
 
-**此页浏览量**（总计 / 今日）：[![Hits](https://hits.zkitefly.eu.org/?tag=https://github.com/PCL-Community/PCL-CE)](https://hits.zkitefly.eu.org/?tag=https://github.com/PCL-Community/PCL-CE&web=true)
+**此页浏览量**（总计 / 今日）：[![Hits](https://hits.zkitefly.eu.org/?tag=https://github.com/yhj2014/PCL-CE.Neo)](https://hits.zkitefly.eu.org/?tag=https://github.com/yhj2014/PCL-CE.Neo&web=true)
 ## ❤️ 贡献者
 
-[![](https://contrib.rocks/image?repo=PCL-Community/PCL-CE)](https://github.com/PCL-Community/PCL-CE/graphs/contributors)
+[![](https://contrib.rocks/image?repo=yhj2014/PCL-CE.Neo)](https://github.com/yhj2014/PCL-CE.Neo/graphs/contributors)
