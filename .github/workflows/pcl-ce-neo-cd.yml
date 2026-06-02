@@ -126,6 +126,8 @@ jobs:
     name: Create GitHub Release
     runs-on: ubuntu-latest
     needs: pre-check
+    outputs:
+      upload_url: ${{ steps.release.outputs.upload_url }}
     env:
       VERSION: ${{ needs.pre-check.outputs.current-tag }}
       IS_MANUAL: ${{ needs.pre-check.outputs.is-manual-trigger }}
@@ -234,7 +236,7 @@ jobs:
       - name: Upload Windows Package to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ needs.pre-check.outputs.current-tag }}
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
           files: "PCL-CE.Neo-${{ env.VERSION }}-win-x64.zip"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -275,7 +277,7 @@ jobs:
       - name: Upload macOS Package to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ needs.pre-check.outputs.current-tag }}
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
           files: "PCL-CE.Neo-${{ env.VERSION }}-osx-x64.zip"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -323,7 +325,7 @@ jobs:
       - name: Upload Linux Package to Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ needs.pre-check.outputs.current-tag }}
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
           files: "PCL-CE.Neo-${{ env.VERSION }}-linux-x64.tar.gz"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
