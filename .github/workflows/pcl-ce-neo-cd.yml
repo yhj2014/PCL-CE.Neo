@@ -126,8 +126,6 @@ jobs:
     name: Create GitHub Release
     runs-on: ubuntu-latest
     needs: pre-check
-    outputs:
-      upload_url: ${{ steps.release.outputs.upload_url }}
     env:
       VERSION: ${{ needs.pre-check.outputs.current-tag }}
       IS_MANUAL: ${{ needs.pre-check.outputs.is-manual-trigger }}
@@ -189,8 +187,7 @@ jobs:
           EOF
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        id: release
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ needs.pre-check.outputs.current-tag }}
           name: "PCL-CE.Neo ${{ needs.pre-check.outputs.clean-version }}"
@@ -204,7 +201,7 @@ jobs:
   build-windows:
     name: Build Windows App
     runs-on: windows-latest
-    needs: create-release
+    needs: [pre-check, create-release]
     env:
       CI_BUILD_TARGET: windows
       VERSION: ${{ needs.pre-check.outputs.current-tag }}
@@ -234,9 +231,9 @@ jobs:
           Compress-Archive -Path * -DestinationPath "../../PCL-CE.Neo-${{ env.VERSION }}-win-x64.zip"
 
       - name: Upload Windows Package to Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
-          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          tag_name: ${{ needs.pre-check.outputs.current-tag }}
           files: "PCL-CE.Neo-${{ env.VERSION }}-win-x64.zip"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -245,7 +242,7 @@ jobs:
   build-macos:
     name: Build macOS App
     runs-on: macos-latest
-    needs: create-release
+    needs: [pre-check, create-release]
     env:
       CI_BUILD_TARGET: macos
       VERSION: ${{ needs.pre-check.outputs.current-tag }}
@@ -275,9 +272,9 @@ jobs:
           zip -r "../../PCL-CE.Neo-${{ env.VERSION }}-osx-x64.zip" .
 
       - name: Upload macOS Package to Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
-          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          tag_name: ${{ needs.pre-check.outputs.current-tag }}
           files: "PCL-CE.Neo-${{ env.VERSION }}-osx-x64.zip"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -286,7 +283,7 @@ jobs:
   build-linux:
     name: Build Linux App
     runs-on: ubuntu-latest
-    needs: create-release
+    needs: [pre-check, create-release]
     env:
       CI_BUILD_TARGET: linux
       VERSION: ${{ needs.pre-check.outputs.current-tag }}
@@ -323,9 +320,9 @@ jobs:
           tar -czf "../../PCL-CE.Neo-${{ env.VERSION }}-linux-x64.tar.gz" .
 
       - name: Upload Linux Package to Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
-          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          tag_name: ${{ needs.pre-check.outputs.current-tag }}
           files: "PCL-CE.Neo-${{ env.VERSION }}-linux-x64.tar.gz"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
