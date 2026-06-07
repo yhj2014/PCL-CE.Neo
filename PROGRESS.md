@@ -5,6 +5,65 @@
 
 ---
 
+## 修复 CD 工作流中 VERSION 环境变量问题 (2025-01-28)
+
+### 问题
+GitHub Actions CD 构建失败，报错：
+```
+'v0.0.1-alpha' is not a valid version string. (Parameter 'value')
+```
+
+### 原因
+在 `.github/workflows/pcl-ce-neo-cd.yml` 中，`VERSION` 环境变量被设置为带 "v" 前缀的标签名（例如 "v0.0.1-alpha"），但 .NET SDK 在构建时不接受带 "v" 前缀的版本号。
+
+### 解决方案
+1. 将 `VERSION` 环境变量改为使用不带 "v" 前缀的 `clean-version`
+2. 添加 `VERSION_TAG` 环境变量用于存储带 "v" 前缀的原始标签名，用于：
+   - 创建和操作 Git 标签
+   - 生成的产物文件名
+   - GitHub Release 页面链接
+
+### 修改位置
+- `.github/workflows/pcl-ce-neo-cd.yml`：
+  - 第 130-131 行：添加 `VERSION_TAG` 并修改 `VERSION`
+  - 第 148-154 行：使用 `VERSION_TAG` 操作 Git 标签
+  - 第 208-209 行：build-windows job
+  - 第 233 行：Windows 打包文件名
+  - 第 250-251 行：build-macos job
+  - 第 275 行：macOS 打包文件名
+  - 第 292-293 行：build-linux job
+  - 第 324 行：Linux 打包文件名
+  - 第 341-342 行：finalize-release job
+  - 第 347 行和第 359 行：显示信息使用 `VERSION_TAG`
+
+---
+
+## 修复 CD 工作流中资产上传和环境变量问题 (2025-01-28)
+
+### 问题 1
+GitHub Release 资产上传失败，报错：`GitHub Releases requires a tag`
+
+### 原因
+构建 job 的 `needs` 依赖没有包含 `pre-check`，导致 `needs.pre-check.outputs.current-tag` 为空。
+
+### 解决方案
+将所有 build job 的 `needs` 从 `[create-release]` 改为 `[pre-check, create-release]`
+
+### 问题 2
+使用 `upload_url` 与 Action 版本不兼容
+
+### 解决方案
+不使用 `upload_url`，继续使用 `tag_name` 参数，并将所有 `softprops/action-gh-release` 升级到 `@v3`
+
+### 修改位置
+- `.github/workflows/pcl-ce-neo-cd.yml`：
+  - 第 205 行：build-windows 的 needs
+  - 第 247 行：build-macos 的 needs
+  - 第 289 行：build-linux 的 needs
+  - 第 190、236、278、327 行：升级到 @v3
+
+---
+
 ## 修复 NuGet 包兼容性问题 (2025-01-28)
 
 ### 问题
