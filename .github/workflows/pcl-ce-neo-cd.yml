@@ -236,7 +236,7 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ needs.pre-check.outputs.current-tag }}
-          files: "PCL-CE.Neo-${{ env.VERSION }}-win-x64.zip"
+          files: "PCL-CE.Neo-${{ env.VERSION_TAG }}-win-x64.zip"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
@@ -278,7 +278,7 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ needs.pre-check.outputs.current-tag }}
-          files: "PCL-CE.Neo-${{ env.VERSION }}-osx-x64.zip"
+          files: "PCL-CE.Neo-${{ env.VERSION_TAG }}-osx-x64.zip"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
@@ -327,7 +327,7 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ needs.pre-check.outputs.current-tag }}
-          files: "PCL-CE.Neo-${{ env.VERSION }}-linux-x64.tar.gz"
+          files: "PCL-CE.Neo-${{ env.VERSION_TAG }}-linux-x64.tar.gz"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         continue-on-error: true
