@@ -127,7 +127,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: pre-check
     env:
-      VERSION: ${{ needs.pre-check.outputs.current-tag }}
+      VERSION: ${{ needs.pre-check.outputs.clean-version }}
+      VERSION_TAG: ${{ needs.pre-check.outputs.current-tag }}
       IS_MANUAL: ${{ needs.pre-check.outputs.is-manual-trigger }}
     
     steps:
@@ -144,13 +145,13 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           
           # 检查 tag 是否已存在
-          if git rev-parse "${{ env.VERSION }}" >/dev/null 2>&1; then
-            echo "✅ 标签已存在：${{ env.VERSION }}"
+          if git rev-parse "${{ env.VERSION_TAG }}" >/dev/null 2>&1; then
+            echo "✅ 标签已存在：${{ env.VERSION_TAG }}"
           else
-            echo "📝 创建新标签：${{ env.VERSION }}"
-            git tag -a "${{ env.VERSION }}" -m "Release ${{ env.VERSION }}"
-            git push origin "${{ env.VERSION }}"
-            echo "✅ 标签已创建并推送：${{ env.VERSION }}"
+            echo "📝 创建新标签：${{ env.VERSION_TAG }}"
+            git tag -a "${{ env.VERSION_TAG }}" -m "Release ${{ env.VERSION_TAG }}"
+            git push origin "${{ env.VERSION_TAG }}"
+            echo "✅ 标签已创建并推送：${{ env.VERSION_TAG }}"
           fi
 
       - name: Generate Release Notes
@@ -204,7 +205,8 @@ jobs:
     needs: [pre-check, create-release]
     env:
       CI_BUILD_TARGET: windows
-      VERSION: ${{ needs.pre-check.outputs.current-tag }}
+      VERSION: ${{ needs.pre-check.outputs.clean-version }}
+      VERSION_TAG: ${{ needs.pre-check.outputs.current-tag }}
     
     steps:
       - name: Checkout
@@ -228,7 +230,7 @@ jobs:
       - name: Create Windows Package
         run: |
           cd publish/win-x64
-          Compress-Archive -Path * -DestinationPath "../../PCL-CE.Neo-${{ env.VERSION }}-win-x64.zip"
+          Compress-Archive -Path * -DestinationPath "../../PCL-CE.Neo-${{ env.VERSION_TAG }}-win-x64.zip"
 
       - name: Upload Windows Package to Release
         uses: softprops/action-gh-release@v3
@@ -245,7 +247,8 @@ jobs:
     needs: [pre-check, create-release]
     env:
       CI_BUILD_TARGET: macos
-      VERSION: ${{ needs.pre-check.outputs.current-tag }}
+      VERSION: ${{ needs.pre-check.outputs.clean-version }}
+      VERSION_TAG: ${{ needs.pre-check.outputs.current-tag }}
     
     steps:
       - name: Checkout
@@ -269,7 +272,7 @@ jobs:
       - name: Create macOS Package
         run: |
           cd publish/osx-x64
-          zip -r "../../PCL-CE.Neo-${{ env.VERSION }}-osx-x64.zip" .
+          zip -r "../../PCL-CE.Neo-${{ env.VERSION_TAG }}-osx-x64.zip" .
 
       - name: Upload macOS Package to Release
         uses: softprops/action-gh-release@v3
@@ -286,7 +289,8 @@ jobs:
     needs: [pre-check, create-release]
     env:
       CI_BUILD_TARGET: linux
-      VERSION: ${{ needs.pre-check.outputs.current-tag }}
+      VERSION: ${{ needs.pre-check.outputs.clean-version }}
+      VERSION_TAG: ${{ needs.pre-check.outputs.current-tag }}
     
     steps:
       - name: Checkout
@@ -317,7 +321,7 @@ jobs:
       - name: Create Linux Package
         run: |
           cd publish/linux-x64
-          tar -czf "../../PCL-CE.Neo-${{ env.VERSION }}-linux-x64.tar.gz" .
+          tar -czf "../../PCL-CE.Neo-${{ env.VERSION_TAG }}-linux-x64.tar.gz" .
 
       - name: Upload Linux Package to Release
         uses: softprops/action-gh-release@v3
@@ -334,12 +338,13 @@ jobs:
     needs: [build-windows, build-macos, build-linux]
     if: always()
     env:
-      VERSION: ${{ needs.pre-check.outputs.current-tag }}
+      VERSION: ${{ needs.pre-check.outputs.clean-version }}
+      VERSION_TAG: ${{ needs.pre-check.outputs.current-tag }}
     
     steps:
       - name: Display Release Summary
         run: |
-          echo "🎉 PCL-CE.Neo ${{ env.VERSION }} 发布完成！"
+          echo "🎉 PCL-CE.Neo ${{ env.VERSION_TAG }} 发布完成！"
           echo ""
           echo "## 📦 发布信息"
           echo "- 版本：${{ needs.pre-check.outputs.clean-version }}"
@@ -351,4 +356,4 @@ jobs:
           echo "- Linux: ${{ needs.build-linux.result }}"
           echo ""
           echo "## 🎯 下载地址"
-          echo "https://github.com/${{ github.repository }}/releases/tag/${{ env.VERSION }}"
+          echo "https://github.com/${{ github.repository }}/releases/tag/${{ env.VERSION_TAG }}"
