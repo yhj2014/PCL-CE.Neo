@@ -13,6 +13,7 @@
 其他重要文档：
 - [原项目架构书.md](./原项目架构书.md) - 原始 PCL 项目的架构设计
 - [PROGRESS.md](./PROGRESS.md) - 开发进度记录
+- [RUN_GUIDE.md](./RUN_GUIDE.md) - 如何运行编译后的应用程序（用户必读）
 
 ---
 

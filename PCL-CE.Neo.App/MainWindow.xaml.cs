@@ -1,6 +1,15 @@
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
+using Microsoft.Extensions.DependencyInjection;
+using PCL_CE.Neo.Core;
 using PCL_CE.Neo.UI;
+
+#if WINDOWS
+using PCL_CE.Neo.Platform.Windows;
+#elif MACOS
+using PCL_CE.Neo.Platform.macOS;
+#elif LINUX
+using PCL_CE.Neo.Platform.Linux;
+#endif
 
 namespace PCL_CE.Neo.App;
 
@@ -8,29 +17,32 @@ public sealed partial class MainWindow : Window
 {
     public MainWindow()
     {
-        this.InitializeComponent();
-        DataContext = new MainViewModel();
+        InitializeComponent();
+        InitializeServices();
     }
 
-    private void MinimizeButton_Click(object sender, RoutedEventArgs e)
+    private void InitializeServices()
     {
-        this.Minimize();
-    }
+        try
+        {
+            var services = new ServiceCollection();
+            services.AddCoreServices();
+            services.AddUIServices();
 
-    private void MaximizeButton_Click(object sender, RoutedEventArgs e)
-    {
-        if (this.WindowState == WindowState.Maximized)
-            this.WindowState = WindowState.Normal;
-        else
-            this.WindowState = WindowState.Maximized;
-    }
-
-    private void CloseButton_Click(object sender, RoutedEventArgs e)
-    {
-        this.Close();
-    }
-
-    private void ContentFrame_Navigated(object sender, Microsoft.UI.Xaml.Navigation.NavigationEventArgs e)
-    {
+#if WINDOWS
+            services.AddWindowsPlatformServices();
+#elif MACOS
+            services.AddMacOSPlatformServices();
+#elif LINUX
+            services.AddLinuxPlatformServices();
+#endif
+            
+            var serviceProvider = services.BuildServiceProvider();
+            StatusText.Text = "✅ 核心服务已初始化";
+        }
+        catch
+        {
+            StatusText.Text = "❌ 服务初始化失败";
+        }
     }
 }
