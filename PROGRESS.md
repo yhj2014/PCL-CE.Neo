@@ -5,6 +5,35 @@
 
 ---
 
+## 修复 CD 产物上传文件名不匹配问题 (2026-06-07)
+
+### 问题
+GitHub Actions CD 工作流中，虽然打包成功，但产物无法上传到 Release，错误信息：
+```
+Pattern 'PCL-CE.Neo-0.0.1-alpha-win-x64.zip' does not match any files
+```
+
+Release 页面创建成功，但没有压缩包等产物。
+
+### 原因
+在三个平台（Windows、macOS、Linux）的构建 job 中：
+- 打包时使用 `VERSION_TAG`（值为 v0.0.1-alpha，带 v 前缀）
+- 上传时使用 `VERSION`（值为 0.0.1-alpha，不带 v 前缀）
+- 导致寻找的文件名与实际文件名不一致（差了一个 v 前缀）
+
+### 解决方案
+修改 build-windows、build-macos、build-linux 三个 job 的上传步骤：
+- 将 `files` 参数中的 `VERSION` 改为 `VERSION_TAG`
+- 统一使用带 v 前缀的标签名作为打包文件名
+
+### 修改位置
+- `.github/workflows/pcl-ce-neo-cd.yml`：
+  - 第 239 行：Windows 上传文件名（`VERSION` → `VERSION_TAG`）
+  - 第 281 行：macOS 上传文件名（`VERSION` → `VERSION_TAG`）
+  - 第 330 行：Linux 上传文件名（`VERSION` → `VERSION_TAG`）
+
+---
+
 ## 修复 CD 工作流中 VERSION 环境变量问题 (2025-01-28)
 
 ### 问题
