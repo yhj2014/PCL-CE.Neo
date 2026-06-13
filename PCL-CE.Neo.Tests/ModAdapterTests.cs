@@ -118,7 +118,7 @@ public class ModAdapterTests
     [Fact]
     public void DownloadResult_Success()
     {
-        var result = DownloadResult.Success(1024);
+        var result = DownloadResult.Succeeded(1024);
 
         Assert.True(result.Success);
         Assert.Equal(1024, result.BytesDownloaded);

@@ -36,7 +36,8 @@ public class StateAdapterTests
     [Fact]
     public void ClearState_Should_Not_Throw()
     {
-        Action act = () => _stateAdapter.ClearState();
+        _stateAdapter.SetState("test_key", "test_value");
+        Action act = () => _stateAdapter.ClearState("test_key");
         act.Should().NotThrow();
     }
 }

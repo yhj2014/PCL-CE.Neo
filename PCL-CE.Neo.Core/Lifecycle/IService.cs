@@ -50,16 +50,25 @@ public interface ILifecycleManager
 
 public class LifecycleManager : ILifecycleManager, IDisposable
 {
-    private readonly IServiceCollection _services;
+    private readonly IServiceCollection? _services;
     private readonly Dictionary<string, IService> _runningServices = new();
     private readonly SemaphoreSlim _lock = new(1, 1);
     private IServiceProvider? _serviceProvider;
 
     public IServiceProvider Services => _serviceProvider ?? throw new InvalidOperationException("Not started");
 
+    public LifecycleManager() : this(new ServiceCollection())
+    {
+    }
+
     public LifecycleManager(IServiceCollection services)
     {
         _services = services;
+    }
+
+    public LifecycleManager(IServiceProvider serviceProvider)
+    {
+        _serviceProvider = serviceProvider;
     }
 
     public event Action<string>? ServiceStarted;
@@ -68,10 +77,36 @@ public class LifecycleManager : ILifecycleManager, IDisposable
 
     public async Task StartAsync()
     {
-        _serviceProvider = _services.BuildServiceProvider();
-        
-        var services = _serviceProvider.GetServices<IService>();
-        foreach (var service in services)
+        if (_services != null && _serviceProvider == null)
+        {
+            _serviceProvider = _services.BuildServiceProvider();
+        }
+
+        var servicesToStart = new List<IService>();
+        if (_services != null)
+        {
+            foreach (var descriptor in _services)
+            {
+                if (typeof(IService).IsAssignableFrom(descriptor.ServiceType))
+                {
+                    var svc = _serviceProvider!.GetService(descriptor.ServiceType) as IService;
+                    if (svc != null) servicesToStart.Add(svc);
+                }
+                else if (descriptor.ImplementationType != null && typeof(IService).IsAssignableFrom(descriptor.ImplementationType))
+                {
+                    var svc = _serviceProvider!.GetService(descriptor.ImplementationType) as IService;
+                    if (svc != null) servicesToStart.Add(svc);
+                }
+            }
+        }
+
+        // 回退：如果上面没找到，直接尝试获取所有 IService
+        if (servicesToStart.Count == 0 && _serviceProvider != null)
+        {
+            servicesToStart.AddRange(_serviceProvider.GetServices<IService>());
+        }
+
+        foreach (var service in servicesToStart)
         {
             try
             {
@@ -80,6 +115,17 @@ public class LifecycleManager : ILifecycleManager, IDisposable
                 {
                     await service.StartAsync();
                     _runningServices[service.Identifier] = service;
+                    // 也按类型名称注册，便于 IsServiceRunning<T> 查询
+                    var serviceType = service.GetType();
+                    _runningServices[serviceType.Name] = service;
+                    // 以及接口类型名称
+                    foreach (var iface in serviceType.GetInterfaces())
+                    {
+                        if (typeof(IService).IsAssignableFrom(iface))
+                        {
+                            _runningServices[iface.Name] = service;
+                        }
+                    }
                     ServiceStarted?.Invoke(service.Identifier);
                 }
                 finally

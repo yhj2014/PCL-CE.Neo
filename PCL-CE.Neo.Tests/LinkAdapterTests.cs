@@ -37,6 +37,6 @@ public class LinkAdapterTests
     public void IsConnected_Should_Return_Boolean()
     {
         var result = _linkAdapter.IsConnected;
-        result.Should().BeTrue().Or.BeFalse();
+        result.GetType().Should().Be(typeof(bool));
     }
 }

@@ -7,11 +7,35 @@ public class StateAdapter : IStateAdapter
 {
     private readonly ILogger<StateAdapter> _logger;
     private readonly IConfigAdapter _config;
+    private readonly Dictionary<string, object> _state = new();
+
+    public StateAdapter() : this(
+        Microsoft.Extensions.Logging.Abstractions.NullLogger<StateAdapter>.Instance,
+        new ConfigAdapter())
+    {
+    }
 
     public StateAdapter(ILogger<StateAdapter> logger, IConfigAdapter config)
     {
         _logger = logger;
         _config = config;
+    }
+
+    public Dictionary<string, object> State => _state;
+
+    public T? GetState<T>(string key, T? defaultValue = default)
+    {
+        return _state.TryGetValue(key, out var value) ? (T)value : defaultValue;
+    }
+
+    public void SetState<T>(string key, T value)
+    {
+        _state[key] = value!;
+    }
+
+    public void ClearState(string key)
+    {
+        _state.Remove(key);
     }
 
     public string Identifier

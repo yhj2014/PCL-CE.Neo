@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace PCL.CE.Neo.Tests;
+namespace PCL_CE.Neo.Tests;
 
 public class TestLogger<T> : ILogger<T>
 {

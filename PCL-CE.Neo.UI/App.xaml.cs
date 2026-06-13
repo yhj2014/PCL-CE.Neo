@@ -1,20 +1,17 @@
 using Microsoft.UI.Xaml;
-using PCL_CE.Neo.UI;
+using PCL_CE.Neo.UI.Pages;
 
 namespace PCL_CE.Neo.UI;
 
-public partial class App : Application
+public sealed partial class App : Application
 {
-    private Window? _window;
-
     public App()
     {
-        InitializeComponent();
     }
 
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
-        _window = new MainWindow();
-        _window.Activate();
+        var window = new MainWindow();
+        window.Activate();
     }
 }

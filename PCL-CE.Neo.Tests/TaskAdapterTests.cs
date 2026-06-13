@@ -3,7 +3,7 @@ using PCL_CE.Neo.Core.Abstractions;
 using PCL_CE.Neo.Core.Adapters;
 using PCL_CE.Neo.Core;
 
-namespace PCL.CE.Neo.Tests;
+namespace PCL_CE.Neo.Tests;
 
 public class TaskAdapterTests
 {

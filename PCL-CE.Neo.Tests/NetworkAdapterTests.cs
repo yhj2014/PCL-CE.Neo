@@ -23,7 +23,7 @@ public class NetworkAdapterTests
     public void IsOnline_Should_Return_Boolean()
     {
         var result = _networkAdapter.IsOnline;
-        result.Should().BeTrue().Or.BeFalse();
+        result.GetType().Should().Be(typeof(bool));
     }
 
     [Fact]

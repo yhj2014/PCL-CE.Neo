@@ -37,6 +37,13 @@ public class ConfigService : IConfigService, IDisposable
     {
     }
 
+    public ConfigService(ILogger<ConfigService> logger, string configFilePath)
+    {
+        _logger = logger;
+        _pathsAdapter = new PathsAdapter();
+        _configFilePath = configFilePath;
+    }
+
     public ConfigService(ILogger<ConfigService> logger, IPathsAdapter pathsAdapter)
     {
         _logger = logger;
@@ -72,6 +79,15 @@ public class ConfigService : IConfigService, IDisposable
             return defaultValue;
         }
     }
+
+    public async Task InitializeAsync()
+    {
+        await LoadAsync();
+    }
+
+    public void Set<T>(string key, T value) => SetValue(key, value);
+
+    public T? Get<T>(string key, T? defaultValue = default) => GetValue(key, defaultValue);
 
     public void SetValue<T>(string key, T value)
     {

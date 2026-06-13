@@ -32,6 +32,8 @@ public class NetworkService : INetworkService, IDisposable
     };
 
     public HttpClient HttpClient => _httpClient;
+    public HttpClient CreateHttpClient() => _httpClient;
+    public Task<string> GetAsync(string url) => GetStringAsync(url);
 
     public NetworkService() : this(
         Microsoft.Extensions.Logging.Abstractions.NullLogger<NetworkService>.Instance)

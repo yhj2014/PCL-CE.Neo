@@ -1,4 +1,5 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Uno.Sdk/5.5.0-dev.42">
+
   <PropertyGroup>
     <AssemblyTitle>PCL-CE.Neo.UI</AssemblyTitle>
     <AssemblyName>PCL-CE.Neo.UI</AssemblyName>
@@ -8,16 +9,20 @@
     <Copyright>Copyright © PCL Community</Copyright>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
-    
+
     <TargetFramework>net10.0</TargetFramework>
-    
+    <UnoVersion>5.5.0-dev.465</UnoVersion>
+
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>PCL_CE.Neo.UI</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Uno.WinUI" Version="5.5.0-dev.465" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.7" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.7" />
   </ItemGroup>
 
   <ItemGroup>
@@ -25,17 +30,4 @@
     <ProjectReference Include="../PCL-CE.Neo.Core/PCL-CE.Neo.Core.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <!-- 暂时排除 XAML 和 UI 相关文件，先让核心代码编译通过 -->
-    <Compile Remove="Controls/**/*.cs" />
-    <Compile Remove="Pages/**/*.cs" />
-    <Compile Remove="Navigation/*.cs" />
-    <Compile Remove="Themes/*.cs" />
-    <Compile Remove="ViewModels/**/*.cs" />
-    <Compile Remove="Animations/**/*.cs" />
-    <Compile Remove="Services/AudioService.cs" />
-    <Compile Remove="Services/WindowService.cs" />
-    <Compile Remove="App.xaml.cs" />
-    <Compile Remove="MainWindow.xaml.cs" />
-  </ItemGroup>
 </Project>

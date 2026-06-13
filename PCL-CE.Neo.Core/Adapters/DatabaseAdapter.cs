@@ -11,12 +11,28 @@ public class DatabaseAdapter : IDatabaseAdapter
     private readonly SemaphoreSlim _lock = new(1, 1);
     private readonly Dictionary<string, Dictionary<string, string>> _collections = new();
 
+    public DatabaseAdapter() : this(
+        Microsoft.Extensions.Logging.Abstractions.NullLogger<DatabaseAdapter>.Instance,
+        new PathsAdapter())
+    {
+    }
+
     public DatabaseAdapter(ILogger<DatabaseAdapter> logger, IPathsAdapter pathsAdapter)
     {
         _logger = logger;
         _pathsAdapter = pathsAdapter;
         _databasePath = Path.Combine(pathsAdapter.SharedData, "database.json");
         LoadDatabase();
+    }
+
+    public void InitializeDatabase()
+    {
+        // 已在构造函数中初始化
+    }
+
+    public string GetConnection()
+    {
+        return _databasePath;
     }
 
     public async Task<T?> GetAsync<T>(string collection, string id) where T : class

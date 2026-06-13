@@ -5,12 +5,13 @@ permissions:
 
 on:
   push:
-    branches: [ main, dev ]
+    branches: [ '**' ]
     paths:
       - 'PCL-CE.Neo*/**'
       - '*.slnx'
       - '.github/workflows/pcl-ce-neo-ci.yml'
   pull_request:
+    branches: [ '**' ]
     paths:
       - 'PCL-CE.Neo*/**'
       - '*.slnx'

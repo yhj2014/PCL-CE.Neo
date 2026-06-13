@@ -1,53 +1,221 @@
+using System.Diagnostics;
+using Microsoft.Extensions.Logging;
+using PCL_CE.Neo.Core.Abstractions;
+
 namespace PCL_CE.Neo.Platform.Linux;
 
-public class LinuxWindowService : Core.Abstractions.IWindowService
+public class LinuxWindowService : IWindowService
 {
+    private readonly ILogger<LinuxWindowService> _logger;
     private object? _mainWindow;
+    private string _title = "PCL-CE.Neo";
+    private int _width = 1280;
+    private int _height = 720;
+    private int _x = 100;
+    private int _y = 100;
+    private bool _isVisible = true;
+    private bool _isMaximized;
+    private bool _isTopmost;
+
+    public LinuxWindowService() : this(Microsoft.Extensions.Logging.Abstractions.NullLogger<LinuxWindowService>.Instance)
+    {
+    }
+
+    public LinuxWindowService(ILogger<LinuxWindowService> logger)
+    {
+        _logger = logger;
+        try
+        {
+            _logger.LogDebug("LinuxWindowService initializing");
+            var display = Environment.GetEnvironmentVariable("DISPLAY");
+            _logger.LogDebug("X11 display detected: {Display}", display ?? "(none)");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Error during LinuxWindowService initialization");
+        }
+    }
 
     public object? MainWindow => _mainWindow;
 
     public void Initialize()
     {
+        try
+        {
+            _logger.LogDebug("LinuxWindowService initializing window state");
+            _mainWindow = new object();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to initialize window service");
+        }
     }
 
     public void ShowMainWindow()
     {
+        try
+        {
+            _logger.LogDebug("Showing main window");
+            _isVisible = true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to show main window");
+        }
     }
 
     public void CloseMainWindow()
     {
+        try
+        {
+            _logger.LogDebug("Closing main window");
+            _isVisible = false;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to close main window");
+        }
     }
 
     public void SetTitle(string title)
     {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(title))
+            {
+                _logger.LogWarning("SetTitle called with empty title");
+                return;
+            }
+
+            _title = title;
+            _logger.LogDebug("Window title set to: {Title}", title);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to set window title");
+        }
     }
 
     public void SetSize(int width, int height)
     {
+        try
+        {
+            if (width <= 0 || height <= 0)
+            {
+                _logger.LogWarning("Invalid window size: {Width}x{Height}", width, height);
+                return;
+            }
+
+            _width = width;
+            _height = height;
+            _logger.LogDebug("Window size set to: {Width}x{Height}", width, height);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to set window size");
+        }
     }
 
     public void SetPosition(int x, int y)
     {
+        try
+        {
+            _x = x;
+            _y = y;
+            _logger.LogDebug("Window position set to: {X}, {Y}", x, y);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to set window position");
+        }
     }
 
     public void Minimize()
     {
+        try
+        {
+            _isVisible = false;
+            _isMaximized = false;
+            _logger.LogDebug("Window minimized");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to minimize window");
+        }
     }
 
     public void Maximize()
     {
+        try
+        {
+            _isMaximized = true;
+            _isVisible = true;
+            _logger.LogDebug("Window maximized");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to maximize window");
+        }
     }
 
     public void Restore()
     {
+        try
+        {
+            _isMaximized = false;
+            _isVisible = true;
+            _logger.LogDebug("Window restored");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to restore window");
+        }
     }
 
     public void SetTopmost(bool topmost)
     {
+        try
+        {
+            _isTopmost = topmost;
+            _logger.LogDebug("Window topmost set to: {Topmost}", topmost);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to set topmost");
+        }
     }
 
     public double GetSystemDpi()
     {
+        try
+        {
+            using var process = Process.Start(new ProcessStartInfo
+            {
+                FileName = "xrandr",
+                Arguments = "--current",
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                CreateNoWindow = true
+            });
+
+            if (process != null)
+            {
+                var output = process.StandardOutput.ReadToEnd();
+                process.WaitForExit(5000);
+
+                var match = System.Text.RegularExpressions.Regex.Match(output, @"(\d+(?:\.\d+)?)\s*dpi");
+                if (match.Success && double.TryParse(match.Groups[1].Value, out var dpi))
+                {
+                    _logger.LogDebug("System DPI detected: {Dpi}", dpi);
+                    return dpi;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to detect system DPI via xrandr");
+        }
+
         return 96.0;
     }
 }

@@ -23,7 +23,7 @@ public record DownloadRequest
 public record DownloadResult
 {
     public bool Success { get; init; }
-    public required string FilePath { get; init; }
+    public string FilePath { get; init; } = "";
     public long BytesDownloaded { get; init; }
     public TimeSpan Elapsed { get; init; }
     public string? ErrorMessage { get; init; }
@@ -31,8 +31,10 @@ public record DownloadResult
 
     public static DownloadResult Succeeded(string path, long bytes, TimeSpan elapsed) =>
         new() { Success = true, FilePath = path, BytesDownloaded = bytes, Elapsed = elapsed };
+    public static DownloadResult Succeeded(long bytes) => new() { Success = true, BytesDownloaded = bytes };
     public static DownloadResult Failed(string path, string message, Exception? ex = null) =>
         new() { Success = false, FilePath = path, ErrorMessage = message, Exception = ex };
+    public static DownloadResult Failed(string message) => new() { Success = false, FilePath = "", ErrorMessage = message };
 }
 
 public record DownloadProgress

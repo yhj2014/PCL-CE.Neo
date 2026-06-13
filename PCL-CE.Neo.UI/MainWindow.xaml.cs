@@ -1,7 +1,5 @@
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Media;
-using PCL_CE.Neo.UI.Themes;
-using PCL_CE.Neo.UI.Navigation;
+using Microsoft.UI.Xaml.Controls;
 using PCL_CE.Neo.UI.Pages;
 
 namespace PCL_CE.Neo.UI;
@@ -11,67 +9,50 @@ public sealed partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-
-        ThemeManager.Instance.Initialize();
-        NavigationService.Instance.Initialize(MainFrame);
-        NavigationService.Instance.Navigate(typeof(HomePage));
-        UpdateNavigationState(typeof(HomePage));
+        MainFrame.Navigate(typeof(HomePage));
     }
 
-    private void OnLightThemeClick(object sender, RoutedEventArgs e)
+    private void OnMinimizeClick(object sender, RoutedEventArgs e)
     {
-        ThemeManager.Instance.SetTheme(AppTheme.Light);
     }
 
-    private void OnDarkThemeClick(object sender, RoutedEventArgs e)
+    private void OnCloseClick(object sender, RoutedEventArgs e)
     {
-        ThemeManager.Instance.SetTheme(AppTheme.Dark);
+        Close();
     }
 
     private void OnNavHomeClick(object sender, RoutedEventArgs e)
     {
-        NavigationService.Instance.Navigate(typeof(HomePage));
-        UpdateNavigationState(typeof(HomePage));
+        MainFrame.Navigate(typeof(HomePage));
+    }
+
+    private void OnNavDownloadClick(object sender, RoutedEventArgs e)
+    {
+        MainFrame.Navigate(typeof(DownloadPage));
     }
 
     private void OnNavLaunchClick(object sender, RoutedEventArgs e)
     {
-        NavigationService.Instance.Navigate(typeof(LaunchPage));
-        UpdateNavigationState(typeof(LaunchPage));
+        MainFrame.Navigate(typeof(LaunchPage));
     }
 
-    private void OnNavVersionsClick(object sender, RoutedEventArgs e)
+    private void OnNavInstanceClick(object sender, RoutedEventArgs e)
     {
-        NavigationService.Instance.Navigate(typeof(VersionSelectPage));
-        UpdateNavigationState(typeof(VersionSelectPage));
-    }
-
-    private void OnNavInstancesClick(object sender, RoutedEventArgs e)
-    {
-        NavigationService.Instance.Navigate(typeof(InstancePage));
-        UpdateNavigationState(typeof(InstancePage));
+        MainFrame.Navigate(typeof(InstancePage));
     }
 
     private void OnNavLoginClick(object sender, RoutedEventArgs e)
     {
-        NavigationService.Instance.Navigate(typeof(LoginPage));
-        UpdateNavigationState(typeof(LoginPage));
+        MainFrame.Navigate(typeof(LoginPage));
     }
 
     private void OnNavToolsClick(object sender, RoutedEventArgs e)
     {
-        NavigationService.Instance.Navigate(typeof(ToolsPage));
-        UpdateNavigationState(typeof(ToolsPage));
+        MainFrame.Navigate(typeof(ToolsPage));
     }
 
     private void OnNavSettingsClick(object sender, RoutedEventArgs e)
     {
-        NavigationService.Instance.Navigate(typeof(SettingsPage));
-        UpdateNavigationState(typeof(SettingsPage));
-    }
-
-    private void UpdateNavigationState(Type currentPage)
-    {
-        // 暂时简化，不处理导航状态
+        MainFrame.Navigate(typeof(SettingsPage));
     }
 }

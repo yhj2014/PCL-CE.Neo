@@ -2,7 +2,7 @@ using System.Collections.Concurrent;
 using PCL_CE.Neo.Core.Abstractions;
 using PCL_CE.Neo.Core.Logging;
 
-namespace PCL_CE.Neo.Core.Abstractions;
+namespace PCL_CE.Neo.Core.Adapters;
 
 public class LoggerAdapter : ILoggerAdapter
 {
@@ -14,6 +14,21 @@ public class LoggerAdapter : ILoggerAdapter
     {
         _categoryName = categoryName;
     }
+
+    public LoggerAdapter()
+    {
+        _categoryName = "Default";
+    }
+
+    public LoggerAdapter(Microsoft.Extensions.Logging.ILogger? logger)
+    {
+        _categoryName = logger?.GetType().Name ?? "Unknown";
+    }
+
+    public void LogDebug(string message, params object[] args) => Debug(message, args);
+    public void LogInfo(string message, params object[] args) => Information(message, args);
+    public void LogWarning(string message, params object[] args) => Warning(message, args);
+    public void LogError(string message, params object[] args) => Error(message, args);
 
     private static Logging.LogLevel ToCoreLogLevel(Abstractions.LogLevel level)
     {
@@ -50,12 +65,16 @@ public class LoggerAdapter : ILoggerAdapter
         LogWrapper.Info(formattedMessage, _categoryName);
     }
 
+    public void Info(string message, params object[] args) => Information(message, args);
+
     public void Warning(string message, params object[] args)
     {
         if (!IsEnabled(Abstractions.LogLevel.Warning)) return;
         var formattedMessage = args.Length > 0 ? string.Format(message, args) : message;
         LogWrapper.Warn(formattedMessage, _categoryName);
     }
+
+    public void Warn(string message, params object[] args) => Warning(message, args);
 
     public void Warning(Exception? ex, string message, params object[] args)
     {

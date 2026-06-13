@@ -68,16 +68,8 @@ public class AdapterTests
     [Fact]
     public void ResourceDownloadAdapter_CanBeInstantiated()
     {
-        var adapter = new ResourceDownloadAdapter(
-            Microsoft.Extensions.Logging.Abstractions.NullLogger<ResourceDownloadAdapter>.Instance,
-            new PathsAdapter(),
-            new NetworkAdapter(
-                Microsoft.Extensions.Logging.Abstractions.NullLogger<NetworkAdapter>.Instance,
-                new PathsAdapter()),
-            new DownloadAdapter(
-                Microsoft.Extensions.Logging.Abstractions.NullLogger<DownloadAdapter>.Instance,
-                new PathsAdapter()));
-        
+        var adapter = new ResourceDownloadAdapter();
+
         Assert.NotNull(adapter);
     }
 }

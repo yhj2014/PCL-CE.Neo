@@ -153,7 +153,7 @@ public class VersionModel
     public string BranchName { get; set; } = "unknown";
 }
 
-internal class DefaultPlatformService : IPlatformService
+public class DefaultPlatformService : IPlatformService
 {
     public string PlatformName => "Unknown";
     public string OSVersion => Environment.OSVersion.ToString();

@@ -59,6 +59,6 @@ public class ApplicationAdapterTests
     public void IsAprilFool_Should_Return_Boolean()
     {
         var result = _appAdapter.IsAprilFool;
-        result.Should().BeTrue().Or.BeFalse();
+        result.GetType().Should().Be(typeof(bool));
     }
 }
