@@ -1,16 +1,15 @@
 using System;
-using Uno.UI.Runtime.Skia;
-using PCL_CE.Neo.UI;
+using UINeoApp = PCL_CE.Neo.UI.App;
 
-namespace PCL_CE.Neo.App;
+namespace PCL_CE.Neo.AppHost;
 
-public static partial class AppHost
+public static class Program
 {
-    public static void RunLinux(string[] args)
+    public static void Main(string[] args)
     {
         try
         {
-            var host = new GtkHost(() => new App(), args);
+            var host = new Uno.UI.Runtime.Skia.Gtk.GtkHost(() => new UINeoApp());
             host.Run();
         }
         catch (Exception ex)

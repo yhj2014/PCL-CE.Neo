@@ -1,0 +1,99 @@
+<Window
+    x:Class="PCL_CE.Neo.UI.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:pages="using:PCL_CE.Neo.UI.Pages">
+
+    <Grid>
+        <!-- 标题栏 -->
+        <Grid VerticalAlignment="Top" Height="48" Background="{StaticResource BrushPrimary}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0" Text="PCL CE" Foreground="White"
+                           FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center"
+                           HorizontalAlignment="Left" Margin="16,0"/>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal"
+                            HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="2">
+                    <Button x:Name="TabHome" Content="首页" Click="OnNavHomeClick"
+                            Width="80" Height="32" Background="Transparent" Foreground="White"
+                            BorderBrush="Transparent" BorderThickness="1" CornerRadius="4" FontSize="13"/>
+                    <Button x:Name="TabDownload" Content="下载" Click="OnNavDownloadClick"
+                            Width="80" Height="32" Background="Transparent" Foreground="White"
+                            BorderBrush="Transparent" BorderThickness="1" CornerRadius="4" FontSize="13"/>
+                    <Button x:Name="TabLaunch" Content="启动" Click="OnNavLaunchClick"
+                            Width="80" Height="32" Background="Transparent" Foreground="White"
+                            BorderBrush="Transparent" BorderThickness="1" CornerRadius="4" FontSize="13"/>
+                    <Button x:Name="TabInstance" Content="实例" Click="OnNavInstanceClick"
+                            Width="80" Height="32" Background="Transparent" Foreground="White"
+                            BorderBrush="Transparent" BorderThickness="1" CornerRadius="4" FontSize="13"/>
+                    <Button x:Name="TabLogin" Content="登录" Click="OnNavLoginClick"
+                            Width="80" Height="32" Background="Transparent" Foreground="White"
+                            BorderBrush="Transparent" BorderThickness="1" CornerRadius="4" FontSize="13"/>
+                    <Button x:Name="TabTools" Content="工具" Click="OnNavToolsClick"
+                            Width="80" Height="32" Background="Transparent" Foreground="White"
+                            BorderBrush="Transparent" BorderThickness="1" CornerRadius="4" FontSize="13"/>
+                    <Button x:Name="TabSettings" Content="设置" Click="OnNavSettingsClick"
+                            Width="80" Height="32" Background="Transparent" Foreground="White"
+                            BorderBrush="Transparent" BorderThickness="1" CornerRadius="4" FontSize="13"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal"
+                            VerticalAlignment="Center" Margin="0,0,8,0" Spacing="2">
+                    <Button x:Name="BtnClose" Content="✕"
+                            Width="32" Height="28" Background="Transparent" Foreground="White"
+                            BorderBrush="Transparent" BorderThickness="0" CornerRadius="4" FontSize="12"
+                            Click="OnCloseClick"/>
+                </StackPanel>
+            </Grid>
+        </Grid>
+
+        <!-- 主内容区 -->
+        <Grid Margin="0,48,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="180"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0" Background="{StaticResource BrushBackgroundSecondary}" Padding="8">
+                <StackPanel Spacing="4">
+                    <Button x:Name="NavHome" Content="首页" Click="OnNavHomeClick" Height="36"
+                            Background="Transparent" Foreground="{StaticResource BrushForeground}"
+                            BorderBrush="Transparent" BorderThickness="0" HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Left" Padding="16,0" FontSize="14"/>
+                    <Button x:Name="NavDownload" Content="版本下载" Click="OnNavDownloadClick" Height="36"
+                            Background="Transparent" Foreground="{StaticResource BrushForeground}"
+                            BorderBrush="Transparent" BorderThickness="0" HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Left" Padding="16,0" FontSize="14"/>
+                    <Button x:Name="NavLaunch" Content="启动游戏" Click="OnNavLaunchClick" Height="36"
+                            Background="Transparent" Foreground="{StaticResource BrushForeground}"
+                            BorderBrush="Transparent" BorderThickness="0" HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Left" Padding="16,0" FontSize="14"/>
+                    <Button x:Name="NavInstance" Content="实例管理" Click="OnNavInstanceClick" Height="36"
+                            Background="Transparent" Foreground="{StaticResource BrushForeground}"
+                            BorderBrush="Transparent" BorderThickness="0" HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Left" Padding="16,0" FontSize="14"/>
+                    <Button x:Name="NavLogin" Content="账号登录" Click="OnNavLoginClick" Height="36"
+                            Background="Transparent" Foreground="{StaticResource BrushForeground}"
+                            BorderBrush="Transparent" BorderThickness="0" HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Left" Padding="16,0" FontSize="14"/>
+                    <Button x:Name="NavTools" Content="工具箱" Click="OnNavToolsClick" Height="36"
+                            Background="Transparent" Foreground="{StaticResource BrushForeground}"
+                            BorderBrush="Transparent" BorderThickness="0" HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Left" Padding="16,0" FontSize="14"/>
+                    <Button x:Name="NavSettings" Content="设置" Click="OnNavSettingsClick" Height="36"
+                            Background="Transparent" Foreground="{StaticResource BrushForeground}"
+                            BorderBrush="Transparent" BorderThickness="0" HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Left" Padding="16,0" FontSize="14"/>
+                </StackPanel>
+            </Border>
+
+            <Frame x:Name="MainFrame" Grid.Column="1" Background="{StaticResource BrushBackground}" Padding="20"/>
+        </Grid>
+    </Grid>
+</Window>

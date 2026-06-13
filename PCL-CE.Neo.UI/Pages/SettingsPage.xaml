@@ -1,0 +1,42 @@
+<Page
+    x:Class="PCL_CE.Neo.UI.Pages.SettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <StackPanel Spacing="16">
+        <TextBlock Text="设置" Style="{StaticResource H1Style}"/>
+        <TextBlock Text="配置启动器的行为和外观" Style="{StaticResource BodyStyle}"/>
+
+        <Border Style="{StaticResource CardBorderStyle}">
+            <StackPanel Spacing="12">
+                <TextBlock Text="下载源" Style="{StaticResource H2Style}"/>
+                <TextBox PlaceholderText="https://piston-meta.mojang.com" Style="{StaticResource BaseTextBoxStyle}" Width="320"/>
+            </StackPanel>
+        </Border>
+
+        <Border Style="{StaticResource CardBorderStyle}">
+            <StackPanel Spacing="12">
+                <TextBlock Text="Java 设置" Style="{StaticResource H2Style}"/>
+                <TextBox PlaceholderText="最小内存 (MB): 512" Style="{StaticResource BaseTextBoxStyle}" Width="320"/>
+                <TextBox PlaceholderText="最大内存 (MB): 4096" Style="{StaticResource BaseTextBoxStyle}" Width="320"/>
+                <TextBox PlaceholderText="自定义 Java 参数" Style="{StaticResource BaseTextBoxStyle}" Width="320" TextWrapping="Wrap" AcceptsReturn="True" Height="80"/>
+            </StackPanel>
+        </Border>
+
+        <Border Style="{StaticResource CardBorderStyle}">
+            <StackPanel Spacing="12">
+                <TextBlock Text="主题与外观" Style="{StaticResource H2Style}"/>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button Content="浅色" Style="{StaticResource SecondaryButtonStyle}"/>
+                    <Button Content="深色" Style="{StaticResource SecondaryButtonStyle}"/>
+                    <Button Content="跟随系统" Style="{StaticResource PrimaryButtonStyle}"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <StackPanel Orientation="Horizontal" Spacing="8">
+            <Button Content="保存设置" Style="{StaticResource PrimaryButtonStyle}"/>
+            <Button Content="恢复默认" Style="{StaticResource SecondaryButtonStyle}"/>
+        </StackPanel>
+    </StackPanel>
+</Page>

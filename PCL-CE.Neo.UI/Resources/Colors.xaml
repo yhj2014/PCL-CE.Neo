@@ -1,0 +1,22 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- 主题色 -->
+    <Color x:Key="ColorPrimary">#FF3399FF</Color>
+    <Color x:Key="ColorPrimaryLight">#FF66B2FF</Color>
+    <Color x:Key="ColorBackground">#FFF0F2F5</Color>
+    <Color x:Key="ColorBackgroundSecondary">#FFE5E8ED</Color>
+    <Color x:Key="ColorForeground">#FF1F2328</Color>
+    <Color x:Key="ColorBorder">#FFD1D5DB</Color>
+
+    <SolidColorBrush x:Key="BrushPrimary" Color="{StaticResource ColorPrimary}"/>
+    <SolidColorBrush x:Key="BrushPrimaryLight" Color="{StaticResource ColorPrimaryLight}"/>
+    <SolidColorBrush x:Key="BrushBackground" Color="{StaticResource ColorBackground}"/>
+    <SolidColorBrush x:Key="BrushBackgroundSecondary" Color="{StaticResource ColorBackgroundSecondary}"/>
+    <SolidColorBrush x:Key="BrushForeground" Color="{StaticResource ColorForeground}"/>
+    <SolidColorBrush x:Key="BrushBorder" Color="{StaticResource ColorBorder}"/>
+    <SolidColorBrush x:Key="BrushWhite" Color="#FFFFFFFF"/>
+    <SolidColorBrush x:Key="BrushHalfWhite" Color="#80FFFFFF"/>
+
+</ResourceDictionary>
