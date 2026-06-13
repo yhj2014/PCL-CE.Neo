@@ -33,6 +33,12 @@ public class GameLauncher : IGameLauncher
     public event Action<string>? GameOutput;
     public event Action<int>? GameExited;
 
+    public GameLauncher() : this(
+        Microsoft.Extensions.Logging.Abstractions.NullLogger<GameLauncher>.Instance,
+        new PCL_CE.Neo.Core.Network.NetworkService())
+    {
+    }
+
     public GameLauncher(ILogger<GameLauncher> logger, INetworkService networkService)
     {
         _logger = logger;

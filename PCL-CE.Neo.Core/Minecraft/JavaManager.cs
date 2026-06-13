@@ -40,6 +40,13 @@ public class JavaManager : IJavaManager
     private readonly List<JavaInstallation> _cachedJavaList = new();
     private bool _cacheInitialized;
 
+    public JavaManager() : this(
+        Microsoft.Extensions.Logging.Abstractions.NullLogger<JavaManager>.Instance,
+        new PCL_CE.Neo.Core.Abstractions.Mock.JavaScannerMock(),
+        new PCL_CE.Neo.Core.IO.DownloadService())
+    {
+    }
+
     public JavaManager(
         ILogger<JavaManager> logger,
         IJavaScanner javaScanner,

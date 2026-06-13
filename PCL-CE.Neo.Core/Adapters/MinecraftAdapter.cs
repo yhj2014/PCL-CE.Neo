@@ -14,6 +14,15 @@ public class MinecraftAdapter : IMinecraftAdapter
     private readonly INetworkAdapter _networkAdapter;
     private Process? _currentGameProcess;
 
+    public MinecraftAdapter() : this(
+        Microsoft.Extensions.Logging.Abstractions.NullLogger<MinecraftAdapter>.Instance,
+        new PathsAdapter(),
+        new PCL_CE.Neo.Core.Abstractions.Mock.JavaScannerMock(),
+        new DownloadAdapter(),
+        new NetworkAdapter())
+    {
+    }
+
     public MinecraftAdapter(
         ILogger<MinecraftAdapter> logger,
         IPathsAdapter pathsAdapter,
