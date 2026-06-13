@@ -1,23 +1,24 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Uno.Sdk/5.4.45">
 
     <PropertyGroup>
         <AssemblyTitle>PCL-CE.Neo.App.Linux</AssemblyTitle>
         <AssemblyName>PCL-CE.Neo.App.Linux</AssemblyName>
-        <Description>PCL CE Neo Linux 应用入口</Description>
+        <Description>PCL CE Neo Linux App</Description>
         <Company>PCL Community</Company>
         <Product>PCL-CE.Neo.App.Linux</Product>
         <Copyright>Copyright © PCL Community</Copyright>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
         <FileVersion>1.0.0.0</FileVersion>
         <OutputType>Exe</OutputType>
-        <RootNamespace>PCL_CE.Neo.App</RootNamespace>
         <TargetFramework>net10.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
-        <Platforms>x64</Platforms>
+        <RootNamespace>PCL_CE.Neo.App</RootNamespace>
+        <DefineConstants>LINUX;$(DefineConstants)</DefineConstants>
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Uno.WinUI.Skia.Gtk" Version="5.4.45" />
         <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.7" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.7" />
     </ItemGroup>
@@ -26,15 +27,6 @@
         <ProjectReference Include="../PCL-CE.Neo.Core.Abstractions/PCL-CE.Neo.Core.Abstractions.csproj" />
         <ProjectReference Include="../PCL-CE.Neo.UI/PCL-CE.Neo.UI.csproj" />
         <ProjectReference Include="../PCL-CE.Neo.Platform/Linux/PCL-CE.Neo.Platform.Linux.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <Compile Remove="App.xaml.cs" />
-        <Compile Remove="MainWindow.xaml.cs" />
-        <EmbeddedResource Remove="App.xaml" />
-        <EmbeddedResource Remove="MainWindow.xaml" />
-        <None Remove="App.xaml" />
-        <None Remove="MainWindow.xaml" />
     </ItemGroup>
 
 </Project>

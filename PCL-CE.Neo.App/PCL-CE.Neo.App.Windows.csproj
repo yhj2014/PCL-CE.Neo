@@ -1,23 +1,27 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Uno.Sdk/5.4.45">
 
     <PropertyGroup>
         <AssemblyTitle>PCL-CE.Neo.App.Windows</AssemblyTitle>
         <AssemblyName>PCL-CE.Neo.App.Windows</AssemblyName>
-        <Description>PCL CE Neo Windows 应用入口</Description>
+        <Description>PCL CE Neo Windows App</Description>
         <Company>PCL Community</Company>
         <Product>PCL-CE.Neo.App.Windows</Product>
         <Copyright>Copyright © PCL Community</Copyright>
         <AssemblyVersion>1.0.0.0</AssemblyVersion>
         <FileVersion>1.0.0.0</FileVersion>
         <OutputType>WinExe</OutputType>
-        <RootNamespace>PCL_CE.Neo.App</RootNamespace>
         <TargetFramework>net10.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <RootNamespace>PCL_CE.Neo.App</RootNamespace>
+        <DefineConstants>WINDOWS;$(DefineConstants)</DefineConstants>
         <Platforms>x64</Platforms>
+        <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+        <UseRidGraph>true</UseRidGraph>
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Uno.WinUI" Version="5.4.45" />
         <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.7" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.7" />
     </ItemGroup>
@@ -26,15 +30,6 @@
         <ProjectReference Include="../PCL-CE.Neo.Core.Abstractions/PCL-CE.Neo.Core.Abstractions.csproj" />
         <ProjectReference Include="../PCL-CE.Neo.UI/PCL-CE.Neo.UI.csproj" />
         <ProjectReference Include="../PCL-CE.Neo.Platform/Windows/PCL-CE.Neo.Platform.Windows.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <Compile Remove="App.xaml.cs" />
-        <Compile Remove="MainWindow.xaml.cs" />
-        <EmbeddedResource Remove="App.xaml" />
-        <EmbeddedResource Remove="MainWindow.xaml" />
-        <None Remove="App.xaml" />
-        <None Remove="MainWindow.xaml" />
     </ItemGroup>
 
 </Project>
