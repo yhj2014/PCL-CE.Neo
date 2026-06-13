@@ -1,6 +1,8 @@
-<Project Sdk="Uno.Sdk/5.5.0-dev.42">
-
+<Project Sdk="Uno.Sdk">
   <PropertyGroup>
+    <TargetFramework>net10.0-desktop</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyTitle>PCL-CE.Neo.UI</AssemblyTitle>
     <AssemblyName>PCL-CE.Neo.UI</AssemblyName>
     <Description>PCL CE Neo UI Library</Description>
@@ -9,12 +11,6 @@
     <Copyright>Copyright © PCL Community</Copyright>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
-
-    <TargetFramework>net10.0</TargetFramework>
-    <UnoVersion>5.5.0-dev.465</UnoVersion>
-
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>PCL_CE.Neo.UI</RootNamespace>
   </PropertyGroup>
 
