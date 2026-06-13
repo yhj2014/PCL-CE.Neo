@@ -15,11 +15,20 @@ jobs:
 
       - name: Sync upstream repo
         run: |
+          # 添加上游仓库
           git remote add upstream https://github.com/PCL-Community/PCL-CE.git
-          git fetch upstream dev --depth=1   # 只拉取最新一次提交
           
-          # 强制覆盖子文件夹
-          git checkout upstream/dev -- PCL-CE/
+          # 拉取上游 dev 分支的最新代码（只取最新一次提交）
+          git fetch upstream dev --depth=1
+          
+          # 创建目标文件夹（如果不存在）
+          mkdir -p PCL-CE
+          
+          # 切换到 PCL-CE 目录
+          cd PCL-CE
+          
+          # 从上游仓库提取所有文件到当前目录
+          git checkout upstream/dev -- .
           
       - name: Commit and push
         run: |
