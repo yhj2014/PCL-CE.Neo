@@ -1,73 +1,147 @@
+using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using PCL_CE.Neo.Core;
+using PCL_CE.Neo.Core.Abstractions;
 using PCL_CE.Neo.UI;
-
-#if WINDOWS
-using PCL_CE.Neo.Platform.Windows;
-#elif MACOS
-using PCL_CE.Neo.Platform.macOS;
-#elif LINUX
-using PCL_CE.Neo.Platform.Linux;
-#endif
 
 namespace PCL_CE.Neo.App;
 
-public class Program
+/// <summary>
+/// PCL-CE.Neo 应用程序入口
+/// </summary>
+public static class Program
 {
+    private static IServiceProvider? _serviceProvider;
+    private static ILogger? _logger;
+
+    /// <summary>
+    /// 应用程序主入口点
+    /// </summary>
+    [STAThread]
     public static void Main(string[] args)
     {
-        Console.WriteLine("╔═══════════════════════════════════════════════════════════╗");
-        Console.WriteLine("║           PCL-CE.Neo - 跨平台 Minecraft 启动器              ║");
-        Console.WriteLine("╠═══════════════════════════════════════════════════════════╣");
-        Console.WriteLine("║  当前状态: 控制台测试版本 (Uno Platform UI 开发中)         ║");
-        Console.WriteLine("║                                                           ║");
-        Console.WriteLine("║  平台: " + Environment.OSVersion.Platform.ToString().PadRight(50) + "║");
-        Console.WriteLine("║  架构: " + System.Runtime.InteropServices.RuntimeInformation.OSArchitecture.ToString().PadRight(50) + "║");
-        Console.WriteLine("║  版本: v0.0.1-alpha (开发版)                                ║");
-        Console.WriteLine("║                                                           ║");
-        Console.WriteLine("║  ⚠️  说明:                                                  ║");
-        Console.WriteLine("║  - 此为核心架构测试版本，图形界面 (GUI) 开发中              ║");
-        Console.WriteLine("║  - 核心业务逻辑和平台抽象层已实现并可正常编译               ║");
-        Console.WriteLine("║  - 完整的 Uno Platform UI 版本将在后续发布                 ║");
-        Console.WriteLine("║                                                           ║");
-        Console.WriteLine("╚═══════════════════════════════════════════════════════════╝");
-        Console.WriteLine();
-        Console.WriteLine("正在初始化核心服务...");
-
         try
         {
-            var services = new ServiceCollection();
-            services.AddCoreServices();
-            services.AddUIServices();
-
-#if WINDOWS
-            services.AddWindowsPlatformServices();
-            Console.WriteLine("✓ Windows 平台服务已加载");
-#elif MACOS
-            services.AddMacOSPlatformServices();
-            Console.WriteLine("✓ macOS 平台服务已加载");
-#elif LINUX
-            services.AddLinuxPlatformServices();
-            Console.WriteLine("✓ Linux 平台服务已加载");
-#endif
-
-            var serviceProvider = services.BuildServiceProvider();
-            Console.WriteLine("✓ 依赖注入容器已初始化");
-            
-            Console.WriteLine();
-            Console.WriteLine("✅ 核心架构验证成功！");
-            Console.WriteLine();
-            Console.WriteLine("按任意键退出...");
+            InitializeServices();
+            RunApplication();
         }
         catch (Exception ex)
         {
-            Console.WriteLine();
-            Console.WriteLine("❌ 初始化失败: " + ex.Message);
-            Console.WriteLine("详细信息: " + ex);
-            Console.WriteLine();
-            Console.WriteLine("按任意键退出...");
+            if (_logger != null)
+            {
+                _logger.LogCritical(ex, "应用程序启动失败");
+            }
+            throw;
         }
-        
-        Console.ReadKey();
     }
+
+    /// <summary>
+    /// 初始化依赖注入容器和服务
+    /// </summary>
+    private static void InitializeServices()
+    {
+        var services = new ServiceCollection();
+
+        services.AddLogging(builder =>
+        {
+            builder.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Information);
+        });
+
+        services.AddCoreServices();
+        services.AddUIServices();
+
+        RegisterPlatformServices(services);
+
+        _serviceProvider = services.BuildServiceProvider();
+        var loggerFactory = _serviceProvider.GetRequiredService<ILoggerFactory>();
+        _logger = loggerFactory.CreateLogger("PCL_CE.Neo.App.Program");
+        _logger.LogInformation("PCL-CE.Neo 应用程序服务初始化完成");
+    }
+
+    /// <summary>
+    /// 根据当前平台动态注册平台服务
+    /// </summary>
+    private static void RegisterPlatformServices(IServiceCollection services)
+    {
+        string platformName = GetPlatformName();
+        string expectedNamespace = $"PCL_CE.Neo.Platform.{platformName}";
+        string expectedTypeName = $"{expectedNamespace}.ServiceCollectionExtensions";
+        string expectedMethodName = "Add" + platformName + "PlatformServices";
+
+        foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+        {
+            try
+            {
+                var type = assembly.GetType(expectedTypeName);
+                if (type != null)
+                {
+                    var method = type.GetMethod(
+                        expectedMethodName,
+                        BindingFlags.Static | BindingFlags.Public,
+                        new[] { typeof(IServiceCollection) });
+
+                    if (method != null)
+                    {
+                        method.Invoke(null, new object[] { services });
+                        if (_logger != null)
+                        {
+                            _logger.LogInformation("已注册 {Platform} 平台服务", platformName);
+                        }
+                        return;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                if (_logger != null)
+                {
+                    _logger.LogWarning(ex, "从程序集 {Assembly} 加载平台服务时出错", assembly.GetName().Name);
+                }
+            }
+        }
+
+        if (_logger != null)
+        {
+            _logger.LogWarning("未找到平台特定的服务注册方法：{TypeName}.{MethodName}", expectedTypeName, expectedMethodName);
+        }
+    }
+
+    /// <summary>
+    /// 获取当前平台名称
+    /// </summary>
+    private static string GetPlatformName()
+    {
+        if (OperatingSystem.IsWindows())
+            return "Windows";
+        if (OperatingSystem.IsMacOS() || OperatingSystem.IsMacCatalyst())
+            return "macOS";
+        if (OperatingSystem.IsLinux())
+            return "Linux";
+        return "Linux";
+    }
+
+    /// <summary>
+    /// 运行应用程序
+    /// </summary>
+    private static void RunApplication()
+    {
+        _logger?.LogInformation("应用程序启动");
+
+        var platformService = _serviceProvider?.GetService<IPlatformService>();
+        if (platformService != null)
+        {
+            _logger?.LogInformation(
+                "当前平台: {Platform}, OS: {OS}",
+                platformService.PlatformName,
+                platformService.OSVersion);
+        }
+
+        _logger?.LogInformation("应用程序运行中...");
+    }
+
+    /// <summary>
+    /// 获取服务容器
+    /// </summary>
+    public static IServiceProvider? ServiceProvider => _serviceProvider;
 }

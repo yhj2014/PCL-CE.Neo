@@ -7,11 +7,6 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddUIServices(this IServiceCollection services)
     {
-        services.AddSingleton<IClipboardService, Services.ClipboardService>();
-        services.AddSingleton<IDialogService, Services.DialogService>();
-        services.AddSingleton<INotificationService, Services.NotificationService>();
-        services.AddSingleton<IThemeService, Services.ThemeService>();
-        services.AddSingleton<IUIAccessProvider, Services.UIAccessProvider>();
         return services;
     }
 }

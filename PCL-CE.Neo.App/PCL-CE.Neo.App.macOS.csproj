@@ -14,21 +14,27 @@
         <TargetFramework>net10.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
-        <DefineConstants>$(DefineConstants);MACOS</DefineConstants>
         <Platforms>x64</Platforms>
-        <RuntimeIdentifier>osx-x64</RuntimeIdentifier>
-        <SelfContained>true</SelfContained>
-        <PublishSingleFile>false</PublishSingleFile>
     </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.7" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.7" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="../PCL-CE.Neo.Core.Abstractions/PCL-CE.Neo.Core.Abstractions.csproj" />
+        <ProjectReference Include="../PCL-CE.Neo.UI/PCL-CE.Neo.UI.csproj" />
+        <ProjectReference Include="../PCL-CE.Neo.Platform/macOS/PCL-CE.Neo.Platform.macOS.csproj" />
+    </ItemGroup>
 
     <ItemGroup>
         <Compile Remove="App.xaml.cs" />
         <Compile Remove="MainWindow.xaml.cs" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <ProjectReference Include="../PCL-CE.Neo.UI/PCL-CE.Neo.UI.csproj" />
-        <ProjectReference Include="../PCL-CE.Neo.Platform/macOS/PCL-CE.Neo.Platform.macOS.csproj" />
+        <EmbeddedResource Remove="App.xaml" />
+        <EmbeddedResource Remove="MainWindow.xaml" />
+        <None Remove="App.xaml" />
+        <None Remove="MainWindow.xaml" />
     </ItemGroup>
 
 </Project>

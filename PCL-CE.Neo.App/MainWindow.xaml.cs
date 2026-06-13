@@ -1,48 +1,45 @@
 using Microsoft.UI.Xaml;
-using Microsoft.Extensions.DependencyInjection;
-using PCL_CE.Neo.Core;
-using PCL_CE.Neo.UI;
-
-#if WINDOWS
-using PCL_CE.Neo.Platform.Windows;
-#elif MACOS
-using PCL_CE.Neo.Platform.macOS;
-#elif LINUX
-using PCL_CE.Neo.Platform.Linux;
-#endif
+using Microsoft.Extensions.Logging;
 
 namespace PCL_CE.Neo.App;
 
+/// <summary>
+/// Uno Platform 主窗口
+/// </summary>
 public sealed partial class MainWindow : Window
 {
-    public MainWindow()
-    {
-        InitializeComponent();
-        InitializeServices();
-    }
+    private readonly ILogger<MainWindow> _logger;
 
-    private void InitializeServices()
+    /// <summary>
+    /// 构造函数
+    /// </summary>
+    public MainWindow()
     {
         try
         {
-            var services = new ServiceCollection();
-            services.AddCoreServices();
-            services.AddUIServices();
+            InitializeComponent();
 
-#if WINDOWS
-            services.AddWindowsPlatformServices();
-#elif MACOS
-            services.AddMacOSPlatformServices();
-#elif LINUX
-            services.AddLinuxPlatformServices();
-#endif
-            
-            var serviceProvider = services.BuildServiceProvider();
-            StatusText.Text = "✅ 核心服务已初始化";
+            var loggerFactory = Program.ServiceProvider?.GetService(typeof(ILoggerFactory)) as ILoggerFactory;
+            _logger = loggerFactory?.CreateLogger<MainWindow>() ??
+                      LoggerFactory.Create(b => b.AddDebug()).CreateLogger<MainWindow>();
+
+            _logger.LogInformation("主窗口创建完成");
+
+            if (StatusText != null)
+            {
+                StatusText.Text = "✅ 核心架构已就绪";
+            }
         }
-        catch
+        catch (Exception ex)
         {
-            StatusText.Text = "❌ 服务初始化失败";
+            var fallbackLogger = LoggerFactory.Create(b => b.AddDebug()).CreateLogger<MainWindow>();
+            fallbackLogger.LogError(ex, "主窗口初始化时发生错误");
+
+            if (StatusText != null)
+            {
+                StatusText.Text = "❌ 初始化失败";
+            }
+            throw;
         }
     }
 }

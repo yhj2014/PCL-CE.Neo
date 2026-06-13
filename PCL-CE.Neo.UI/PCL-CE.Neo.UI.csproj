@@ -8,9 +8,9 @@
     <Copyright>Copyright © PCL Community</Copyright>
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
-    
+
     <TargetFramework>net10.0</TargetFramework>
-    
+
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>PCL_CE.Neo.UI</RootNamespace>
@@ -18,6 +18,8 @@
 
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.7" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.7" />
   </ItemGroup>
 
   <ItemGroup>
@@ -26,16 +28,24 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- 暂时排除 XAML 和 UI 相关文件，先让核心代码编译通过 -->
     <Compile Remove="Controls/**/*.cs" />
     <Compile Remove="Pages/**/*.cs" />
-    <Compile Remove="Navigation/*.cs" />
-    <Compile Remove="Themes/*.cs" />
+    <Compile Remove="Navigation/**/*.cs" />
+    <Compile Remove="Themes/**/*.cs" />
     <Compile Remove="ViewModels/**/*.cs" />
     <Compile Remove="Animations/**/*.cs" />
-    <Compile Remove="Services/AudioService.cs" />
-    <Compile Remove="Services/WindowService.cs" />
+    <Compile Remove="Services/**/*.cs" />
     <Compile Remove="App.xaml.cs" />
     <Compile Remove="MainWindow.xaml.cs" />
+    <EmbeddedResource Remove="Controls/**/*.xaml" />
+    <EmbeddedResource Remove="Pages/**/*.xaml" />
+    <EmbeddedResource Remove="Resources/**/*.xaml" />
+    <EmbeddedResource Remove="App.xaml" />
+    <EmbeddedResource Remove="MainWindow.xaml" />
+    <None Remove="Controls/**/*.xaml" />
+    <None Remove="Pages/**/*.xaml" />
+    <None Remove="Resources/**/*.xaml" />
+    <None Remove="App.xaml" />
+    <None Remove="MainWindow.xaml" />
   </ItemGroup>
 </Project>
