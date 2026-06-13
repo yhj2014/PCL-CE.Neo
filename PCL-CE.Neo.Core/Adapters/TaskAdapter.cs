@@ -17,6 +17,10 @@ public class TaskAdapter : ITaskAdapter
     public IReadOnlyList<ITaskInfo> RunningTasks => _tasks.Values.Where(t => t.State == Abstractions.TaskState.Running).ToList();
     public ITaskInfo? CurrentTask => RunningTasks.FirstOrDefault();
 
+    public TaskAdapter() : this(Microsoft.Extensions.Logging.Abstractions.NullLogger<TaskAdapter>.Instance)
+    {
+    }
+
     public TaskAdapter(ILogger<TaskAdapter> logger)
     {
         _logger = logger;

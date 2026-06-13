@@ -7,6 +7,7 @@ namespace PCL_CE.Neo.Platform.Linux;
 public class LinuxClipboardService : IClipboardService
 {
     private readonly ILogger<LinuxClipboardService> _logger;
+    private string? _cachedText;
 
     public LinuxClipboardService() : this(Microsoft.Extensions.Logging.Abstractions.NullLogger<LinuxClipboardService>.Instance)
     {
@@ -64,8 +65,8 @@ public class LinuxClipboardService : IClipboardService
             var tool = FindClipboardTool();
             if (string.IsNullOrEmpty(tool))
             {
-                _logger.LogWarning("No clipboard tool available (xclip/xsel not found)");
-                return null;
+                _logger.LogWarning("No clipboard tool available (xclip/xsel not found), using cache");
+                return _cachedText;
             }
 
             var args = tool == "xclip"
@@ -88,19 +89,22 @@ public class LinuxClipboardService : IClipboardService
                 process.WaitForExit(5000);
 
                 _logger.LogDebug("Clipboard read: {Length} chars", text.Length);
-                return text;
+                return string.IsNullOrEmpty(text) ? _cachedText : text;
             }
+
+            return _cachedText;
         }
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Failed to read clipboard text");
         }
 
-        return null;
+        return _cachedText;
     }
 
     public void SetText(string text)
     {
+        _cachedText = text;
         try
         {
             if (text == null)
@@ -112,7 +116,7 @@ public class LinuxClipboardService : IClipboardService
             var tool = FindClipboardTool();
             if (string.IsNullOrEmpty(tool))
             {
-                _logger.LogWarning("No clipboard tool available, ignoring SetText");
+                _logger.LogWarning("No clipboard tool available, cached in memory only");
                 return;
             }
 
@@ -240,6 +244,7 @@ public class LinuxClipboardService : IClipboardService
 
     public void Clear()
     {
+        _cachedText = null;
         try
         {
             var tool = FindClipboardTool();

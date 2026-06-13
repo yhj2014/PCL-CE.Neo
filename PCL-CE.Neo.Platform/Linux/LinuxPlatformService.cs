@@ -146,11 +146,13 @@ public class LinuxPlatformService : IPlatformService
             var xdgDataHome = Environment.GetEnvironmentVariable("XDG_DATA_HOME");
             if (!string.IsNullOrWhiteSpace(xdgDataHome) && Directory.Exists(xdgDataHome))
             {
-                return xdgDataHome;
+                var pclPath = Path.Combine(xdgDataHome, "PCL-CE.Neo");
+                Directory.CreateDirectory(pclPath);
+                return pclPath;
             }
 
             var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            var fallback = Path.Combine(home, ".local", "share");
+            var fallback = Path.Combine(home, ".local", "share", "PCL-CE.Neo");
             Directory.CreateDirectory(fallback);
             _logger.LogDebug("LocalApplicationData path: {Path}", fallback);
             return fallback;
@@ -159,7 +161,7 @@ public class LinuxPlatformService : IPlatformService
         {
             _logger.LogWarning(ex, "Failed to get local app data path");
             var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            var fallback = Path.Combine(home, ".local", "share");
+            var fallback = Path.Combine(home, ".local", "share", "PCL-CE.Neo");
             Directory.CreateDirectory(fallback);
             return fallback;
         }

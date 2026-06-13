@@ -10,6 +10,7 @@ using PCL_CE.Neo.Core.Link;
 using PCL_CE.Neo.Core.Minecraft;
 using PCL_CE.Neo.Core.Network;
 using TaskManagerImpl = PCL_CE.Neo.Core.TaskManager.TaskManager;
+using TaskManagerInterface = PCL_CE.Neo.Core.TaskManager.ITaskManager;
 
 namespace PCL_CE.Neo.Core;
 
@@ -17,8 +18,8 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddCoreServices(this IServiceCollection services)
     {
-        // 添加日志服务（简化，不依赖完整 Logging 包）
-        services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
+        // 添加日志服务（简化，使用 NullLogger，不依赖完整 Logging 包）
+        services.AddSingleton(typeof(Microsoft.Extensions.Logging.ILogger<>), typeof(NullLogger<>));
 
         services.AddSingleton<IConfigService, ConfigService>();
         services.AddSingleton<IDatabaseService, DatabaseService>();
@@ -26,6 +27,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IDownloadService, DownloadService>();
         // 用工厂方法注册 LifecycleManager，避免 IServiceCollection 依赖
         services.AddSingleton<ILifecycleManager>(sp => new LifecycleManager(sp));
+        services.AddSingleton<TaskManagerInterface, TaskManagerImpl>();
         services.AddSingleton<IJavaManager, JavaManager>();
         services.AddSingleton<IGameLauncher, GameLauncher>();
         services.AddSingleton<ILinkService, LinkService>();
@@ -35,6 +37,8 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddCoreAdapters(this IServiceCollection services)
     {
+        services.AddSingleton(typeof(Microsoft.Extensions.Logging.ILogger<>), typeof(NullLogger<>));
+
         services.AddSingleton<IApplicationAdapter, ApplicationAdapter>();
         services.AddSingleton<IConfigAdapter, ConfigAdapter>();
         services.AddSingleton<IPathsAdapter, PathsAdapter>();

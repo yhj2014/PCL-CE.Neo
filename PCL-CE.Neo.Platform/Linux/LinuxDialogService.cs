@@ -269,8 +269,8 @@ public class LinuxDialogService : IDialogService
             var tool = FindDialogTool();
             if (string.IsNullOrEmpty(tool))
             {
-                _logger.LogWarning("No dialog tool available, treating as confirmation");
-                return true;
+                _logger.LogWarning("No dialog tool available, treating as not confirmed");
+                return false;
             }
 
             var args = tool == "zenity"
