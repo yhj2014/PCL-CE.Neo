@@ -9,6 +9,8 @@ public class WindowsPlatformService : IPlatformService
 {
     private readonly ILogger<WindowsPlatformService> _logger;
 
+    public WindowsPlatformService() : this(Microsoft.Extensions.Logging.Abstractions.NullLogger<WindowsPlatformService>.Instance) { }
+
     public WindowsPlatformService(ILogger<WindowsPlatformService> logger)
     {
         _logger = logger;
@@ -153,7 +155,7 @@ public class WindowsPlatformService : IPlatformService
         try
         {
             var basePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            var path = Path.Combine(basePath, "PCL-CE.Neo", "GameData");
+            var path = Path.Combine(basePath, ".minecraft");
             Directory.CreateDirectory(path);
             _logger.LogDebug("GameData path: {Path}", path);
             return path;
@@ -161,7 +163,7 @@ public class WindowsPlatformService : IPlatformService
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Failed to create game data path");
-            var fallback = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "PCL-CE.Neo", "GameData");
+            var fallback = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".minecraft");
             Directory.CreateDirectory(fallback);
             return fallback;
         }

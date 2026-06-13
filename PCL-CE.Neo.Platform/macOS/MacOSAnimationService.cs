@@ -9,6 +9,8 @@ public class MacOSAnimationService : IAnimationService
     private readonly ILogger<MacOSAnimationService> _logger;
     private readonly ConcurrentDictionary<object, CancellationTokenSource> _activeAnimations;
 
+    public MacOSAnimationService() : this(Microsoft.Extensions.Logging.Abstractions.NullLogger<MacOSAnimationService>.Instance) { }
+
     public MacOSAnimationService(ILogger<MacOSAnimationService> logger)
     {
         _logger = logger;

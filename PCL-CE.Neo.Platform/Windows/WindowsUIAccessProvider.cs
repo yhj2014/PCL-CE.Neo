@@ -11,6 +11,8 @@ public class WindowsUIAccessProvider : IUIAccessProvider
     private readonly SynchronizationContext _uiContext;
     private readonly int _uiThreadId;
 
+    public WindowsUIAccessProvider() : this(Microsoft.Extensions.Logging.Abstractions.NullLogger<WindowsUIAccessProvider>.Instance) { }
+
     public WindowsUIAccessProvider(ILogger<WindowsUIAccessProvider> logger)
     {
         _logger = logger;

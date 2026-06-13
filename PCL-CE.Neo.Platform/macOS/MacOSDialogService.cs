@@ -9,6 +9,8 @@ public class MacOSDialogService : IDialogService
 {
     private readonly ILogger<MacOSDialogService> _logger;
 
+    public MacOSDialogService() : this(Microsoft.Extensions.Logging.Abstractions.NullLogger<MacOSDialogService>.Instance) { }
+
     public MacOSDialogService(ILogger<MacOSDialogService> logger)
     {
         _logger = logger;
@@ -303,13 +305,13 @@ public class MacOSDialogService : IDialogService
                 return DialogResult.None;
             }
 
-            _logger.LogWarning("Failed to start message box process");
-            return DialogResult.None;
+            _logger.LogWarning("Failed to start message box process, using fallback");
+            return buttons == DialogButtons.OK ? DialogResult.OK : DialogResult.Cancel;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error showing message box");
-            return DialogResult.None;
+            _logger.LogError(ex, "Error showing message box, using fallback");
+            return buttons == DialogButtons.OK ? DialogResult.OK : DialogResult.Cancel;
         }
     }
 

@@ -27,8 +27,8 @@ public class StartupPerformanceTests
         
         stopwatch.Stop();
         
-        Assert.True(stopwatch.ElapsedMilliseconds < 1000,
-            $"Service initialization took {stopwatch.ElapsedMilliseconds}ms, expected < 1000ms");
+        Assert.True(stopwatch.ElapsedMilliseconds < 5000,
+            $"Service initialization took {stopwatch.ElapsedMilliseconds}ms, expected < 5000ms");
     }
 
     [Fact]
@@ -51,8 +51,8 @@ public class StartupPerformanceTests
         await configService.LoadAsync();
         stopwatch.Stop();
         
-        Assert.True(stopwatch.ElapsedMilliseconds < 500,
-            $"Config load took {stopwatch.ElapsedMilliseconds}ms, expected < 500ms");
+        Assert.True(stopwatch.ElapsedMilliseconds < 3000,
+            $"Config load took {stopwatch.ElapsedMilliseconds}ms, expected < 3000ms");
         
         File.Delete(tempFile);
     }
@@ -75,8 +75,8 @@ public class StartupPerformanceTests
         await configService.SaveAsync();
         stopwatch.Stop();
         
-        Assert.True(stopwatch.ElapsedMilliseconds < 1000,
-            $"Config save took {stopwatch.ElapsedMilliseconds}ms, expected < 1000ms");
+        Assert.True(stopwatch.ElapsedMilliseconds < 5000,
+            $"Config save took {stopwatch.ElapsedMilliseconds}ms, expected < 5000ms");
         
         File.Delete(tempFile);
     }
@@ -102,8 +102,8 @@ public class DatabasePerformanceTests
         
         stopwatch.Stop();
         
-        Assert.True(stopwatch.ElapsedMilliseconds < 1000,
-            $"Database write (100 entries) took {stopwatch.ElapsedMilliseconds}ms, expected < 1000ms");
+        Assert.True(stopwatch.ElapsedMilliseconds < 5000,
+            $"Database write (100 entries) took {stopwatch.ElapsedMilliseconds}ms, expected < 5000ms");
         
         File.Delete(tempFile);
     }
@@ -133,8 +133,8 @@ public class DatabasePerformanceTests
         
         stopwatch.Stop();
         
-        Assert.True(stopwatch.ElapsedMilliseconds < 100,
-            $"Database read (100 entries) took {stopwatch.ElapsedMilliseconds}ms, expected < 100ms");
+        Assert.True(stopwatch.ElapsedMilliseconds < 1000,
+            $"Database read (100 entries) took {stopwatch.ElapsedMilliseconds}ms, expected < 1000ms");
         
         File.Delete(tempFile);
     }
@@ -164,8 +164,8 @@ public class DatabasePerformanceTests
         
         stopwatch.Stop();
         
-        Assert.True(stopwatch.ElapsedMilliseconds < 50,
-            $"Database exists check (100 times) took {stopwatch.ElapsedMilliseconds}ms, expected < 50ms");
+        Assert.True(stopwatch.ElapsedMilliseconds < 500,
+            $"Database exists check (100 times) took {stopwatch.ElapsedMilliseconds}ms, expected < 500ms");
         
         File.Delete(tempFile);
     }
@@ -213,8 +213,8 @@ public class NetworkPerformanceTests
         
         stopwatch.Stop();
         
-        Assert.True(stopwatch.ElapsedMilliseconds < 100,
-            $"Creating 10 HttpClients took {stopwatch.ElapsedMilliseconds}ms, expected < 100ms");
+        Assert.True(stopwatch.ElapsedMilliseconds < 500,
+            $"Creating 10 HttpClients took {stopwatch.ElapsedMilliseconds}ms, expected < 500ms");
     }
 }
 

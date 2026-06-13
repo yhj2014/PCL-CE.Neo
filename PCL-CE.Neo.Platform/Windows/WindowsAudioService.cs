@@ -16,6 +16,8 @@ public class WindowsAudioService : IAudioService
 
     public event EventHandler? PlaybackFinished;
 
+    public WindowsAudioService() : this(Microsoft.Extensions.Logging.Abstractions.NullLogger<WindowsAudioService>.Instance) { }
+
     public WindowsAudioService(ILogger<WindowsAudioService> logger)
     {
         _logger = logger;

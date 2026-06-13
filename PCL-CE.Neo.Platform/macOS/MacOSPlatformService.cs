@@ -9,6 +9,8 @@ public class MacOSPlatformService : IPlatformService
 {
     private readonly ILogger<MacOSPlatformService> _logger;
 
+    public MacOSPlatformService() : this(Microsoft.Extensions.Logging.Abstractions.NullLogger<MacOSPlatformService>.Instance) { }
+
     public MacOSPlatformService(ILogger<MacOSPlatformService> logger)
     {
         _logger = logger;
@@ -128,7 +130,8 @@ public class MacOSPlatformService : IPlatformService
         try
         {
             var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            var path = Path.Combine(home, "Library", "Application Support");
+            var path = Path.Combine(home, "Library", "Application Support", "PCL-CE.Neo");
+            Directory.CreateDirectory(path);
             _logger.LogDebug("LocalApplicationData path: {Path}", path);
             return path;
         }
@@ -136,7 +139,8 @@ public class MacOSPlatformService : IPlatformService
         {
             _logger.LogWarning(ex, "Failed to get local app data path");
             var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            var fallback = Path.Combine(home, "Library", "Application Support");
+            var fallback = Path.Combine(home, "Library", "Application Support", "PCL-CE.Neo");
+            Directory.CreateDirectory(fallback);
             return fallback;
         }
     }

@@ -18,6 +18,8 @@ public class WindowsJavaScanner : IJavaScanner
         @"C:\Program Files\BellSoft"
     };
 
+    public WindowsJavaScanner() : this(Microsoft.Extensions.Logging.Abstractions.NullLogger<WindowsJavaScanner>.Instance) { }
+
     public WindowsJavaScanner(ILogger<WindowsJavaScanner> logger)
     {
         _logger = logger;

@@ -12,6 +12,8 @@ public class WindowsThemeService : IThemeService
 
     public event EventHandler? ThemeChanged;
 
+    public WindowsThemeService() : this(Microsoft.Extensions.Logging.Abstractions.NullLogger<WindowsThemeService>.Instance) { }
+
     public WindowsThemeService(ILogger<WindowsThemeService> logger)
     {
         _logger = logger;

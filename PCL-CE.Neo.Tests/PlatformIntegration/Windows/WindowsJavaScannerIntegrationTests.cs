@@ -35,26 +35,23 @@ public class WindowsJavaScannerIntegrationTests
     [Fact]
     public void ScanDirectory_ShouldReturnValidJavaPaths()
     {
-        // Arrange
         var tempDir = Path.Combine(Path.GetTempPath(), "PCL_CE_Neo_Test_Java");
         Directory.CreateDirectory(tempDir);
-        var testBinDir = Path.Combine(tempDir, "bin");
+        var jdkDir = Path.Combine(tempDir, "jdk-17");
+        var testBinDir = Path.Combine(jdkDir, "bin");
         Directory.CreateDirectory(testBinDir);
         var testJavaExe = Path.Combine(testBinDir, "java.exe");
         File.Create(testJavaExe).Dispose();
 
         try
         {
-            // Act
             var javaPaths = _javaScanner.ScanDirectory(tempDir).ToList();
 
-            // Assert
             javaPaths.Should().NotBeNull();
-            javaPaths.Should().Contain(testJavaExe);
+            javaPaths.Should().Contain(jdkDir);
         }
         finally
         {
-            // Cleanup
             if (Directory.Exists(tempDir))
             {
                 Directory.Delete(tempDir, true);
@@ -65,7 +62,6 @@ public class WindowsJavaScannerIntegrationTests
     [Fact]
     public void IsValidJavaPath_ShouldReturnTrueForValidJavaPath()
     {
-        // Arrange
         var tempDir = Path.Combine(Path.GetTempPath(), "PCL_CE_Neo_Test_Java_Valid");
         Directory.CreateDirectory(tempDir);
         var testBinDir = Path.Combine(tempDir, "bin");
@@ -75,10 +71,8 @@ public class WindowsJavaScannerIntegrationTests
 
         try
         {
-            // Act
-            var isValid = _javaScanner.IsValidJavaPath(testJavaExe);
+            var isValid = _javaScanner.IsValidJavaPath(tempDir);
 
-            // Assert
             isValid.Should().BeTrue();
         }
         finally

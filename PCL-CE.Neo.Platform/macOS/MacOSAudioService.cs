@@ -17,6 +17,8 @@ public class MacOSAudioService : IAudioService
 
     public event EventHandler? PlaybackFinished;
 
+    public MacOSAudioService() : this(Microsoft.Extensions.Logging.Abstractions.NullLogger<MacOSAudioService>.Instance) { }
+
     public MacOSAudioService(ILogger<MacOSAudioService> logger)
     {
         _logger = logger;

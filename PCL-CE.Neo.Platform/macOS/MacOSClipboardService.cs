@@ -11,6 +11,8 @@ public class MacOSClipboardService : IClipboardService
     private string? _cachedText;
     private byte[]? _cachedImage;
 
+    public MacOSClipboardService() : this(Microsoft.Extensions.Logging.Abstractions.NullLogger<MacOSClipboardService>.Instance) { }
+
     public MacOSClipboardService(ILogger<MacOSClipboardService> logger)
     {
         _logger = logger;
@@ -80,6 +82,7 @@ public class MacOSClipboardService : IClipboardService
             }
 
             _logger.LogDebug("Setting text to clipboard, length: {Length}", text.Length);
+            _cachedText = text;
             var startInfo = new ProcessStartInfo
             {
                 FileName = "pbcopy",
@@ -99,7 +102,6 @@ public class MacOSClipboardService : IClipboardService
                     writer.Write(text);
                 }
                 process.WaitForExit(3000);
-                _cachedText = text;
                 _logger.LogInformation("Text successfully set to clipboard, length: {Length}", text.Length);
             }
         }
@@ -242,6 +244,8 @@ end try";
         try
         {
             _logger.LogDebug("Clearing clipboard");
+            _cachedText = null;
+            _cachedImage = null;
             var startInfo = new ProcessStartInfo
             {
                 FileName = "pbcopy",
@@ -259,8 +263,6 @@ end try";
                 process.StandardInput.Close();
                 process.WaitForExit(2000);
             }
-            _cachedText = string.Empty;
-            _cachedImage = null;
             _logger.LogInformation("Clipboard cleared");
         }
         catch (Exception ex)

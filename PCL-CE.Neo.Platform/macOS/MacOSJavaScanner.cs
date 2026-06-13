@@ -17,6 +17,8 @@ public class MacOSJavaScanner : IJavaScanner
         "/usr/lib/jvm"
     };
 
+    public MacOSJavaScanner() : this(Microsoft.Extensions.Logging.Abstractions.NullLogger<MacOSJavaScanner>.Instance) { }
+
     public MacOSJavaScanner(ILogger<MacOSJavaScanner> logger)
     {
         _logger = logger;

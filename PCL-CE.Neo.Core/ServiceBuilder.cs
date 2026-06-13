@@ -1,6 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using PCL_CE.Neo.Core.Abstractions;
 using System.Reflection;
+using MELogging = Microsoft.Extensions.Logging;
+using MELA = Microsoft.Extensions.Logging.Abstractions;
 
 namespace PCL_CE.Neo.Core;
 
@@ -28,6 +30,7 @@ public static class ServiceBuilder
     public static IServiceCollection AddPlatformServices(string platform)
     {
         var serviceCollection = Services.AddPCLCoreServices();
+        serviceCollection.AddSingleton(typeof(MELogging.ILogger<>), typeof(MELA.NullLogger<>));
         platform = platform.ToLowerInvariant();
         
         return platform switch

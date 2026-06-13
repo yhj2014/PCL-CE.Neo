@@ -1,7 +1,8 @@
 using Xunit;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using PCL_CE.Neo.Core.Abstractions;
-using PCL_CE.Neo.Platform.MacOS;
+using PCL_CE.Neo.Platform.macOS;
 
 namespace PCL_CE.Neo.Tests.PlatformIntegration.MacOS;
 

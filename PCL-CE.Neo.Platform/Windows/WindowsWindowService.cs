@@ -17,6 +17,8 @@ public class WindowsWindowService : IWindowService
     private bool _isMaximized;
     private bool _isTopmost;
 
+    public WindowsWindowService() : this(Microsoft.Extensions.Logging.Abstractions.NullLogger<WindowsWindowService>.Instance) { }
+
     public WindowsWindowService(ILogger<WindowsWindowService> logger)
     {
         _logger = logger;
