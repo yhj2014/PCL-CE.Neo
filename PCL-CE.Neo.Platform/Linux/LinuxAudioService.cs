@@ -15,6 +15,10 @@ public class LinuxAudioService : IAudioService
 
     public event EventHandler? PlaybackFinished;
 
+    public LinuxAudioService() : this(Microsoft.Extensions.Logging.Abstractions.NullLogger<LinuxAudioService>.Instance)
+    {
+    }
+
     public LinuxAudioService(ILogger<LinuxAudioService> logger)
     {
         _logger = logger;

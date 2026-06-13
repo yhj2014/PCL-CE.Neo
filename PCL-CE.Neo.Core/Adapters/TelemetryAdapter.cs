@@ -20,6 +20,13 @@ public class TelemetryAdapter : ITelemetryAdapter
 
     public bool IsEnabled => _isEnabled;
 
+    public TelemetryAdapter() : this(
+        Microsoft.Extensions.Logging.Abstractions.NullLogger<TelemetryAdapter>.Instance,
+        new ConfigAdapter(),
+        new NetworkAdapter())
+    {
+    }
+
     public TelemetryAdapter(
         ILogger<TelemetryAdapter> logger,
         IConfigAdapter config,
@@ -28,6 +35,11 @@ public class TelemetryAdapter : ITelemetryAdapter
         _logger = logger;
         _config = config;
         _network = network;
+    }
+
+    public void TrackException(Exception ex, string? message = null)
+    {
+        _errorQueue.Enqueue(new TelemetryError { Name = ex.GetType().Name, Message = message ?? ex.Message, Timestamp = DateTime.UtcNow });
     }
 
     public void Initialize()
@@ -247,6 +259,8 @@ public class TelemetryEvent
 
 public class TelemetryError
 {
+    public string Name { get; init; } = "";
+    public DateTime Timestamp { get; init; }
     public Exception? Exception { get; init; }
     public string? Message { get; init; }
     public Dictionary<string, object?> Properties { get; init; } = new();

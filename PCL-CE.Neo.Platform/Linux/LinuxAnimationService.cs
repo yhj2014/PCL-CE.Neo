@@ -8,6 +8,10 @@ public class LinuxAnimationService : IAnimationService
     private readonly ILogger<LinuxAnimationService> _logger;
     private readonly Dictionary<object, CancellationTokenSource> _activeAnimations = new();
 
+    public LinuxAnimationService() : this(Microsoft.Extensions.Logging.Abstractions.NullLogger<LinuxAnimationService>.Instance)
+    {
+    }
+
     public LinuxAnimationService(ILogger<LinuxAnimationService> logger)
     {
         _logger = logger;

@@ -11,6 +11,10 @@ public class LinuxThemeService : IThemeService
 
     public event EventHandler? ThemeChanged;
 
+    public LinuxThemeService() : this(Microsoft.Extensions.Logging.Abstractions.NullLogger<LinuxThemeService>.Instance)
+    {
+    }
+
     public LinuxThemeService(ILogger<LinuxThemeService> logger)
     {
         _logger = logger;

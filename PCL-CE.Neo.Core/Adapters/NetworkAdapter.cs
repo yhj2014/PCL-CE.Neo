@@ -17,12 +17,50 @@ public class NetworkAdapter : INetworkAdapter
 
     public event Action<NetworkLogEntry>? LogReceived;
 
+    public NetworkAdapter() : this(
+        Microsoft.Extensions.Logging.Abstractions.NullLogger<NetworkAdapter>.Instance,
+        new PathsAdapter())
+    {
+    }
+
     public NetworkAdapter(ILogger<NetworkAdapter> logger, IPathsAdapter pathsAdapter)
     {
         _logger = logger;
         _pathsAdapter = pathsAdapter;
         InitializeHttpClient();
     }
+
+    public bool IsOnline => true;
+
+    public async Task<bool> CheckConnection()
+    {
+        try
+        {
+            var result = await GetAsync("https://www.google.com");
+            return !string.IsNullOrEmpty(result);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public async Task<bool> CheckConnection(string url)
+    {
+        try
+        {
+            var result = await GetAsync(url);
+            return !string.IsNullOrEmpty(result);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public HttpClient CreateHttpClient() => _httpClient ?? new HttpClient();
+
+    public Task<string> GetAsync(string url) => GetAsync(url, null);
 
     public async Task<string> GetAsync(string url, Dictionary<string, string>? headers = null)
     {

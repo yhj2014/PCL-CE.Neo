@@ -55,6 +55,38 @@ public abstract class TaskBase : ITask
 
     public abstract Task StartAsync();
 
+    private Task? _runningTask;
+
+    public void Start()
+    {
+        SetState(TaskState.Running);
+        _runningTask = Task.Run(async () =>
+        {
+            try
+            {
+                await StartAsync();
+                if (State == TaskState.Running)
+                {
+                    SetState(TaskState.Completed);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                if (State != TaskState.Cancelled)
+                {
+                    SetState(TaskState.Cancelled);
+                }
+            }
+            catch (Exception ex)
+            {
+                if (State != TaskState.Cancelled)
+                {
+                    Fail("Task failed", ex);
+                }
+            }
+        });
+    }
+
     public virtual void Pause()
     {
         if (State == TaskState.Running)

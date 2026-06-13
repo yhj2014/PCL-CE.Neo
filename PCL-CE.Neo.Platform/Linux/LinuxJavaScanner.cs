@@ -17,6 +17,10 @@ public class LinuxJavaScanner : IJavaScanner
         "/usr/local/java"
     };
 
+    public LinuxJavaScanner() : this(Microsoft.Extensions.Logging.Abstractions.NullLogger<LinuxJavaScanner>.Instance)
+    {
+    }
+
     public LinuxJavaScanner(ILogger<LinuxJavaScanner> logger)
     {
         _logger = logger;

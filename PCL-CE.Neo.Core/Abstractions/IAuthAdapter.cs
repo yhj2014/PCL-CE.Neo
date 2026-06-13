@@ -19,21 +19,23 @@ public enum AuthProvider
 
 public record AuthToken
 {
-    public required string AccessToken { get; init; }
+    public string AccessToken { get; init; } = "";
     public string? RefreshToken { get; init; }
-    public required DateTime ExpiresAt { get; init; }
+    public DateTime ExpiresAt { get; init; }
     public string? TokenType { get; init; }
     public string? Xuid { get; init; }
 }
 
 public record UserProfile
 {
-    public required string Id { get; init; }
-    public required string Username { get; init; }
+    public string Id { get; init; } = "";
+    public string Username { get; init; } = "";
     public string? DisplayName { get; init; }
     public string? AvatarUrl { get; init; }
+    public string? SkinUrl { get; init; }
+    public string? CapeUrl { get; init; }
     public DateTime? ExpiresAt { get; init; }
-    public AuthProvider Provider { get; init; }
+    public AuthProvider Provider { get; init; } = AuthProvider.Offline;
     public Dictionary<string, string> Properties { get; init; } = new();
     public bool IsSelected { get; init; }
 }

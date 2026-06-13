@@ -9,6 +9,10 @@ public class LinuxPlatformService : IPlatformService
 {
     private readonly ILogger<LinuxPlatformService> _logger;
 
+    public LinuxPlatformService() : this(Microsoft.Extensions.Logging.Abstractions.NullLogger<LinuxPlatformService>.Instance)
+    {
+    }
+
     public LinuxPlatformService(ILogger<LinuxPlatformService> logger)
     {
         _logger = logger;

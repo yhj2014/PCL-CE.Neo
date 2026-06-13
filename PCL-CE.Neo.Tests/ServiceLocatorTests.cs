@@ -5,7 +5,7 @@ using PCL_CE.Neo.Core.Abstractions;
 using PCL_CE.Neo.Core;
 using PclLogLevel = PCL_CE.Neo.Core.Abstractions.LogLevel;
 
-namespace PCL.CE.Neo.Tests;
+namespace PCL_CE.Neo.Tests;
 
 public class ServiceLocatorTests
 {

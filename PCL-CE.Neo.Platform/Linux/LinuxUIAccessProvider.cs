@@ -10,6 +10,10 @@ public class LinuxUIAccessProvider : IUIAccessProvider
     private readonly SynchronizationContext? _mainContext;
     private readonly int _mainThreadId;
 
+    public LinuxUIAccessProvider() : this(Microsoft.Extensions.Logging.Abstractions.NullLogger<LinuxUIAccessProvider>.Instance)
+    {
+    }
+
     public LinuxUIAccessProvider(ILogger<LinuxUIAccessProvider> logger)
     {
         _logger = logger;

@@ -28,6 +28,14 @@ public class AuthAdapter : IAuthAdapter
     public bool IsLoggedIn => _currentState == AuthState.LoggedIn && _currentUser != null;
     public string? AccessToken => _currentToken?.AccessToken;
 
+    public AuthAdapter() : this(
+        Microsoft.Extensions.Logging.Abstractions.NullLogger<AuthAdapter>.Instance,
+        new NetworkAdapter(),
+        new ConfigAdapter(),
+        new PathsAdapter())
+    {
+    }
+
     public AuthAdapter(
         ILogger<AuthAdapter> logger,
         INetworkAdapter network,

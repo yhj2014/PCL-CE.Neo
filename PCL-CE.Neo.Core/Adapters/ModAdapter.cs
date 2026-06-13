@@ -16,6 +16,15 @@ public class ModAdapter : IModAdapter
     public event Action<ModInfo>? ModRemoved;
     public event Action<ModInfo>? ModUpdated;
 
+    public ModAdapter() : this(
+        Microsoft.Extensions.Logging.Abstractions.NullLogger<ModAdapter>.Instance,
+        new PathsAdapter(),
+        new DatabaseAdapter(),
+        new DownloadAdapter(),
+        new NetworkAdapter())
+    {
+    }
+
     public ModAdapter(
         ILogger<ModAdapter> logger,
         IPathsAdapter paths,

@@ -50,16 +50,25 @@ public interface ILifecycleManager
 
 public class LifecycleManager : ILifecycleManager, IDisposable
 {
-    private readonly IServiceCollection _services;
+    private readonly IServiceCollection? _services;
     private readonly Dictionary<string, IService> _runningServices = new();
     private readonly SemaphoreSlim _lock = new(1, 1);
     private IServiceProvider? _serviceProvider;
 
     public IServiceProvider Services => _serviceProvider ?? throw new InvalidOperationException("Not started");
 
+    public LifecycleManager() : this(new ServiceCollection())
+    {
+    }
+
     public LifecycleManager(IServiceCollection services)
     {
         _services = services;
+    }
+
+    public LifecycleManager(IServiceProvider serviceProvider)
+    {
+        _serviceProvider = serviceProvider;
     }
 
     public event Action<string>? ServiceStarted;
@@ -68,9 +77,12 @@ public class LifecycleManager : ILifecycleManager, IDisposable
 
     public async Task StartAsync()
     {
-        _serviceProvider = _services.BuildServiceProvider();
-        
-        var services = _serviceProvider.GetServices<IService>();
+        if (_services != null && _serviceProvider == null)
+        {
+            _serviceProvider = _services.BuildServiceProvider();
+        }
+
+        var services = _serviceProvider!.GetServices<IService>();
         foreach (var service in services)
         {
             try

@@ -17,6 +17,10 @@ public class LinuxWindowService : IWindowService
     private bool _isMaximized;
     private bool _isTopmost;
 
+    public LinuxWindowService() : this(Microsoft.Extensions.Logging.Abstractions.NullLogger<LinuxWindowService>.Instance)
+    {
+    }
+
     public LinuxWindowService(ILogger<LinuxWindowService> logger)
     {
         _logger = logger;

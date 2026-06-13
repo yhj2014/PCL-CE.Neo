@@ -8,6 +8,10 @@ public class LinuxClipboardService : IClipboardService
 {
     private readonly ILogger<LinuxClipboardService> _logger;
 
+    public LinuxClipboardService() : this(Microsoft.Extensions.Logging.Abstractions.NullLogger<LinuxClipboardService>.Instance)
+    {
+    }
+
     public LinuxClipboardService(ILogger<LinuxClipboardService> logger)
     {
         _logger = logger;

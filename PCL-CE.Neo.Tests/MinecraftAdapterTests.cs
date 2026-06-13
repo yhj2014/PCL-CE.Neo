@@ -1,7 +1,7 @@
 using Xunit;
 using PCL_CE.Neo.Core.Abstractions;
 
-namespace PCL.CE.Neo.Tests;
+namespace PCL_CE.Neo.Tests;
 
 public class MinecraftAdapterTests
 {

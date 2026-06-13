@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 using PCL_CE.Neo.Core.Abstractions;
 using PCL_CE.Neo.Core.Adapters;
 using PCL_CE.Neo.Core.Configuration;
@@ -16,12 +17,15 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddCoreServices(this IServiceCollection services)
     {
+        // 添加日志服务（简化，不依赖完整 Logging 包）
+        services.AddSingleton(typeof(ILogger<>), typeof(NullLogger<>));
+
         services.AddSingleton<IConfigService, ConfigService>();
         services.AddSingleton<IDatabaseService, DatabaseService>();
         services.AddSingleton<INetworkService, NetworkService>();
         services.AddSingleton<IDownloadService, DownloadService>();
-        services.AddSingleton<ILifecycleManager, LifecycleManager>();
-        // services.AddSingleton<ITaskManager, TaskManagerImpl>();
+        // 用工厂方法注册 LifecycleManager，避免 IServiceCollection 依赖
+        services.AddSingleton<ILifecycleManager>(sp => new LifecycleManager(sp));
         services.AddSingleton<IJavaManager, JavaManager>();
         services.AddSingleton<IGameLauncher, GameLauncher>();
         services.AddSingleton<ILinkService, LinkService>();

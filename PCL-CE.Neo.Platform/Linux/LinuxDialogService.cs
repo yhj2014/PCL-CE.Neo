@@ -8,6 +8,10 @@ public class LinuxDialogService : IDialogService
 {
     private readonly ILogger<LinuxDialogService> _logger;
 
+    public LinuxDialogService() : this(Microsoft.Extensions.Logging.Abstractions.NullLogger<LinuxDialogService>.Instance)
+    {
+    }
+
     public LinuxDialogService(ILogger<LinuxDialogService> logger)
     {
         _logger = logger;

@@ -21,10 +21,12 @@ public interface IModAdapter
 
 public record ModInfo
 {
-    public required string Id { get; init; }
-    public required string Name { get; init; }
-    public required string FilePath { get; init; }
-    public required ModSource Source { get; init; }
+    public string Id { get; init; } = "";
+    public string Name { get; init; } = "";
+    public string FilePath { get; init; } = "";
+    public ModSource Source { get; init; } = ModSource.Local;
+    public string? Description { get; init; }
+    public string? IconUrl { get; init; }
     public string? RemoteId { get; init; }
     public string? Version { get; init; }
     public string? LoaderType { get; init; }
@@ -58,7 +60,8 @@ public record ModSearchQuery
     public string? LoaderType { get; init; }
     public ModSource? Source { get; init; }
     public int Page { get; init; } = 1;
-    public int PageSize { get; init; } = 20;
+    public int PageSize { get; init; } = 10;
+    public int Offset { get; init; }
     public ModSearchSortBy SortBy { get; init; } = ModSearchSortBy.Relevance;
 }
 
@@ -73,18 +76,26 @@ public enum ModSearchSortBy
 
 public record ModDownloadRequest
 {
-    public required string Url { get; init; }
-    public required string InstanceId { get; init; }
-    public required ModSource Source { get; init; }
-    public required string ModId { get; init; }
+    public string Url { get; init; } = "";
+    public string InstanceId { get; init; } = "";
+    public ModSource Source { get; init; } = ModSource.Local;
+    public string ModId { get; init; } = "";
+    public string? Name { get; init; }
+    public string? FileName { get; init; }
     public string? ExpectedHash { get; init; }
 }
 
-public record ModUpdateInfo
+public class ModUpdateInfo
 {
-    public required string ModId { get; init; }
+    private string? _latestVersion;
+
+    public string ModId { get; init; } = "";
     public string? CurrentVersion { get; init; }
-    public string? LatestVersion { get; init; }
+    public string? LatestVersion
+    {
+        get => _latestVersion ?? CurrentVersion;
+        init => _latestVersion = value;
+    }
     public string? DownloadUrl { get; init; }
     public bool IsUpdateAvailable { get; init; }
 }

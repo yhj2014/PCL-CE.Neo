@@ -8,6 +8,13 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddLinuxPlatformServices(this IServiceCollection services)
     {
+        // 添加日志服务
+        services.AddLogging(builder =>
+        {
+            builder.AddDebug();
+            builder.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Trace);
+        });
+
         services.AddSingleton<IPlatformService>(sp => new LinuxPlatformService(
             sp.GetRequiredService<ILogger<LinuxPlatformService>>()));
 

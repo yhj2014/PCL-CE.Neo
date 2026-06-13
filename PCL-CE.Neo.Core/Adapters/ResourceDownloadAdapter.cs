@@ -11,6 +11,14 @@ public class ResourceDownloadAdapter : IResourceDownloadAdapter
     private readonly INetworkAdapter _network;
     private readonly IPathsAdapter _paths;
 
+    public ResourceDownloadAdapter() : this(
+        Microsoft.Extensions.Logging.Abstractions.NullLogger<ResourceDownloadAdapter>.Instance,
+        new DownloadAdapter(),
+        new NetworkAdapter(),
+        new PathsAdapter())
+    {
+    }
+
     public ResourceDownloadAdapter(
         ILogger<ResourceDownloadAdapter> logger,
         IDownloadAdapter download,
@@ -21,6 +29,16 @@ public class ResourceDownloadAdapter : IResourceDownloadAdapter
         _download = download;
         _network = network;
         _paths = paths;
+    }
+
+    public async Task<ResourceDownloadResult> DownloadResource(string resourceId, string destination)
+    {
+        return await DownloadVersionAsync(resourceId);
+    }
+
+    public void CancelDownload()
+    {
+        // 简化实现
     }
 
     public async Task<ResourceDownloadResult> DownloadVersionAsync(string versionId, IProgress<double>? progress = null)

@@ -8,6 +8,10 @@ public class LinuxNotificationService : INotificationService
 {
     private readonly ILogger<LinuxNotificationService> _logger;
 
+    public LinuxNotificationService() : this(Microsoft.Extensions.Logging.Abstractions.NullLogger<LinuxNotificationService>.Instance)
+    {
+    }
+
     public LinuxNotificationService(ILogger<LinuxNotificationService> logger)
     {
         _logger = logger;

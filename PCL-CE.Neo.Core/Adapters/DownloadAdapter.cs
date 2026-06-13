@@ -14,6 +14,13 @@ public class DownloadAdapter : IDownloadAdapter
 
     public event Action<DownloadProgress>? ProgressChanged;
 
+    public DownloadAdapter() : this(
+        Microsoft.Extensions.Logging.Abstractions.NullLogger<DownloadAdapter>.Instance,
+        new PathsAdapter(),
+        new NetworkAdapter())
+    {
+    }
+
     public DownloadAdapter(
         ILogger<DownloadAdapter> logger,
         IPathsAdapter pathsAdapter,

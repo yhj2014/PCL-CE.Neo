@@ -24,6 +24,13 @@ public class LinkAdapter : ILinkAdapter
     public string? RoomCode => _roomCode;
     public IReadOnlyList<PlayerInfo> Players => _players.Values.ToList();
 
+    public LinkAdapter() : this(
+        Microsoft.Extensions.Logging.Abstractions.NullLogger<LinkAdapter>.Instance,
+        new NetworkAdapter(),
+        new ConfigAdapter())
+    {
+    }
+
     public LinkAdapter(
         ILogger<LinkAdapter> logger,
         INetworkAdapter network,
@@ -32,6 +39,46 @@ public class LinkAdapter : ILinkAdapter
         _logger = logger;
         _network = network;
         _config = config;
+    }
+
+    public bool IsConnected => _state == LinkState.Connected;
+
+    public void Connect(string server, int port)
+    {
+        SetState(LinkState.Connected);
+    }
+
+    public async Task<bool> Connect()
+    {
+        try
+        {
+            await CreateRoomAsync();
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public void Disconnect()
+    {
+        SetState(LinkState.Disconnected);
+        _players.Clear();
+        _roomCode = null;
+    }
+
+    public async Task<bool> DisconnectAsync()
+    {
+        try
+        {
+            Disconnect();
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     public async Task<string> CreateRoomAsync()
