@@ -1,6 +1,6 @@
-<Project Sdk="Uno.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net10.0-desktop</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyTitle>PCL-CE.Neo.App.Linux</AssemblyTitle>
@@ -16,9 +16,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Uno.WinUI.Runtime.Skia.Gtk" Version="5.5.0-dev.465" />
+    <PackageReference Include="Uno.WinUI.Runtime.Skia.X11" Version="5.5.0-dev.465" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.7" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.7" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Program.Windows.cs" />
+    <Compile Remove="Program.macOS.cs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,4 +1,5 @@
 using System;
+using Uno.UI.Runtime.Skia.MacOS;
 using UINeoApp = PCL_CE.Neo.UI.App;
 
 namespace PCL_CE.Neo.AppHost;
@@ -9,7 +10,7 @@ public static class Program
     {
         try
         {
-            var host = new Uno.UI.Runtime.Skia.MacOS.MacSkiaHost(() => new UINeoApp());
+            var host = new MacSkiaHost(() => new UINeoApp());
             host.Run();
         }
         catch (Exception ex)
