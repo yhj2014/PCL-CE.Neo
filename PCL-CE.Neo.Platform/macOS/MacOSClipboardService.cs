@@ -11,6 +11,10 @@ public class MacOSClipboardService : IClipboardService
     private string? _cachedText;
     private byte[]? _cachedImage;
 
+    public MacOSClipboardService() : this(Microsoft.Extensions.Logging.Abstractions.NullLogger<MacOSClipboardService>.Instance)
+    {
+    }
+
     public MacOSClipboardService(ILogger<MacOSClipboardService> logger)
     {
         _logger = logger;

@@ -9,6 +9,10 @@ public class MacOSPlatformService : IPlatformService
 {
     private readonly ILogger<MacOSPlatformService> _logger;
 
+    public MacOSPlatformService() : this(Microsoft.Extensions.Logging.Abstractions.NullLogger<MacOSPlatformService>.Instance)
+    {
+    }
+
     public MacOSPlatformService(ILogger<MacOSPlatformService> logger)
     {
         _logger = logger;

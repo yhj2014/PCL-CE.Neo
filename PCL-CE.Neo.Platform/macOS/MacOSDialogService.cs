@@ -9,6 +9,10 @@ public class MacOSDialogService : IDialogService
 {
     private readonly ILogger<MacOSDialogService> _logger;
 
+    public MacOSDialogService() : this(Microsoft.Extensions.Logging.Abstractions.NullLogger<MacOSDialogService>.Instance)
+    {
+    }
+
     public MacOSDialogService(ILogger<MacOSDialogService> logger)
     {
         _logger = logger;

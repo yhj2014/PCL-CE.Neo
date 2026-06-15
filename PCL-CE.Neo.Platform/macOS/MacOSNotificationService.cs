@@ -10,6 +10,10 @@ public class MacOSNotificationService : INotificationService
     private readonly ILogger<MacOSNotificationService> _logger;
     private int _notificationCount;
 
+    public MacOSNotificationService() : this(Microsoft.Extensions.Logging.Abstractions.NullLogger<MacOSNotificationService>.Instance)
+    {
+    }
+
     public MacOSNotificationService(ILogger<MacOSNotificationService> logger)
     {
         _logger = logger;

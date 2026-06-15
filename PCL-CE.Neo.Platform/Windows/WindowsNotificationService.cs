@@ -10,6 +10,10 @@ public class WindowsNotificationService : INotificationService
     private readonly ILogger<WindowsNotificationService> _logger;
     private int _notificationCount;
 
+    public WindowsNotificationService() : this(Microsoft.Extensions.Logging.Abstractions.NullLogger<WindowsNotificationService>.Instance)
+    {
+    }
+
     public WindowsNotificationService(ILogger<WindowsNotificationService> logger)
     {
         _logger = logger;

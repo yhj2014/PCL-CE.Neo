@@ -17,6 +17,10 @@ public class MacOSWindowService : IWindowService
     private bool _isMaximized;
     private bool _isTopmost;
 
+    public MacOSWindowService() : this(Microsoft.Extensions.Logging.Abstractions.NullLogger<MacOSWindowService>.Instance)
+    {
+    }
+
     public MacOSWindowService(ILogger<MacOSWindowService> logger)
     {
         _logger = logger;

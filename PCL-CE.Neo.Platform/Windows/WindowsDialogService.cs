@@ -9,6 +9,10 @@ public class WindowsDialogService : IDialogService
 {
     private readonly ILogger<WindowsDialogService> _logger;
 
+    public WindowsDialogService() : this(Microsoft.Extensions.Logging.Abstractions.NullLogger<WindowsDialogService>.Instance)
+    {
+    }
+
     public WindowsDialogService(ILogger<WindowsDialogService> logger)
     {
         _logger = logger;

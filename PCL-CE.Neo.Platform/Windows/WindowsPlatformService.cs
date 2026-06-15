@@ -9,6 +9,10 @@ public class WindowsPlatformService : IPlatformService
 {
     private readonly ILogger<WindowsPlatformService> _logger;
 
+    public WindowsPlatformService() : this(Microsoft.Extensions.Logging.Abstractions.NullLogger<WindowsPlatformService>.Instance)
+    {
+    }
+
     public WindowsPlatformService(ILogger<WindowsPlatformService> logger)
     {
         _logger = logger;

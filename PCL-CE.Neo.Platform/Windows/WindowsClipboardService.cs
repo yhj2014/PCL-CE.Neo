@@ -11,6 +11,10 @@ public class WindowsClipboardService : IClipboardService
     private string? _cachedText;
     private byte[]? _cachedImage;
 
+    public WindowsClipboardService() : this(Microsoft.Extensions.Logging.Abstractions.NullLogger<WindowsClipboardService>.Instance)
+    {
+    }
+
     public WindowsClipboardService(ILogger<WindowsClipboardService> logger)
     {
         _logger = logger;

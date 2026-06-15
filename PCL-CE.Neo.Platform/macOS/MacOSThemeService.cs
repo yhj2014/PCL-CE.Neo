@@ -12,6 +12,10 @@ public class MacOSThemeService : IThemeService
 
     public event EventHandler? ThemeChanged;
 
+    public MacOSThemeService() : this(Microsoft.Extensions.Logging.Abstractions.NullLogger<MacOSThemeService>.Instance)
+    {
+    }
+
     public MacOSThemeService(ILogger<MacOSThemeService> logger)
     {
         _logger = logger;

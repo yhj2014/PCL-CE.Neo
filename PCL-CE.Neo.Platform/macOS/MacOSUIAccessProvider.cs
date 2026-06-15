@@ -11,6 +11,10 @@ public class MacOSUIAccessProvider : IUIAccessProvider
     private readonly SynchronizationContext _uiContext;
     private readonly int _uiThreadId;
 
+    public MacOSUIAccessProvider() : this(Microsoft.Extensions.Logging.Abstractions.NullLogger<MacOSUIAccessProvider>.Instance)
+    {
+    }
+
     public MacOSUIAccessProvider(ILogger<MacOSUIAccessProvider> logger)
     {
         _logger = logger;

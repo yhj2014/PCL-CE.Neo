@@ -9,6 +9,10 @@ public class WindowsAnimationService : IAnimationService
     private readonly Dictionary<object, CancellationTokenSource> _activeAnimations;
     private readonly object _lock = new();
 
+    public WindowsAnimationService() : this(Microsoft.Extensions.Logging.Abstractions.NullLogger<WindowsAnimationService>.Instance)
+    {
+    }
+
     public WindowsAnimationService(ILogger<WindowsAnimationService> logger)
     {
         _logger = logger;
