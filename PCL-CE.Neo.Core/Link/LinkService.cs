@@ -1,3 +1,5 @@
+using System.Text;
+using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using PCL_CE.Neo.Core.Network;
@@ -58,29 +60,104 @@ public class LinkService : ILinkService
             using var stream = client.GetStream();
             stream.ReadTimeout = 5000;
 
-            var handshake = CreateHandshake(address, port);
+            // Send handshake with state=1 (status)
+            var handshake = CreateHandshake(address, port, 1);
             await stream.WriteAsync(handshake);
             
+            // Send status request
+            var request = CreateStatusRequest();
+            await stream.WriteAsync(request);
+            
+            // Read response length
             var length = await ReadVarIntAsync(stream);
-            if (length > 0)
+            if (length <= 0)
             {
-                var response = new byte[length];
-                await ReadExactAsync(stream, response);
-                
-                return new ServerInfo(
-                    Name: address,
-                    Address: address,
-                    Port: port,
-                    MOTD: "Online"
-                );
+                _logger.LogWarning("Invalid response length from server");
+                return null;
             }
+            
+            // Read response data
+            var responseData = new byte[length];
+            await ReadExactAsync(stream, responseData);
+            
+            // Skip packet ID (VarInt) and parse JSON
+            var jsonStart = FindJsonStart(responseData);
+            if (jsonStart < 0)
+            {
+                _logger.LogWarning("Could not find JSON in server response");
+                return null;
+            }
+            
+            var jsonString = Encoding.UTF8.GetString(responseData, jsonStart, responseData.Length - jsonStart);
+            _logger.LogDebug("Server response JSON: {Json}", jsonString);
+            
+            using var doc = JsonDocument.Parse(jsonString);
+            var root = doc.RootElement;
+            
+            // Parse JSON response
+            string? description = null;
+            int? playerCount = null;
+            int? maxPlayers = null;
+            string? versionName = null;
+            string? versionProtocol = null;
+            string? favicon = null;
+            
+            if (root.TryGetProperty("description", out var descElem))
+            {
+                // Description can be a string or an object with "text" field
+                if (descElem.ValueKind == JsonValueKind.String)
+                {
+                    description = descElem.GetString();
+                }
+                else if (descElem.TryGetProperty("text", out var textElem))
+                {
+                    description = textElem.GetString();
+                }
+            }
+            
+            if (root.TryGetProperty("players", out var playersElem))
+            {
+                if (playersElem.TryGetProperty("online", out var onlineElem))
+                    playerCount = onlineElem.GetInt32();
+                if (playersElem.TryGetProperty("max", out var maxElem))
+                    maxPlayers = maxElem.GetInt32();
+            }
+            
+            if (root.TryGetProperty("version", out var versionElem))
+            {
+                if (versionElem.TryGetProperty("name", out var nameElem))
+                    versionName = nameElem.GetString();
+                if (versionElem.TryGetProperty("protocol", out var protocolElem))
+                    versionProtocol = protocolElem.GetInt32().ToString();
+            }
+            
+            if (root.TryGetProperty("favicon", out var faviconElem))
+            {
+                favicon = faviconElem.GetString();
+            }
+            
+            // Send ping to get latency
+            var ping = await MeasurePingAsync(stream);
+            
+            _logger.LogInformation("Server ping successful: {Address}:{Port}, Players: {Online}/{Max}, Version: {Version}, Latency: {Latency}ms",
+                address, port, playerCount, maxPlayers, versionName, ping);
+            
+            return new ServerInfo(
+                Name: description ?? address,
+                Address: address,
+                Port: port,
+                MOTD: description,
+                PlayerCount: playerCount,
+                MaxPlayers: maxPlayers,
+                Version: versionName,
+                IconUrl: favicon
+            );
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to ping server");
+            _logger.LogError(ex, "Failed to ping server {Address}:{Port}", address, port);
+            return null;
         }
-        
-        return null;
     }
 
     public Task<string> GetLobbyCodeAsync()
@@ -143,7 +220,7 @@ public class LinkService : ILinkService
                 return null;
             }
 
-            var info = System.Text.Json.JsonSerializer.Deserialize<LobbyInfo>(response);
+            var info = JsonSerializer.Deserialize<LobbyInfo>(response);
             return info;
         }
         catch (Exception ex)
@@ -159,7 +236,7 @@ public class LinkService : ILinkService
 
         try
         {
-            var payload = System.Text.Json.JsonSerializer.Serialize(new
+            var payload = JsonSerializer.Serialize(new
             {
                 Code = code,
                 HostName = playerName,
@@ -183,23 +260,123 @@ public class LinkService : ILinkService
         }
     }
 
-    private static byte[] CreateHandshake(string address, int port)
+    private byte[] CreateHandshake(string address, int port, int state)
     {
-        var packet = new List<byte>();
+        using var ms = new MemoryStream();
         
-        packet.AddRange(WriteVarInt(0));
-        packet.AddRange(WriteVarInt(47));
-        packet.AddRange(WriteVarInt(address.Length));
-        packet.AddRange(System.Text.Encoding.UTF8.GetBytes(address));
-        packet.AddRange(WriteShort((short)port));
-        packet.AddRange(WriteVarInt(1));
+        // Packet ID (0x00 for handshake)
+        WriteVarInt(ms, 0x00);
+        // Protocol version (-1 for auto-detect, 47 for 1.8-1.16.5)
+        WriteVarInt(ms, 47);
+        // Server address
+        WriteString(ms, address);
+        // Server port
+        WriteShort(ms, (short)port);
+        // State (1 for status)
+        WriteVarInt(ms, state);
         
-        var data = packet.ToArray();
+        var data = ms.ToArray();
+        return CreatePacket(data);
+    }
+
+    private byte[] CreateStatusRequest()
+    {
+        // Status request packet ID (0x00)
+        return CreatePacket(new byte[] { 0x00 });
+    }
+
+    private async Task<long> MeasurePingAsync(Stream stream)
+    {
+        try
+        {
+            // Create ping packet
+            var pingData = CreatePacket(new byte[] { 0x01 });
+            var pingStart = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            
+            await stream.WriteAsync(pingData);
+            
+            // Read pong response
+            var length = await ReadVarIntAsync(stream);
+            if (length > 0)
+            {
+                var response = new byte[length];
+                await ReadExactAsync(stream, response);
+                
+                var pingEnd = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                return pingEnd - pingStart;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to measure ping");
+        }
+        
+        return -1;
+    }
+
+    private byte[] CreatePacket(byte[] data)
+    {
+        using var ms = new MemoryStream();
+        WriteVarInt(ms, data.Length);
+        ms.Write(data);
+        return ms.ToArray();
+    }
+
+    private int FindJsonStart(byte[] data)
+    {
+        // Find the position where the JSON starts (after the packet ID VarInt)
+        // The response format is: [length (VarInt)][packet_id (VarInt)][json (UTF-8)]
+        int index = 0;
+        try
+        {
+            // Skip length VarInt
+            while (index < data.Length && (data[index] & 0x80) != 0)
+                index++;
+            index++;
+            
+            // Skip packet ID VarInt
+            while (index < data.Length && (data[index] & 0x80) != 0)
+                index++;
+            index++;
+            
+            return index;
+        }
+        catch
+        {
+            return -1;
+        }
+    }
+
+    private static byte[] WriteVarInt(Stream stream, int value)
+    {
         var result = new List<byte>();
-        result.AddRange(WriteVarInt(data.Length));
-        result.AddRange(data);
-        
+        while (true)
+        {
+            if ((value & ~0x7F) == 0)
+            {
+                result.Add((byte)value);
+                break;
+            }
+            result.Add((byte)((value & 0x7F) | 0x80));
+            value >>= 7;
+        }
+        stream.Write(result.ToArray());
         return result.ToArray();
+    }
+
+    private static byte[] WriteString(Stream stream, string value)
+    {
+        var stringBytes = Encoding.UTF8.GetBytes(value);
+        WriteVarInt(stream, stringBytes.Length);
+        stream.Write(stringBytes);
+        return stringBytes;
+    }
+
+    private static byte[] WriteShort(Stream stream, short value)
+    {
+        var bytes = new byte[] { (byte)(value >> 8), (byte)(value & 0xFF) };
+        stream.Write(bytes);
+        return bytes;
     }
 
     private static async Task<int> ReadVarIntAsync(Stream stream)
@@ -209,9 +386,15 @@ public class LinkService : ILinkService
         while (true)
         {
             var b = (byte)stream.ReadByte();
+            if (b == 0xFF) break; // End of stream
             value |= (b & 0x7F) << shift;
             if ((b & 0x80) == 0) break;
             shift += 7;
+            if (shift >= 32)
+            {
+                _logger?.LogWarning("VarInt overflow");
+                break;
+            }
         }
         return value;
     }
@@ -225,26 +408,6 @@ public class LinkService : ILinkService
             if (read == 0) break;
             offset += read;
         }
-    }
-
-    private static byte[] WriteVarInt(int value)
-    {
-        var result = new List<byte>();
-        while (true)
-        {
-            if ((value & ~0x7F) == 0)
-            {
-                result.Add((byte)value);
-                return result.ToArray();
-            }
-            result.Add((byte)((value & 0x7F) | 0x80));
-            value >>= 7;
-        }
-    }
-
-    private static byte[] WriteShort(short value)
-    {
-        return new byte[] { (byte)(value >> 8), (byte)(value & 0xFF) };
     }
 
     private static string GenerateLobbyCode()
