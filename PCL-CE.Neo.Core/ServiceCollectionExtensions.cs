@@ -9,6 +9,7 @@ using PCL_CE.Neo.Core.Lifecycle;
 using PCL_CE.Neo.Core.Link;
 using PCL_CE.Neo.Core.Minecraft;
 using PCL_CE.Neo.Core.Network;
+using PCL_CE.Neo.Core.Update;
 using TaskManagerImpl = PCL_CE.Neo.Core.TaskManager.TaskManager;
 using TaskManagerInterface = PCL_CE.Neo.Core.TaskManager.ITaskManager;
 
@@ -30,7 +31,13 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<TaskManagerInterface, TaskManagerImpl>();
         services.AddSingleton<IJavaManager, JavaManager>();
         services.AddSingleton<IGameLauncher, GameLauncher>();
+        
+        // Link 服务（包含 McPing）
+        services.AddSingleton<IMcPingServiceFactory, McPingServiceFactory>();
         services.AddSingleton<ILinkService, LinkService>();
+        
+        // Update 服务
+        services.AddSingleton<IUpdateService, UpdateService>();
 
         return services;
     }
