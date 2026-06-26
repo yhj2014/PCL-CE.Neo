@@ -28,7 +28,8 @@ public static class ServiceCollectionExtensions
         // 用工厂方法注册 LifecycleManager，避免 IServiceCollection 依赖
         services.AddSingleton<ILifecycleManager>(sp => new LifecycleManager(sp));
         services.AddSingleton<TaskManagerInterface, TaskManagerImpl>();
-        services.AddSingleton<IJavaManager, JavaManager>();
+        services.AddSingleton<JavaManager>();
+        services.AddSingleton<GameCoreService>();
         services.AddSingleton<IGameLauncher, GameLauncher>();
         services.AddSingleton<ILinkService, LinkService>();
 
