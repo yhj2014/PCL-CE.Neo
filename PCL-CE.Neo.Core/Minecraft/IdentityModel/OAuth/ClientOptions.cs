@@ -1,0 +1,14 @@
+using System;
+using System.Collections.Generic;
+using System.Net.Http;
+
+namespace PCL_CE.Neo.Core.Minecraft.IdentityModel.OAuth;
+
+public record OAuthClientOptions
+{
+    public Dictionary<string, string>? Headers { get; set; }
+    public required EndpointMeta Meta { get; set; }
+    public required Func<HttpClient> GetClient { get; set; }
+    public required string RedirectUri { get; set; }
+    public required string ClientId { get; set; }
+}
