@@ -1,198 +1,221 @@
-using System.Text.Json;
-using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using PCL_CE.Neo.Core.Abstractions;
-using PCL_CE.Neo.Core.Adapters;
 using PCL_CE.Neo.Core.App;
+using PCL_CE.Neo.Core.Configuration.Storage;
 
 namespace PCL_CE.Neo.Core.Configuration;
 
-public interface IConfigService
+public sealed partial class ConfigService
 {
-    T GetValue<T>(string key, T defaultValue = default!);
-    void SetValue<T>(string key, T value);
-    bool HasKey(string key);
-    Task LoadAsync();
-    Task SaveAsync();
-}
+    private static readonly Dictionary<string, ConfigItem> _Items = [];
+    private static readonly HashSet<string> _KeySet = [];
 
-public class ConfigService : IConfigService, IDisposable
-{
-    private readonly ILogger<ConfigService> _logger;
-    private readonly IPathsAdapter _pathsAdapter;
-    private readonly Dictionary<string, object?> _config = new();
-    private readonly SemaphoreSlim _lock = new(1, 1);
-    private readonly string _configFilePath;
-    private bool _loaded;
+    public static IReadOnlySet<string> KeySet => _KeySet;
 
-    private static readonly JsonSerializerOptions JsonOptions = new()
+    [ConfigItem<int>("FileVersion", 1)] public static partial int SharedVersion { get; set; }
+    [ConfigItem<int>("LocalFileVersion", 1, ConfigSource.Local)] public static partial int LocalVersion { get; set; }
+
+    public static string SharedConfigPath { get; } = Path.Combine(Paths.SharedData, "config.v1.json");
+    public static string LocalConfigPath { get; } = Path.Combine(Paths.Data, "config.v1.yml");
+
+    public static bool TryGetConfigItemNoType(string key, [NotNullWhen(true)] out ConfigItem? item)
+        => _Items.TryGetValue(key, out item);
+
+    public static bool TryGetConfigItem<TValue>(string key, out ConfigItem<TValue>? item)
     {
-        WriteIndented = true,
-        PropertyNameCaseInsensitive = true
-    };
-
-    public ConfigService() : this(
-        Microsoft.Extensions.Logging.Abstractions.NullLogger<ConfigService>.Instance,
-        new PathsAdapter())
-    {
+        if (!_isConfigItemsInitialized) throw new InvalidOperationException("Not initialized");
+        var result = TryGetConfigItemNoType(key, out var value);
+        item = result ? (value as ConfigItem<TValue>) : null;
+        return result;
     }
 
-    public ConfigService(ILogger<ConfigService> logger, string configFilePath)
+    public static ConfigItem<TValue> GetConfigItem<TValue>(string key)
     {
-        _logger = logger;
-        _pathsAdapter = new PathsAdapter();
-        _configFilePath = configFilePath;
+        var result = TryGetConfigItem<TValue>(key, out var item);
+        if (!result) throw new KeyNotFoundException($"Config key not found: '{key}'");
+        return item ?? throw new InvalidCastException($"Type of '{key}' is incompatible with {typeof(TValue).FullName}");
     }
 
-    public ConfigService(ILogger<ConfigService> logger, IPathsAdapter pathsAdapter)
+    public static void RegisterObserver(IConfigScope scope, ConfigObserver observer)
     {
-        _logger = logger;
-        _pathsAdapter = pathsAdapter;
-        _configFilePath = Path.Combine(_pathsAdapter.SharedData, "config.v1.json");
-    }
-
-    public T GetValue<T>(string key, T defaultValue = default!)
-    {
-        lock (_config)
+        var itemKeys = scope.CheckScope(KeySet);
+        foreach (var key in itemKeys)
         {
-            if (_config.TryGetValue(key, out var value) && value != null)
+            var item = _Items[key];
+            item.Observe(observer);
+        }
+    }
+
+    #region Providers
+
+    private static ConfigStorage? _sharedConfigProvider;
+    private static ConfigStorage? _sharedEncryptedConfigProvider;
+    private static ConfigStorage? _localConfigProvider;
+    private static ConfigStorage? _instanceConfigProvider;
+
+    public static IConfigProvider GetProvider(ConfigSource source)
+    {
+        if (!_isProvidersInitialized) throw new InvalidOperationException("Not initialized");
+        return source switch
+        {
+            ConfigSource.Shared => _sharedConfigProvider!,
+            ConfigSource.SharedEncrypt => _sharedEncryptedConfigProvider!,
+            ConfigSource.Local => _localConfigProvider!,
+            ConfigSource.GameInstance => _instanceConfigProvider!,
+            _ => throw new ArgumentException($"Invalid source: {source}")
+        };
+    }
+
+    private static void _InitializeProviders()
+    {
+        Action[] inits = [
+            () =>
             {
-                try
+                if (!File.Exists(SharedConfigPath))
                 {
-                    if (value is JsonElement element)
-                    {
-                        var result = JsonSerializer.Deserialize<T>(element.GetRawText(), JsonOptions);
-                        return result ?? defaultValue;
-                    }
-                    if (value is T typedValue)
-                    {
-                        return typedValue;
-                    }
-                    var json = JsonSerializer.Serialize(value, JsonOptions);
-                    return JsonSerializer.Deserialize<T>(json, JsonOptions) ?? defaultValue;
+                    string[] oldPaths = [
+                        Path.Combine(Paths.OldSharedData, "Config.json"),
+                        Path.Combine(Paths.SharedData, "config.json")
+                    ];
+                    _TryMigrate(SharedConfigPath, oldPaths.Select(path =>
+                        new ConfigMigration { From = path, To = SharedConfigPath, OnMigration = SharedJsonMigration }));
                 }
-                catch
+                var fileProvider = new JsonFileProvider(SharedConfigPath);
+                var storage = new FileConfigStorage(fileProvider);
+                _sharedConfigProvider = storage;
+                _sharedEncryptedConfigProvider = new EncryptedFileConfigStorage(storage);
+            },
+            () =>
+            {
+                if (!File.Exists(LocalConfigPath)) _TryMigrate(LocalConfigPath, [
+                    new ConfigMigration
+                    {
+                        From = Path.Combine(Paths.Data, "setup.ini"),
+                        To = LocalConfigPath,
+                        OnMigration = CatIniMigration
+                    }
+                ]);
+                var fileProvider = new YamlFileProvider(LocalConfigPath);
+                _localConfigProvider = new FileConfigStorage(fileProvider);
+            },
+            () =>
+            {
+                _instanceConfigProvider = new DynamicCacheConfigStorage
                 {
-                    return defaultValue;
-                }
+                    StorageFactory = argument =>
+                    {
+                        ArgumentNullException.ThrowIfNull(argument);
+                        var dir = Path.GetFullPath(argument.ToString()!);
+                        var configPath = Path.Combine(dir, "PCL", "config.v1.yml");
+                        if (!File.Exists(dir)) _TryMigrate(dir, [
+                            new ConfigMigration
+                            {
+                                From = Path.Combine(dir, "PCL", "setup.ini"),
+                                To = configPath,
+                                OnMigration = CatIniMigration
+                            }
+                        ]);
+                        var fileProvider = new YamlFileProvider(configPath);
+                        var storage = new FileConfigStorage(fileProvider);
+                        return storage;
+                    }
+                };
             }
-            return defaultValue;
-        }
-    }
+        ];
+        try { Task.WaitAll(inits.Select(Task.Run).ToArray()); }
+        catch (AggregateException ex) { throw ex.GetBaseException(); }
 
-    public async Task InitializeAsync()
-    {
-        await LoadAsync();
-    }
+        return;
 
-    public void Set<T>(string key, T value) => SetValue(key, value);
-
-    public T? Get<T>(string key, T? defaultValue = default) => GetValue(key, defaultValue);
-
-    public void SetValue<T>(string key, T value)
-    {
-        lock (_config)
+        void SharedJsonMigration(string from, string to)
         {
-            _config[key] = value;
+            File.Copy(from, to);
         }
-        _ = SaveAsync();
-    }
 
-    public bool HasKey(string key)
-    {
-        lock (_config)
+        void CatIniMigration(string from, string to)
         {
-            return _config.ContainsKey(key);
+            var lines = File.ReadAllLines(from);
+            var yamlProvider = new YamlFileProvider(to);
+            foreach (var line in lines)
+            {
+                if (string.IsNullOrWhiteSpace(line)) continue;
+                var kv = line.Split(':', 2);
+                if (kv.Length != 2) continue;
+                yamlProvider.Set(kv[0], kv[1]);
+            }
+            yamlProvider.Sync();
         }
     }
 
-    public async Task LoadAsync()
+    private static void _TryMigrate(string target, IEnumerable<ConfigMigration> migrations)
     {
-        if (_loaded) return;
-
-        await _lock.WaitAsync();
         try
         {
-            if (File.Exists(_configFilePath))
-            {
-                var json = await File.ReadAllTextAsync(_configFilePath);
-                var loaded = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json, JsonOptions);
-                if (loaded != null)
-                {
-                    lock (_config)
-                    {
-                        foreach (var kvp in loaded)
-                        {
-                            _config[kvp.Key] = kvp.Value;
-                        }
-                    }
-                    _logger.LogInformation("配置已加载，共 {Count} 项", loaded.Count);
-                }
-            }
-            _loaded = true;
+            var result = ConfigMigration.Migrate(target, migrations);
+            if (!result) { }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "加载配置失败");
-        }
-        finally
-        {
-            _lock.Release();
         }
     }
 
-    public async Task SaveAsync()
+    #endregion
+
+    #region Lifecycle & Initialization
+
+    public static bool IsInitialized { get; private set; } = false;
+
+    private static bool _isProvidersInitialized = false;
+    private static bool _isConfigItemsInitialized = false;
+
+    public static void Start()
     {
-        await _lock.WaitAsync();
+        if (IsInitialized) return;
+        var timer = new Stopwatch();
+        timer.Start();
         try
         {
-            Dictionary<string, object?> toSave;
-            lock (_config)
+            _InitializeConfigItems();
+            _isConfigItemsInitialized = true;
+            _InitializeProviders();
+            _isProvidersInitialized = true;
+            foreach (var (_, item) in _Items)
             {
-                toSave = new Dictionary<string, object?>(_config);
+                item.TriggerEvent(ConfigEvent.Init, null, true, true);
             }
-
-            var json = JsonSerializer.Serialize(toSave, JsonOptions);
-            var directory = Path.GetDirectoryName(_configFilePath);
-            if (!string.IsNullOrEmpty(directory))
-            {
-                Directory.CreateDirectory(directory);
-            }
-            await File.WriteAllTextAsync(_configFilePath, json);
-            _logger.LogDebug("配置已保存");
+            IsInitialized = true;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "保存配置失败");
+            var currentSection = _isConfigItemsInitialized ? "OBSERVER" : _isProvidersInitialized ? "CONFIG_ITEM" : "PROVIDER";
+            var msg = $"配置初始化失败，当前位于 {currentSection} 阶段。";
+            if (ex is ConfigFileInitException e)
+            {
+                var filePath = e.Path;
+                var backupPath = e.Path + ".failbackup";
+                var bakPath = e.Path + ".bak";
+                File.Move(filePath, backupPath, true);
+                if (File.Exists(bakPath)) File.Copy(bakPath, filePath, true);
+            }
+            throw new InvalidOperationException(msg, ex);
         }
-        finally
-        {
-            _lock.Release();
-        }
+        timer.Stop();
     }
 
-    public void Load() => LoadAsync().GetAwaiter().GetResult();
-    public void Save() => _ = SaveAsync();
-
-    private bool _disposed;
-    public void Dispose()
+    public static void Stop()
     {
-        if (_disposed) return;
-        _disposed = true;
-        _lock.Dispose();
-    }
-}
-
-public static class ConfigServiceExtensions
-{
-    public static IServiceCollection AddConfigService(this IServiceCollection services)
-    {
-        services.AddSingleton<IConfigService, ConfigService>();
-        return services;
+        _sharedConfigProvider?.Stop();
+        _localConfigProvider?.Stop();
+        _instanceConfigProvider?.Stop();
     }
 
-    public static IConfigService GetConfigService(this IServiceProvider services)
-    {
-        return services.GetRequiredService<IConfigService>();
-    }
+    #endregion
+
+    private static void _InitializeConfigItems() { }
 }
